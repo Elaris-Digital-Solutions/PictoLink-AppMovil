@@ -43,12 +43,6 @@
             "backgroundColor": "#000000"
           }
         }
-      ],
-      [
-        "@react-native-voice/voice",
-        {
-          "microphonePermission": "Permite acceso al micrófono para dictar mensajes y convertirlos a pictogramas."
-        }
       ]
     ],
     "experiments": {
