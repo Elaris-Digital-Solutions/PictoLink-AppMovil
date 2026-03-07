@@ -27,7 +27,7 @@ export const FolderRow = memo(function FolderRow() {
 
     return (
         <div
-            className="flex-shrink-0 flex items-stretch bg-gray-900 border-t-2 border-gray-700"
+            className="flex-shrink-0 flex items-stretch bg-white border-t-2 border-gray-200"
             style={{ height: 88 }}
         >
             {/* ── Scrollable folder tabs ── */}
@@ -37,10 +37,10 @@ export const FolderRow = memo(function FolderRow() {
                 <button
                     onClick={navigateHome}
                     className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 min-w-[72px]
-                      border-r border-gray-700 transition-colors
+                      border-r border-gray-200 transition-colors
                       ${isHome
-                            ? 'bg-gray-600 text-white'
-                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
                         }`}
                     aria-label="Inicio"
                     aria-pressed={isHome}
@@ -65,10 +65,10 @@ export const FolderRow = memo(function FolderRow() {
                                 }
                             }}
                             className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 px-3 min-w-[78px]
-                          border-r border-gray-700 transition-colors
+                          border-r border-gray-200 transition-colors
                           ${isActive
                                     ? 'bg-blue-600 text-white'
-                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
                                 }`}
                             aria-pressed={isActive}
                             aria-label={cat.label}
@@ -86,7 +86,7 @@ export const FolderRow = memo(function FolderRow() {
                                     <span className="text-2xl leading-none">{cat.icon ?? '📁'}</span>
                                 )}
                             </div>
-                            <span className="text-[10px] font-bold whitespace-nowrap max-w-[72px] truncate text-center">
+                            <span className="text-[10px] font-bold whitespace-nowrap max-w-[72px] truncate text-center leading-tight">
                                 {cat.label}
                             </span>
                         </button>

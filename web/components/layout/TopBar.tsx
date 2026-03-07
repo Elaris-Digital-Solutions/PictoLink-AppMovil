@@ -2,61 +2,57 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, MessageSquare, Settings, Zap } from 'lucide-react';
+import { LayoutGrid, MessageCircle, Home, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useProfileStore } from '@/lib/store/useProfileStore';
+
+// ─── Nav items ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-    { href: '/dashboard', label: 'Home', icon: Zap },
-    { href: '/board', label: 'Board', icon: LayoutGrid },
-    { href: '/chat', label: 'Chat', icon: MessageSquare },
-    { href: '/settings', label: 'Settings', icon: Settings },
-];
+    { href: '/board',     label: 'Tablero',  icon: LayoutGrid },
+    { href: '/chat',      label: 'Mensajes', icon: MessageCircle },
+    { href: '/dashboard', label: 'Inicio',   icon: Home },
+    { href: '/settings',  label: 'Ajustes',  icon: Settings },
+] as const;
 
-// ─── Top bar (mobile header) ─────────────────────────────────────────────────
+// ─── BottomNav ────────────────────────────────────────────────────────────────
+// Universal bottom navigation — visible on every screen.
 
-export function TopBar() {
+export function BottomNav() {
     const pathname = usePathname();
-    const profile = useProfileStore((s) => s.profile);
-
-    const pageTitle = NAV_ITEMS.find((n) => pathname.startsWith(n.href))?.label ?? 'PictoLink';
 
     return (
-        <>
-            {/* Mobile header */}
-            <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-                        <LayoutGrid size={14} className="text-white" />
-                    </div>
-                    <h1 className="text-base font-bold text-gray-900">{pageTitle}</h1>
-                </div>
-                {profile && (
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg">
-                        {profile.avatar_emoji}
-                    </div>
-                )}
-            </header>
-
-            {/* Mobile bottom navigation */}
-            <nav className="md:hidden flex items-center bg-white border-t border-gray-200 flex-shrink-0 safe-area-pb">
-                {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                    const active = pathname.startsWith(href);
-                    return (
-                        <Link
-                            key={href}
-                            href={href}
-                            className={cn(
-                                'flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors',
-                                active ? 'text-blue-600' : 'text-gray-400'
-                            )}
-                        >
-                            <Icon size={22} />
-                            <span className="text-[10px] font-semibold">{label}</span>
-                        </Link>
-                    );
-                })}
-            </nav>
-        </>
+        <nav
+            className="flex-shrink-0 flex items-stretch bg-white border-t-2 border-gray-100 safe-area-pb"
+            style={{ height: 60 }}
+        >
+            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href || pathname.startsWith(href + '/');
+                return (
+                    <Link
+                        key={href}
+                        href={href}
+                        className={cn(
+                            'flex-1 flex flex-col items-center justify-center gap-1 transition-colors',
+                            active ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                        )}
+                    >
+                        <Icon
+                            size={24}
+                            strokeWidth={active ? 2.5 : 1.8}
+                            className={active ? 'text-blue-600' : 'text-gray-400'}
+                        />
+                        <span className={cn(
+                            'text-[10px] font-bold leading-none',
+                            active ? 'text-blue-600' : 'text-gray-400'
+                        )}>
+                            {label}
+                        </span>
+                    </Link>
+                );
+            })}
+        </nav>
     );
 }
+
+/** @deprecated Use BottomNav instead */
+export function TopBar() { return null; }

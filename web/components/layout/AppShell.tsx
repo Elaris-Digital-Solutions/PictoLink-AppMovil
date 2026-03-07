@@ -1,29 +1,19 @@
-import { Sidebar } from './Sidebar';
-import { TopBar } from './TopBar';
+import { BottomNav } from './TopBar';
 
 // ─── AppShell ─────────────────────────────────────────────────────────────────
-// Wraps every authenticated page.
-// Desktop: sidebar left + main content right
-// Mobile: top bar + content + bottom nav
+// Single-column layout: page content fills all space, universal bottom nav
+// is always pinned at the very bottom.
 
 export function AppShell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex h-dvh w-full overflow-hidden bg-gray-50">
-            {/* Desktop sidebar */}
-            <Sidebar />
+        <div className="flex flex-col h-dvh w-full overflow-hidden bg-white">
+            {/* Page content — flex-1 so it fills everything above the nav */}
+            <main className="flex-1 overflow-hidden">
+                {children}
+            </main>
 
-            {/* Main content area */}
-            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                {/* Mobile top bar */}
-                <TopBar />
-
-                {/* Page content */}
-                <main className="flex-1 overflow-hidden">
-                    {children}
-                </main>
-
-                {/* Mobile bottom nav is inside TopBar component */}
-            </div>
+            {/* Universal bottom navigation */}
+            <BottomNav />
         </div>
     );
 }

@@ -69,7 +69,7 @@ export const PictoCell = memo(function PictoCell({
             {/* ── Fitzgerald Key color strip ── */}
             <div
                 className="w-full flex-shrink-0"
-                style={{ backgroundColor: bgColor, height: 5 }}
+                style={{ backgroundColor: bgColor, height: 7 }}
             />
 
             {/* ── Image / icon area ── occupies all flex space between bar and label */}
@@ -100,7 +100,7 @@ export const PictoCell = memo(function PictoCell({
                 className="w-full flex-shrink-0 px-0.5 py-0.5 text-center"
                 style={{ backgroundColor: `${bgColor}22`, minHeight: 20 }}
             >
-                <span className="text-[10px] font-bold text-gray-900 leading-tight line-clamp-2 block">
+                <span className="text-[11px] font-bold text-gray-900 leading-tight line-clamp-2 block">
                     {node.label}
                 </span>
             </div>

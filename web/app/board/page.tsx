@@ -26,7 +26,7 @@ import { Home, ChevronRight } from 'lucide-react';
 
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
-import { useChatStore } from '@/lib/store/useChatStore';
+import { usePhraseLogStore } from '@/lib/store/usePhraseLogStore';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
@@ -54,10 +54,10 @@ function Breadcrumb({
 
     return (
         <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1
-                    bg-gray-800 border-b border-gray-700 overflow-x-auto scrollbar-hide">
+                    bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
             <button
                 onClick={onHome}
-                className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                className="flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors flex-shrink-0"
                 aria-label="Inicio"
             >
                 <Home size={13} />
@@ -66,10 +66,10 @@ function Breadcrumb({
 
             {nodes.map((node, idx) => (
                 <span key={node.id} className="flex items-center gap-1 flex-shrink-0">
-                    <ChevronRight size={12} className="text-gray-600" />
+                    <ChevronRight size={12} className="text-gray-400" />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-gray-300 hover:text-white transition-colors whitespace-nowrap"
+                        className="text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -83,12 +83,10 @@ function Breadcrumb({
 
 export default function BoardPage() {
     // ── Stores (primitives only) ──────────────────────────────────────────────
-    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 5);
+    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 8);
     const categoryPath = useBoardStore((s) => s.categoryPath);
     const sentence = useBoardStore((s) => s.sentence);
     const favorites = useBoardStore((s) => s.favorites);
-    const profile = useProfileStore((s) => s.profile);
-
     const addWord = useBoardStore((s) => s.addWord);
     const enterFolder = useBoardStore((s) => s.enterFolder);
     const navigateHome = useBoardStore((s) => s.navigateHome);
@@ -96,7 +94,7 @@ export default function BoardPage() {
     const toggleFavorite = useBoardStore((s) => s.toggleFavorite);
     const clearSentence = useBoardStore((s) => s.clearSentence);
 
-    const sendToChat = useChatStore((s) => s.sendMessage);
+    const addPhrase = usePhraseLogStore((s) => s.addEntry);
 
     // ── Derived data (O(1) catalog lookups) ───────────────────────────────────
     const currentItems = useMemo<PictoNode[]>(
@@ -130,18 +128,20 @@ export default function BoardPage() {
 
     const handleSend = useCallback(
         (text: string) => {
-            if (profile?.id) sendToChat(sentence, text, profile.id);
+            if (sentence.length > 0) {
+                addPhrase([...sentence], text);
+            }
             clearSentence();
         },
-        [sendToChat, sentence, profile?.id, clearSentence]
+        [addPhrase, sentence, clearSentence]
     );
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         // Outer shell: fills the AppShell <main> which is flex-1 overflow-hidden
-        <div className="flex flex-col w-full h-full overflow-hidden bg-gray-900">
+        <div className="flex flex-col w-full h-full overflow-hidden bg-white">
 
-            {/* ① SENTENCE BAR — top, 80px, dark */}
+            {/* ① SENTENCE BAR — top, light */}
             <SentenceBar onSend={handleSend} />
 
             {/* ② BREADCRUMB — only when inside a sub-folder */}
@@ -152,7 +152,7 @@ export default function BoardPage() {
             />
 
             {/* ③ PICTO GRID — fills ALL remaining space */}
-            <div className="flex-1 overflow-hidden bg-gray-50">
+            <div className="flex-1 overflow-hidden bg-gray-100">
                 <PictoGrid
                     items={currentItems}
                     columns={gridColumns}
@@ -164,7 +164,7 @@ export default function BoardPage() {
                 />
             </div>
 
-            {/* ④ FOLDER ROW — bottom, 88px, dark */}
+            {/* ④ FOLDER ROW — bottom category navigation */}
             <FolderRow />
         </div>
     );
