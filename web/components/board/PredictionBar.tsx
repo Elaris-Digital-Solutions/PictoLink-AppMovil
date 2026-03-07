@@ -6,9 +6,22 @@ import { useBoardStore } from '@/lib/store/useBoardStore';
 import { getPictoImageUrl, flattenPictogramsForPrediction } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 
-// ─── Prediction chip ──────────────────────────────────────────────────────────
+// ─── Static fallback predictions ──────────────────────────────────────────────
 
-const PredictionChip = memo(function PredictionChip({
+const COMMON_PREDICTIONS: PictoNode[] = [
+    { id: 'a-3345', label: 'Quiero', arasaacId: 3345, color: '#4CAF50' },
+    { id: 'g-8128', label: 'Por favor', arasaacId: 8128, color: '#EC4899' },
+    { id: 'a-2474', label: 'Ayuda', arasaacId: 2474, color: '#4CAF50' },
+    { id: 'g-8194', label: 'Gracias', arasaacId: 8194, color: '#EC4899' },
+    { id: 'g-4576', label: 'Sí', arasaacId: 4576, color: '#EC4899' },
+    { id: 'g-4550', label: 'No', arasaacId: 4550, color: '#EC4899' },
+    { id: 'a-2432', label: 'Comer', arasaacId: 2432, color: '#4CAF50' },
+    { id: 'n-2370', label: 'Agua', arasaacId: 2370, color: '#FF9800' },
+];
+
+// ─── Single prediction chip ────────────────────────────────────────────────────
+
+const PredChip = memo(function PredChip({
     node,
     onSelect,
 }: {
@@ -18,40 +31,31 @@ const PredictionChip = memo(function PredictionChip({
     return (
         <button
             onClick={onSelect}
-            className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-purple-200 rounded-full hover:bg-purple-50 hover:border-purple-400 transition-all duration-100 active:scale-95"
+            className="flex-shrink-0 flex flex-col items-center justify-center gap-1
+                 bg-white border-2 border-purple-200 rounded-xl
+                 hover:border-purple-400 hover:bg-purple-50 active:scale-95
+                 transition-all w-[70px] h-[70px] px-1"
         >
             {node.arasaacId ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={getPictoImageUrl(node.arasaacId, 300)}
                     alt={node.label}
-                    width={22}
-                    height={22}
-                    className="object-contain w-[22px] h-[22px]"
+                    className="object-contain w-8 h-8"
                 />
             ) : (
-                <span className="text-sm leading-none">{node.icon ?? '🔲'}</span>
+                <span className="text-xl leading-none">{node.icon ?? '🔲'}</span>
             )}
-            <span className="text-xs font-semibold text-purple-700">
+            <span className="text-[10px] font-bold text-purple-700 text-center leading-tight truncate w-full px-0.5">
                 {node.label}
             </span>
         </button>
     );
 });
 
-const COMMON_PREDICTIONS: PictoNode[] = [
-    { id: 'a-3345', label: 'Want', arasaacId: 3345, color: '#4CAF50' },
-    { id: 'g-8128', label: 'Please', arasaacId: 8128, color: '#EC4899' },
-    { id: 'a-2474', label: 'Help', arasaacId: 2474, color: '#4CAF50' },
-    { id: 'g-8194', label: 'Thank you', arasaacId: 8194, color: '#EC4899' },
-    { id: 'g-4576', label: 'Yes', arasaacId: 4576, color: '#EC4899' },
-    { id: 'g-4550', label: 'No', arasaacId: 4550, color: '#EC4899' },
-];
-
-// ─── Prediction Bar ───────────────────────────────────────────────────────────
+// ─── Prediction Bar ────────────────────────────────────────────────────────────
 
 export const PredictionBar = memo(function PredictionBar() {
-    // Use primitive selectors only — no function selectors
     const addWord = useBoardStore((s) => s.addWord);
     const sentence = useBoardStore((s) => s.sentence);
     const usageCount = useBoardStore((s) => s.usageCount);
@@ -63,28 +67,23 @@ export const PredictionBar = memo(function PredictionBar() {
         const sorted = all
             .filter((p) => !sentenceIds.has(p.id))
             .sort((a, b) => (usageCount[b.id] ?? 0) - (usageCount[a.id] ?? 0))
-            .slice(0, 6);
+            .slice(0, 8);
         return sorted.length > 0 ? sorted : COMMON_PREDICTIONS;
     }, [sentence, usageCount]);
 
-    if (predictions.length === 0) return null;
-
     return (
-        <div className="flex-shrink-0 border-t border-purple-100 bg-purple-50 px-3 py-2">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                <div className="flex-shrink-0 flex items-center gap-1 text-purple-500">
-                    <Sparkles size={14} />
-                    <span className="text-xs font-bold uppercase tracking-wide">
-                        Sugerencias
-                    </span>
-                </div>
-                <div className="w-px h-5 bg-purple-200 flex-shrink-0" />
+        <div className="flex-shrink-0 flex items-center gap-0 bg-purple-50 border-t-2 border-purple-200"
+            style={{ minHeight: 86 }}>
+            {/* Label */}
+            <div className="flex-shrink-0 flex flex-col items-center justify-center px-3 gap-0.5 text-purple-600 border-r-2 border-purple-200 h-full">
+                <Sparkles size={18} />
+                <span className="text-[10px] font-black uppercase tracking-wider">Suger.</span>
+            </div>
+
+            {/* Chips */}
+            <div className="flex items-center gap-2 px-3 overflow-x-auto scrollbar-hide py-2">
                 {predictions.map((node) => (
-                    <PredictionChip
-                        key={node.id}
-                        node={node}
-                        onSelect={() => addWord(node)}
-                    />
+                    <PredChip key={node.id} node={node} onSelect={() => addWord(node)} />
                 ))}
             </div>
         </div>

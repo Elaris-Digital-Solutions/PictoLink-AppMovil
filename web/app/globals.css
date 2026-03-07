@@ -7,7 +7,7 @@
   --font-inter: 'Inter', sans-serif;
 }
 
-/* ─── Base ───────────────────────────────────────────────────────────────── */
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -15,36 +15,69 @@
 }
 
 html,
-body {
+body,
+#__next {
   height: 100%;
-  overflow: hidden;             /* prevent rubber-band scroll in AAC mode */
-  touch-action: manipulation;  /* eliminate 300ms tap delay on iOS */
+  width: 100%;
+  overflow: hidden;
+  /* Full-screen AAC — no page scroll */
+  touch-action: manipulation;
+  /* Eliminate 300ms tap delay on iOS */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Focus ring (AAC: thick and visible) ────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid #3B82F6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ─── Disable text selection on boards ───────────────────────────────────── */
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ─── Scrollbar utilities ────────────────────────────────────────────────── */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* ─── Safe area support (notched phones) ─────────────────────────────────── */
+/* ─── Safe area (notched devices) ───────────────────────────────────────── */
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ─── Focus ring override for AAC (larger, more visible) ─────────────────── */
-:focus-visible {
-  outline: 3px solid #3B82F6;
-  outline-offset: 2px;
+/* ─── AAC grid: enforce square cells via container query ─────────────────── */
+.aac-grid-cell {
+  container-type: size;
 }
 
-/* ─── Prevent text selection on picto tap ────────────────────────────────── */
-button,
-[role="button"] {
-  user-select: none;
-  -webkit-user-select: none;
+/* ─── Ring width 3 utility (Tailwind v4 compat) ─────────────────────────── */
+.focus-visible\:ring-3:focus-visible {
+  --tw-ring-width: 3px;
+}
+
+/* ─── Animate pulse for speaking state ──────────────────────────────────── */
+@keyframes speaking-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-speaking {
+  animation: speaking-pulse 0.8s ease-in-out infinite;
 }

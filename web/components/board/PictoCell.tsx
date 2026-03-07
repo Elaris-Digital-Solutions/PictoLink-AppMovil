@@ -1,12 +1,26 @@
 'use client';
 
+/**
+ * PictoCell — single pictogram tile.
+ *
+ * Visual structure (Proloquo-inspired):
+ * ┌───────────────────────────────┐
+ * │▓▓▓  color header bar (5px)   │
+ * │                               │
+ * │       [   image   ]           │
+ * │                               │
+ * │▒▒▒▒▒▒▒ label band ▒▒▒▒▒▒▒▒▒ │
+ * └───────────────────────────────┘
+ *
+ * Cell adapts to its grid container size; aspect-ratio 1/1 is enforced
+ * by the wrapper div in PictoGrid.
+ */
+
 import { useState, memo } from 'react';
-import { Star, Folder } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 import { getPictoImageUrl } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PictoCellProps {
     node: PictoNode;
@@ -14,10 +28,7 @@ interface PictoCellProps {
     onLongPress?: (node: PictoNode) => void;
     isFavorite?: boolean;
     isSelected?: boolean;
-    size?: number;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const PictoCell = memo(function PictoCell({
     node,
@@ -25,85 +36,90 @@ export const PictoCell = memo(function PictoCell({
     onLongPress,
     isFavorite = false,
     isSelected = false,
-    size = 100,
 }: PictoCellProps) {
     const [imgError, setImgError] = useState(false);
-    const headerColor = node.color ?? '#6B7280';
 
+    const bgColor = node.color ?? '#6B7280';
     const imageUrl = node.arasaacId && !imgError
         ? getPictoImageUrl(node.arasaacId, 300)
         : null;
+    const isFolder = node.isFolder === true;
 
     return (
         <button
             onClick={() => onPress(node)}
-            onContextMenu={(e) => {
-                e.preventDefault();
-                onLongPress?.(node);
-            }}
+            onContextMenu={(e) => { e.preventDefault(); onLongPress?.(node); }}
             className={cn(
-                'relative flex flex-col items-center rounded-xl border-2 bg-white',
-                'transition-all duration-100 select-none cursor-pointer',
-                'active:scale-95 hover:shadow-md hover:border-gray-300',
+                // Fill the wrapper completely
+                'relative flex flex-col items-center w-full h-full',
+                'rounded-lg border-2 bg-white overflow-hidden',
+                // Interaction
+                'cursor-pointer select-none touch-manipulation',
+                'transition-all duration-100 active:scale-[0.95] active:brightness-90',
+                'hover:ring-2 hover:ring-offset-1 hover:ring-blue-400 hover:z-10',
+                // Selection state
                 isSelected
-                    ? 'border-blue-500 shadow-blue-100 shadow-md'
-                    : 'border-gray-200',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400'
+                    ? 'border-blue-500 shadow-lg shadow-blue-200 ring-2 ring-blue-400 ring-offset-1'
+                    : 'border-gray-300',
+                'focus:outline-none focus-visible:ring-3 focus-visible:ring-blue-500 focus-visible:ring-offset-1'
             )}
-            style={{ width: size, minHeight: size + 28 }}
             aria-label={node.label}
+            aria-pressed={isSelected}
         >
-            {/* Color header bar */}
+            {/* ── Fitzgerald Key color strip ── */}
             <div
-                className="w-full rounded-t-[10px] flex items-center justify-center"
-                style={{ backgroundColor: headerColor, height: 6 }}
+                className="w-full flex-shrink-0"
+                style={{ backgroundColor: bgColor, height: 5 }}
             />
 
-            {/* Image / emoji area */}
-            <div className="flex-1 flex items-center justify-center p-1.5 w-full">
-                {node.isFolder && !node.arasaacId ? (
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-3xl leading-none">{node.icon ?? '📁'}</span>
-                        <Folder size={16} className="text-gray-400" />
-                    </div>
-                ) : imageUrl ? (
+            {/* ── Image / icon area ── occupies all flex space between bar and label */}
+            <div className="flex-1 flex items-center justify-center w-full p-1 min-h-0 min-w-0">
+                {imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                         src={imageUrl}
                         alt={node.label}
-                        style={{ width: size - 20, height: size - 20 }}
-                        className="object-contain"
+                        className="object-contain max-w-full max-h-full"
+                        style={{ width: '78%', height: '78%' }}
                         onError={() => setImgError(true)}
                     />
                 ) : (
-                    <span className="text-4xl leading-none">{node.icon ?? '🔲'}</span>
+                    <span
+                        className="leading-none select-none"
+                        style={{ fontSize: 'clamp(20px, 4cqw, 42px)' }}
+                        role="img"
+                        aria-label={node.label}
+                    >
+                        {node.icon ?? (isFolder ? '📁' : '🔲')}
+                    </span>
                 )}
             </div>
 
-            {/* Label */}
+            {/* ── Label strip ── */}
             <div
-                className="w-full px-1 pb-1.5 text-center"
-                style={{ minHeight: 28 }}
+                className="w-full flex-shrink-0 px-0.5 py-0.5 text-center"
+                style={{ backgroundColor: `${bgColor}22`, minHeight: 20 }}
             >
-                <span className="text-xs font-semibold text-gray-700 leading-tight line-clamp-2">
+                <span className="text-[10px] font-bold text-gray-900 leading-tight line-clamp-2 block">
                     {node.label}
                 </span>
             </div>
 
-            {/* Folder badge */}
-            {node.isFolder && (
-                <Folder
-                    size={12}
-                    className="absolute top-2 right-2 text-white drop-shadow-sm"
+            {/* ── Folder indicator ── */}
+            {isFolder && (
+                <ChevronRight
+                    size={11}
+                    className="absolute top-1.5 right-1 opacity-70"
+                    style={{ color: bgColor }}
                 />
             )}
 
-            {/* Favorite star */}
+            {/* ── Favourite star ── */}
             {isFavorite && (
                 <Star
-                    size={12}
+                    size={11}
                     fill="currentColor"
-                    className="absolute top-2 left-2 text-amber-400"
+                    className="absolute top-1.5 left-1 text-amber-400 drop-shadow"
                 />
             )}
         </button>

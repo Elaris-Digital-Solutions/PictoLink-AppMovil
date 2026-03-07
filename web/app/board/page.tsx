@@ -1,126 +1,171 @@
 'use client';
 
+/**
+ * Board Page — Proloquo2Go-inspired AAC layout.
+ *
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  SentenceBar  (80px, dark)                                           │
+ * │  [chip] [chip] [chip]…       [Delete] [Clear] [Enviar] [🔊 HABLAR]  │
+ * ├──────────────────────────────────────────────────────────────────────┤
+ * │                                                                      │
+ * │  PictoGrid  (flex-1, fills all remaining height)                    │
+ * │  5 × N square cells  — core vocabulary                              │
+ * │                                                                      │
+ * │  Optional breadcrumb bar when navigated into a sub-folder           │
+ * │                                                                      │
+ * ├──────────────────────────────────────────────────────────────────────┤
+ * │  FolderRow   (88px, dark)                                            │
+ * │  [🏠 Home] [People] [Food] [Actions] [Feelings] …                   │
+ * └──────────────────────────────────────────────────────────────────────┘
+ *
+ * Zero page-level scrolling — only the grid scrolls if items overflow.
+ */
+
 import { useMemo, useCallback, useState } from 'react';
+import { Home, ChevronRight } from 'lucide-react';
+
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
-import { CategoryNav } from '@/components/board/CategoryNav';
-import { PictoGrid } from '@/components/board/PictoGrid';
+import { useChatStore } from '@/lib/store/useChatStore';
+
 import { SentenceBar } from '@/components/board/SentenceBar';
-import { PredictionBar } from '@/components/board/PredictionBar';
+import { PictoGrid } from '@/components/board/PictoGrid';
+import { FolderRow } from '@/components/board/FolderRow';
+
 import type { PictoNode } from '@/types';
-import { Search, X } from 'lucide-react';
-import { searchCatalog, getCurrentBoardItems } from '@/lib/pictograms/catalog';
+import {
+    getCurrentBoardItems,
+    getPathNodes,
+} from '@/lib/pictograms/catalog';
 
-// ─── Search Bar ───────────────────────────────────────────────────────────────
+// ─── Mini breadcrumb shown above the grid when deep in a folder ───────────────
 
-function BoardSearchBar({
-    query,
-    onChange,
-    onClear,
+function Breadcrumb({
+    path,
+    onHome,
+    onNavigateTo,
 }: {
-    query: string;
-    onChange: (q: string) => void;
-    onClear: () => void;
+    path: string[];
+    onHome: () => void;
+    onNavigateTo: (path: string[]) => void;
 }) {
+    const nodes = getPathNodes(path);
+    if (path.length === 0) return null;
+
     return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100">
-            <Search size={16} className="text-gray-400 flex-shrink-0" />
-            <input
-                type="text"
-                value={query}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder="Buscar pictograma…"
-                className="flex-1 text-sm outline-none text-gray-700 placeholder:text-gray-400"
-            />
-            {query && (
-                <button onClick={onClear} className="text-gray-400 hover:text-gray-600">
-                    <X size={16} />
-                </button>
-            )}
+        <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1
+                    bg-gray-800 border-b border-gray-700 overflow-x-auto scrollbar-hide">
+            <button
+                onClick={onHome}
+                className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                aria-label="Inicio"
+            >
+                <Home size={13} />
+                <span className="text-xs font-bold">Inicio</span>
+            </button>
+
+            {nodes.map((node, idx) => (
+                <span key={node.id} className="flex items-center gap-1 flex-shrink-0">
+                    <ChevronRight size={12} className="text-gray-600" />
+                    <button
+                        onClick={() => onNavigateTo(path.slice(0, idx + 1))}
+                        className="text-xs font-bold text-gray-300 hover:text-white transition-colors whitespace-nowrap"
+                    >
+                        {node.label}
+                    </button>
+                </span>
+            ))}
         </div>
     );
 }
 
-// ─── Board Page ───────────────────────────────────────────────────────────────
+// ─── Board Page ────────────────────────────────────────────────────────────────
 
 export default function BoardPage() {
-    // ── Read PRIMITIVE values from stores (stable references) ──────────────────
-    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 4);
+    // ── Stores (primitives only) ──────────────────────────────────────────────
+    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 5);
     const categoryPath = useBoardStore((s) => s.categoryPath);
     const sentence = useBoardStore((s) => s.sentence);
     const favorites = useBoardStore((s) => s.favorites);
+    const profile = useProfileStore((s) => s.profile);
 
-    // ── Actions (stable across renders) ────────────────────────────────────────
     const addWord = useBoardStore((s) => s.addWord);
-    const navigateTo = useBoardStore((s) => s.navigateTo);
+    const enterFolder = useBoardStore((s) => s.enterFolder);
+    const navigateHome = useBoardStore((s) => s.navigateHome);
+    const navigateToPath = useBoardStore((s) => s.navigateToPath);
     const toggleFavorite = useBoardStore((s) => s.toggleFavorite);
+    const clearSentence = useBoardStore((s) => s.clearSentence);
 
-    const [searchQuery, setSearchQuery] = useState('');
+    const sendToChat = useChatStore((s) => s.sendMessage);
 
-    // ── Derived data — depends only on PRIMITIVE values, never on functions ────
-    const currentItems = useMemo<PictoNode[]>(() => {
-        if (searchQuery.trim().length >= 2) return searchCatalog(searchQuery);
-        return getCurrentBoardItems(categoryPath);       // direct catalog call
-    }, [searchQuery, categoryPath]);                   // categoryPath is string[]
+    // ── Derived data (O(1) catalog lookups) ───────────────────────────────────
+    const currentItems = useMemo<PictoNode[]>(
+        () => getCurrentBoardItems(categoryPath),
+        [categoryPath]
+    );
 
     const selectedIds = useMemo(() => sentence.map((p) => p.id), [sentence]);
 
-    const favoriteIds = useMemo(
-        () => {
-            const favSet = new Set(favorites.map((f) => f.id));
-            return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
-        },
-        [currentItems, favorites]                        // favorites is PictoNode[]
-    );
+    const favoriteIds = useMemo(() => {
+        const favSet = new Set(favorites.map((f) => f.id));
+        return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
+    }, [currentItems, favorites]);
 
-    // ── Event handlers ─────────────────────────────────────────────────────────
+    // ── Event handlers ────────────────────────────────────────────────────────
     const handleSelectItem = useCallback(
         (node: PictoNode) => {
             if (node.isFolder) {
-                navigateTo(node.id);
-                setSearchQuery('');
+                enterFolder(node.id);
             } else {
                 addWord(node);
             }
         },
-        [navigateTo, addWord]
+        [enterFolder, addWord]
     );
 
-    const handleLongPressItem = useCallback(
+    const handleLongPress = useCallback(
         (node: PictoNode) => { if (!node.isFolder) toggleFavorite(node); },
         [toggleFavorite]
     );
 
-    // ── Render ─────────────────────────────────────────────────────────────────
-    return (
-        <div className="flex flex-col h-full bg-gray-50">
-            <CategoryNav />
+    const handleSend = useCallback(
+        (text: string) => {
+            if (profile?.id) sendToChat(sentence, text, profile.id);
+            clearSentence();
+        },
+        [sendToChat, sentence, profile?.id, clearSentence]
+    );
 
-            <BoardSearchBar
-                query={searchQuery}
-                onChange={setSearchQuery}
-                onClear={() => setSearchQuery('')}
+    // ── Render ────────────────────────────────────────────────────────────────
+    return (
+        // Outer shell: fills the AppShell <main> which is flex-1 overflow-hidden
+        <div className="flex flex-col w-full h-full overflow-hidden bg-gray-900">
+
+            {/* ① SENTENCE BAR — top, 80px, dark */}
+            <SentenceBar onSend={handleSend} />
+
+            {/* ② BREADCRUMB — only when inside a sub-folder */}
+            <Breadcrumb
+                path={categoryPath}
+                onHome={navigateHome}
+                onNavigateTo={navigateToPath}
             />
 
-            <div className="flex-1 overflow-y-auto">
+            {/* ③ PICTO GRID — fills ALL remaining space */}
+            <div className="flex-1 overflow-hidden bg-gray-50">
                 <PictoGrid
                     items={currentItems}
                     columns={gridColumns}
-                    cellSize={gridColumns >= 5 ? 88 : 100}
                     onSelectItem={handleSelectItem}
-                    onLongPressItem={handleLongPressItem}
+                    onLongPressItem={handleLongPress}
                     selectedIds={selectedIds}
                     favoriteIds={favoriteIds}
-                    emptyMessage={
-                        searchQuery.length >= 2
-                            ? `No se encontraron resultados para "${searchQuery}"`
-                            : 'Selecciona una categoría para ver pictogramas'
-                    }
+                    emptyMessage="Selecciona una categoría en la barra inferior"
                 />
             </div>
 
-            <PredictionBar />
-            <SentenceBar />
+            {/* ④ FOLDER ROW — bottom, 88px, dark */}
+            <FolderRow />
         </div>
     );
 }

@@ -1,15 +1,40 @@
 'use client';
 
+/**
+ * PictoGrid — the core AAC communication board.
+ *
+ * Design goals:
+ *  • Fills 100% of its parent (flex-1) with NO external scroll
+ *  • Cells are square (aspect-ratio 1/1) enforced by wrapper divs
+ *  • CSS grid with N columns — auto-rows so extra rows fill downward
+ *  • Grid scrolls internally only if items overflow the visible height
+ *
+ * Usage:
+ *  <div className="flex-1 overflow-hidden">
+ *    <PictoGrid items={...} columns={5} ... />
+ *  </div>
+ */
+
 import { memo } from 'react';
 import { PictoCell } from './PictoCell';
 import type { PictoNode } from '@/types';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Empty State ───────────────────────────────────────────────────────────────
+
+function EmptyState({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-500 p-8">
+            <span className="text-5xl select-none" role="img" aria-label="empty">🔲</span>
+            <p className="text-sm font-semibold text-center">{message}</p>
+        </div>
+    );
+}
+
+// ─── PictoGrid ────────────────────────────────────────────────────────────────
 
 interface PictoGridProps {
     items: PictoNode[];
     columns?: number;
-    cellSize?: number;
     onSelectItem: (node: PictoNode) => void;
     onLongPressItem?: (node: PictoNode) => void;
     selectedIds?: string[];
@@ -17,28 +42,14 @@ interface PictoGridProps {
     emptyMessage?: string;
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
-function EmptyState({ message }: { message: string }) {
-    return (
-        <div className="flex flex-col items-center justify-center h-48 text-gray-400 gap-2">
-            <span className="text-5xl">🔲</span>
-            <p className="text-sm font-medium">{message}</p>
-        </div>
-    );
-}
-
-// ─── Grid ─────────────────────────────────────────────────────────────────────
-
 export const PictoGrid = memo(function PictoGrid({
     items,
-    columns = 4,
-    cellSize = 100,
+    columns = 5,
     onSelectItem,
     onLongPressItem,
     selectedIds = [],
     favoriteIds = [],
-    emptyMessage = 'No hay pictogramas aquí',
+    emptyMessage = 'Selecciona una categoría',
 }: PictoGridProps) {
     if (items.length === 0) {
         return <EmptyState message={emptyMessage} />;
@@ -46,20 +57,38 @@ export const PictoGrid = memo(function PictoGrid({
 
     return (
         <div
-            className="grid gap-2.5 p-3 overflow-y-auto content-start"
             style={{
-                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                // The grid fills its container (parent must be flex-1 overflow-hidden)
+                width: '100%',
+                height: '100%',
+                display: 'grid',
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                // auto-rows: each row is sized evenly within the available height
+                gridAutoRows: '1fr',
+                gap: 4,
+                padding: 4,
+                boxSizing: 'border-box',
+                // Allow vertical scroll ONLY if items overflow — normally they shouldn't
+                overflowY: 'auto',
+                overflowX: 'hidden',
             }}
         >
             {items.map((node) => (
-                <div key={node.id} className="flex justify-center">
+                // Wrapper enforces square cells via aspect-ratio
+                <div
+                    key={node.id}
+                    style={{
+                        aspectRatio: '1 / 1',
+                        minWidth: 0,
+                        minHeight: 0,
+                    }}
+                >
                     <PictoCell
                         node={node}
                         onPress={onSelectItem}
                         onLongPress={onLongPressItem}
                         isSelected={selectedIds.includes(node.id)}
                         isFavorite={favoriteIds.includes(node.id)}
-                        size={cellSize}
                     />
                 </div>
             ))}

@@ -1,112 +1,103 @@
+/**
+ * lib/store/useBoardStore.ts
+ *
+ * AAC Board Zustand store.
+ *
+ * Design rules:
+ *  • Store holds ONLY serialisable primitive state (arrays, records, strings).
+ *  • No computed functions live inside the store — callers derive data
+ *    directly from primitives + catalog utilities (no render-loop risk).
+ *  • Persisted slice: favorites + usageCount only.
+ */
+
 'use client';
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PictoNode } from '@/types';
-import { getCurrentBoardItems, getParentCategory, flattenPictogramsForPrediction } from '@/lib/pictograms/catalog';
 
-// ─── Prediction logic ─────────────────────────────────────────────────────────
+// ─── State interface ───────────────────────────────────────────────────────────
 
-const COMMON_PREDICTIONS: PictoNode[] = [
-    { id: 'a-3345', label: 'Want', arasaacId: 3345, color: '#4CAF50' },
-    { id: 'g-8128', label: 'Please', arasaacId: 8128, color: '#EC4899' },
-    { id: 'a-2474', label: 'Help', arasaacId: 2474, color: '#4CAF50' },
-    { id: 'g-8194', label: 'Thank you', arasaacId: 8194, color: '#EC4899' },
-    { id: 'g-4576', label: 'Yes', arasaacId: 4576, color: '#EC4899' },
-    { id: 'g-4550', label: 'No', arasaacId: 4550, color: '#EC4899' },
-    { id: 'n-2370', label: 'Water', arasaacId: 2370, color: '#FF9800' },
-    { id: 'a-2432', label: 'Eat', arasaacId: 2432, color: '#4CAF50' },
-];
-
-// ─── State interface ──────────────────────────────────────────────────────────
-
-interface BoardStore {
-    // Sentence
+export interface BoardState {
+    // ── Sentence builder ──────────────────────────────────────────────────────
     sentence: PictoNode[];
+
+    /** Append a pictogram to the current sentence */
     addWord: (picto: PictoNode) => void;
+    /** Remove the last word */
+    removeLast: () => void;
+    /** Alias kept for backwards compat */
     removeLastWord: () => void;
+    /** Clear the entire sentence */
     clearSentence: () => void;
 
-    // Navigation
+    // ── Navigation stack ──────────────────────────────────────────────────────
+    /** Ordered stack of folder ids — [] means root */
     categoryPath: string[];
-    navigateTo: (categoryId: string) => void;
+
+    /** Push a folder id onto the stack */
+    enterFolder: (id: string) => void;
+    /** Alias kept for backwards compat */
+    navigateTo: (id: string) => void;
+    /** Pop the top of the stack */
+    goBack: () => void;
+    /** Alias kept for backwards compat */
     navigateBack: () => void;
+    /** Reset stack to root */
+    goHome: () => void;
+    /** Alias kept for backwards compat */
     navigateHome: () => void;
+    /** Jump to a specific path depth (breadcrumb click) */
+    navigateToPath: (path: string[]) => void;
 
-    // Derived (computed on demand)
-    getCurrentItems: () => PictoNode[];
-    getSentenceText: () => string;
-    getPredictions: () => PictoNode[];
-
-    // Favorites (persisted)
+    // ── Favourites (persisted) ────────────────────────────────────────────────
     favorites: PictoNode[];
     toggleFavorite: (picto: PictoNode) => void;
-    isFavorite: (id: string) => boolean;
 
-    // Frequency tracking
+    // ── Usage frequency (persisted) ───────────────────────────────────────────
+    /** id → tap count.  Used by prediction engine. */
     usageCount: Record<string, number>;
     trackUsage: (id: string) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useBoardStore = create<BoardStore>()(
+export const useBoardStore = create<BoardState>()(
     persist(
         (set, get) => ({
-            // ── Sentence ────────────────────────────────────────────
+
+            // ── Sentence ─────────────────────────────────────────────────────────
             sentence: [],
 
-            addWord: (picto) =>
-                set((s) => {
-                    get().trackUsage(picto.id);
-                    return { sentence: [...s.sentence, picto] };
-                }),
+            addWord: (picto) => {
+                // Track usage atomically (no interim state read)
+                const prev = get().usageCount;
+                set({
+                    sentence: [...get().sentence, picto],
+                    usageCount: { ...prev, [picto.id]: (prev[picto.id] ?? 0) + 1 },
+                });
+            },
 
-            removeLastWord: () =>
-                set((s) => ({ sentence: s.sentence.slice(0, -1) })),
+            removeLast: () => set((s) => ({ sentence: s.sentence.slice(0, -1) })),
+            removeLastWord: () => set((s) => ({ sentence: s.sentence.slice(0, -1) })),
 
             clearSentence: () => set({ sentence: [] }),
 
-            // ── Navigation ──────────────────────────────────────────
+            // ── Navigation ───────────────────────────────────────────────────────
             categoryPath: [],
 
-            navigateTo: (categoryId) =>
-                set((s) => ({ categoryPath: [...s.categoryPath, categoryId] })),
+            enterFolder: (id) => set((s) => ({ categoryPath: [...s.categoryPath, id] })),
+            navigateTo: (id) => set((s) => ({ categoryPath: [...s.categoryPath, id] })),
 
-            navigateBack: () =>
-                set((s) => ({
-                    categoryPath: getParentCategory(s.categoryPath),
-                })),
+            goBack: () => set((s) => ({ categoryPath: s.categoryPath.slice(0, -1) })),
+            navigateBack: () => set((s) => ({ categoryPath: s.categoryPath.slice(0, -1) })),
 
+            goHome: () => set({ categoryPath: [] }),
             navigateHome: () => set({ categoryPath: [] }),
 
-            // ── Computed ────────────────────────────────────────────
-            getCurrentItems: () => getCurrentBoardItems(get().categoryPath),
+            navigateToPath: (path) => set({ categoryPath: path }),
 
-            getSentenceText: () =>
-                get()
-                    .sentence.map((p) => p.label)
-                    .join(' '),
-
-            getPredictions: () => {
-                const { sentence, usageCount } = get();
-
-                // After selecting a word, suggest context-aware completions
-                if (sentence.length === 0) {
-                    return COMMON_PREDICTIONS.slice(0, 6);
-                }
-
-                // Get frequently used pictograms, sorted by frequency
-                const all = flattenPictogramsForPrediction();
-                const sorted = all
-                    .filter((p) => !sentence.some((s) => s.id === p.id))
-                    .sort((a, b) => (usageCount[b.id] ?? 0) - (usageCount[a.id] ?? 0))
-                    .slice(0, 6);
-
-                return sorted.length > 0 ? sorted : COMMON_PREDICTIONS.slice(0, 6);
-            },
-
-            // ── Favorites ───────────────────────────────────────────
+            // ── Favourites ───────────────────────────────────────────────────────
             favorites: [],
 
             toggleFavorite: (picto) =>
@@ -119,9 +110,7 @@ export const useBoardStore = create<BoardStore>()(
                     };
                 }),
 
-            isFavorite: (id) => get().favorites.some((f) => f.id === id),
-
-            // ── Frequency ───────────────────────────────────────────
+            // ── Usage frequency ──────────────────────────────────────────────────
             usageCount: {},
 
             trackUsage: (id) =>
@@ -132,6 +121,7 @@ export const useBoardStore = create<BoardStore>()(
         {
             name: 'pictolink-board',
             skipHydration: true,
+            // Only persist favourites and usage frequency — navigation resets on reload
             partialize: (s) => ({
                 favorites: s.favorites,
                 usageCount: s.usageCount,
@@ -139,3 +129,14 @@ export const useBoardStore = create<BoardStore>()(
         }
     )
 );
+
+// ─── Derived selectors (pure functions, stable references) ────────────────────
+// Use these in components instead of computing inline every render:
+
+/** Returns the serialised sentence text */
+export const selectSentenceText = (s: BoardState): string =>
+    s.sentence.map((p) => p.label).join(' ');
+
+/** Returns a Set of favourite ids for O(1) membership check */
+export const selectFavoriteIds = (s: BoardState): Set<string> =>
+    new Set(s.favorites.map((f) => f.id));
