@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ──────────────────────────────────────────────────────── */
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;             /* prevent rubber-band scroll in AAC mode */
+  touch-action: manipulation;  /* eliminate 300ms tap delay on iOS */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Scrollbar utilities ────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Safe area support (notched phones) ─────────────────────────────────── */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Focus ring override for AAC (larger, more visible) ─────────────────── */
+:focus-visible {
+  outline: 3px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* ─── Prevent text selection on picto tap ────────────────────────────────── */
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
