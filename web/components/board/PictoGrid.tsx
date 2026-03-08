@@ -65,8 +65,8 @@ export const PictoGrid = memo(function PictoGrid({
                 gridTemplateColumns: `repeat(${columns}, 1fr)`,
                 // auto-rows: each row is sized evenly within the available height
                 gridAutoRows: '1fr',
-                gap: 4,
-                padding: 4,
+                gap: 3,
+                padding: 3,
                 boxSizing: 'border-box',
                 // Allow vertical scroll ONLY if items overflow — normally they shouldn't
                 overflowY: 'auto',

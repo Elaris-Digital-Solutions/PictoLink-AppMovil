@@ -65,17 +65,19 @@ function Breadcrumb({
     const nodes = getPathNodes(path);
     if (path.length === 0) return null;
     return (
-        <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1 bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
-            <button onClick={onHome} className="flex items-center gap-1 text-gray-500 hover:text-gray-900 flex-shrink-0">
-                <Home size={13} />
-                <span className="text-xs font-bold">Inicio</span>
+        <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide"
+            style={{ backgroundColor: '#2A2A2A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
+            <button onClick={onHome} className="flex items-center gap-1.5 flex-shrink-0">
+                <Home size={13} style={{ color: 'rgba(255,255,255,0.5)' }} />
+                <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>Inicio</span>
             </button>
             {nodes.map((node, idx) => (
-                <span key={node.id} className="flex items-center gap-1 flex-shrink-0">
-                    <ChevronRight size={12} className="text-gray-400" />
+                <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
+                    <ChevronRight size={11} style={{ color: 'rgba(255,255,255,0.25)' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-gray-600 hover:text-gray-900 whitespace-nowrap"
+                        className="text-xs font-bold text-white whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -365,77 +367,78 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     }, [entries]);
 
     return (
-        <div className="flex flex-col h-full bg-gray-50">
+        <div className="flex flex-col h-full bg-white">
 
-            {/* Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-5 py-4 bg-white border-b border-gray-100">
-                <div className="w-10 h-10 rounded-2xl bg-blue-100 flex items-center justify-center">
-                    <MessageCircle size={22} className="text-blue-600" />
-                </div>
-                <div>
-                    <h1 className="text-xl font-black text-gray-900 leading-none">Mensajes</h1>
-                    <p className="text-xs text-gray-400 font-medium mt-0.5">¿Con quién quieres hablar?</p>
-                </div>
+            {/* Header — clean, modern, no gradient */}
+            <div
+                className="flex-shrink-0 px-5 pt-7 pb-5 bg-white"
+                style={{ borderBottom: '1px solid #F0F0F0' }}
+            >
+                <h1 className="text-[34px] font-black text-gray-950 leading-none tracking-tight">Mensajes</h1>
+                <p className="text-[14px] text-gray-400 font-medium mt-1">¿Con quién quieres hablar?</p>
             </div>
 
-            {/* Grid of contacts */}
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="grid grid-cols-2 gap-3">
-                    {contacts.map((contact) => {
-                        const unread = unreadCount[contact.id] ?? 0;
-                        const preview = lastReplies[contact.id];
-                        return (
-                            <button
-                                key={contact.id}
-                                onClick={() => onSelect(contact)}
-                                className="flex flex-col items-center gap-3 p-5 bg-white rounded-3xl border-2
-                                           hover:border-blue-200 hover:bg-blue-50 active:scale-[0.97] transition-all shadow-sm text-left"
-                                style={{ borderColor: unread > 0 ? contact.avatarColor : '#F3F4F6' }}
-                            >
-                                {/* Avatar + badge */}
-                                <div className="relative">
-                                    <Avatar contact={contact} size="lg" />
-                                    {unread > 0 && (
-                                        <div className="absolute -top-1 -right-1 min-w-[24px] h-[24px] rounded-full
-                                                        text-white text-[11px] font-black
-                                                        flex items-center justify-center px-1 shadow"
-                                            style={{ backgroundColor: contact.avatarColor }}>
-                                            {unread}
-                                        </div>
+            {/* Contact list — WhatsApp-style rows */}
+            <div className="flex-1 overflow-y-auto">
+                {contacts.map((contact) => {
+                    const unread = unreadCount[contact.id] ?? 0;
+                    const preview = lastReplies[contact.id];
+                    const timeStr = preview
+                        ? new Date(preview.timestamp).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+                        : '';
+                    return (
+                        <button
+                            key={contact.id}
+                            onClick={() => onSelect(contact)}
+                            className="w-full flex items-center gap-4 px-5 py-4 bg-white active:bg-gray-50 border-b border-gray-100 press-anim text-left"
+                        >
+                            {/* Avatar */}
+                            <Avatar contact={contact} size="md" />
+
+                            {/* Text */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                    <span className="text-[16px] font-bold text-gray-900 truncate leading-none">
+                                        {contact.name}
+                                    </span>
+                                    {timeStr && (
+                                        <span
+                                            className="text-[12px] flex-shrink-0"
+                                            style={{ color: unread > 0 ? contact.avatarColor : '#9CA3AF', fontWeight: unread > 0 ? 700 : 400 }}
+                                        >
+                                            {timeStr}
+                                        </span>
                                     )}
                                 </div>
-
-                                {/* Name + role */}
-                                <div className="text-center w-full">
-                                    <p className="text-lg font-black text-gray-900 leading-tight">{contact.name}</p>
-                                    <p className="text-xs text-gray-400 font-medium mt-0.5">{contact.role}</p>
-                                </div>
-
-                                {/* Last reply preview — pictograms if available */}
-                                {preview && (
-                                    <div
-                                        className="w-full rounded-xl overflow-hidden"
-                                        style={{ border: `1.5px solid ${contact.avatarColor}44` }}
-                                    >
-                                        {preview.pictograms.length > 0 ? (
-                                            <div className="flex gap-1 p-2 flex-wrap justify-center"
-                                                style={{ backgroundColor: contact.avatarColor + '18' }}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        {preview?.pictograms && preview.pictograms.length > 0 ? (
+                                            <div className="flex gap-1 items-center">
                                                 {preview.pictograms.slice(0, 3).map((p, i) => (
                                                     <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} />
                                                 ))}
                                             </div>
+                                        ) : preview ? (
+                                            <p className="text-[13px] text-gray-400 truncate">
+                                                {preview.direction === 'received' ? '← ' : '→ '}{preview.text}
+                                            </p>
                                         ) : (
-                                            <div className="px-3 py-2 text-xs font-semibold text-gray-700 text-left line-clamp-2 leading-snug"
-                                                style={{ backgroundColor: contact.avatarColor + '18' }}>
-                                                💬 {preview.text}
-                                            </div>
+                                            <p className="text-[13px] text-gray-300 italic">Sin mensajes</p>
                                         )}
                                     </div>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+                                    {unread > 0 && (
+                                        <div
+                                            className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1"
+                                            style={{ backgroundColor: contact.avatarColor }}
+                                        >
+                                            {unread}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );
@@ -499,36 +502,40 @@ function ConversationBoard({
     return (
         <div className="relative flex flex-col w-full h-full overflow-hidden bg-white">
 
-            {/* Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border-b-2 border-gray-100">
+            {/* Header — flat contact color */}
+            <div
+                className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+                style={{ backgroundColor: contact.avatarColor }}
+            >
                 <button
                     onClick={onBack}
-                    className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300
-                               flex items-center justify-center flex-shrink-0 transition-colors"
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all press-anim"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
                     aria-label="Volver a contactos"
                 >
-                    <ArrowLeft size={22} className="text-gray-700" />
+                    <ArrowLeft size={20} className="text-white" />
                 </button>
 
-                <Avatar contact={contact} size="sm" />
+                <div style={{ border: '2px solid rgba(255,255,255,0.5)', borderRadius: '50%' }}>
+                    <Avatar contact={contact} size="sm" />
+                </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-base font-black text-gray-900 leading-none">{contact.name}</p>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">{contact.role}</p>
+                    <p className="text-base font-black text-white leading-none">{contact.name}</p>
+                    <p className="text-xs text-white/70 font-medium mt-0.5">{contact.role}</p>
                 </div>
 
                 {/* Toggle thread */}
                 <button
                     onClick={() => setShowThread((v) => !v)}
-                    className={cn(
-                        'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-colors',
-                        showThread
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                    )}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-bold transition-all press-anim"
+                    style={{
+                        backgroundColor: showThread ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)',
+                        color: showThread ? contact.avatarColor : 'white',
+                    }}
                     aria-label="Ver conversación"
                 >
-                    <MessageSquare size={17} />
+                    <MessageSquare size={16} />
                     <span>{msgCount > 0 ? msgCount : 'Ver'}</span>
                 </button>
             </div>
@@ -543,7 +550,7 @@ function ConversationBoard({
             <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
 
             {/* Picto grid */}
-            <div className="flex-1 overflow-hidden bg-gray-100">
+            <div className="flex-1 overflow-hidden bg-gray-200">
                 <PictoGrid
                     items={currentItems}
                     columns={gridColumns}

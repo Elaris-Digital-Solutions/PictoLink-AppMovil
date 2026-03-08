@@ -13,8 +13,8 @@
 import { memo } from 'react';
 import { Home } from 'lucide-react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
-import { getRootCategories } from '@/lib/pictograms/catalog';
-import { getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { getRootCategories, getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { cn } from '@/lib/utils';
 
 export const FolderRow = memo(function FolderRow() {
     const categoryPath = useBoardStore((s) => s.categoryPath);
@@ -27,8 +27,8 @@ export const FolderRow = memo(function FolderRow() {
 
     return (
         <div
-            className="flex-shrink-0 flex items-stretch bg-white border-t-2 border-gray-200"
-            style={{ height: 88 }}
+            className="flex-shrink-0 flex items-stretch"
+            style={{ height: 88, backgroundColor: '#1C1C1E' }}
         >
             {/* ── Scrollable folder tabs ── */}
             <div className="flex items-stretch gap-0 overflow-x-auto scrollbar-hide w-full">
@@ -36,12 +36,11 @@ export const FolderRow = memo(function FolderRow() {
                 {/* Home tab */}
                 <button
                     onClick={navigateHome}
-                    className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 min-w-[72px]
-                      border-r border-gray-200 transition-colors
-                      ${isHome
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-                        }`}
+                    className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5 px-4 min-w-[72px] transition-all press-anim"
+                    style={isHome
+                        ? { backgroundColor: '#3B82F6', color: 'white' }
+                        : { color: 'rgba(255,255,255,0.55)' }
+                    }
                     aria-label="Inicio"
                     aria-pressed={isHome}
                 >
@@ -56,7 +55,6 @@ export const FolderRow = memo(function FolderRow() {
                         <button
                             key={cat.id}
                             onClick={() => {
-                                // If active, go home; otherwise enter that folder
                                 if (isActive) {
                                     navigateHome();
                                 } else {
@@ -64,12 +62,11 @@ export const FolderRow = memo(function FolderRow() {
                                     enterFolder(cat.id);
                                 }
                             }}
-                            className={`flex-shrink-0 flex flex-col items-center justify-center gap-1 px-3 min-w-[78px]
-                          border-r border-gray-200 transition-colors
-                          ${isActive
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-                                }`}
+                            className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5 px-3 min-w-[78px] transition-all press-anim"
+                            style={isActive
+                                ? { backgroundColor: cat.color ?? '#3B82F6', color: 'white' }
+                                : { color: 'rgba(255,255,255,0.6)' }
+                            }
                             aria-pressed={isActive}
                             aria-label={cat.label}
                         >

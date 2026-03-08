@@ -22,8 +22,8 @@ export function BottomNav() {
 
     return (
         <nav
-            className="flex-shrink-0 flex items-stretch bg-white border-t-2 border-gray-100 safe-area-pb"
-            style={{ height: 60 }}
+            className="flex-shrink-0 flex items-stretch bg-white/95 backdrop-blur-md safe-area-pb nav-shadow"
+            style={{ height: 64 }}
         >
             {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || pathname.startsWith(href + '/');
@@ -31,18 +31,31 @@ export function BottomNav() {
                     <Link
                         key={href}
                         href={href}
-                        className={cn(
-                            'flex-1 flex flex-col items-center justify-center gap-1 transition-colors',
-                            active ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
-                        )}
+                        className="flex-1 flex flex-col items-center justify-center gap-0.5 relative press-anim"
                     >
-                        <Icon
-                            size={24}
-                            strokeWidth={active ? 2.5 : 1.8}
-                            className={active ? 'text-blue-600' : 'text-gray-400'}
-                        />
+                        {/* Top active bar */}
+                        <div className={cn(
+                            'absolute top-0 rounded-b-full transition-all duration-300',
+                            active ? 'w-8 h-1 bg-blue-500' : 'w-0 h-1 bg-transparent'
+                        )} />
+
+                        {/* Icon with pill bg when active */}
+                        <div className={cn(
+                            'w-14 h-8 rounded-2xl flex items-center justify-center transition-all duration-200',
+                            active ? 'bg-blue-50' : 'bg-transparent'
+                        )}>
+                            <Icon
+                                size={22}
+                                strokeWidth={active ? 2.5 : 1.8}
+                                className={cn(
+                                    'transition-colors duration-200',
+                                    active ? 'text-blue-600' : 'text-gray-400'
+                                )}
+                            />
+                        </div>
+
                         <span className={cn(
-                            'text-[10px] font-bold leading-none',
+                            'text-[10px] font-semibold leading-none transition-colors duration-200',
                             active ? 'text-blue-600' : 'text-gray-400'
                         )}>
                             {label}

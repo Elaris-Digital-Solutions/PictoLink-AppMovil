@@ -49,27 +49,20 @@ export const PictoCell = memo(function PictoCell({
         <button
             onClick={() => onPress(node)}
             onContextMenu={(e) => { e.preventDefault(); onLongPress?.(node); }}
-            className={cn(
-                // Fill the wrapper completely
-                'relative flex flex-col items-center w-full h-full',
-                'rounded-lg border-2 bg-white overflow-hidden',
-                // Interaction
-                'cursor-pointer select-none touch-manipulation',
-                'transition-all duration-100 active:scale-[0.95] active:brightness-90',
-                'hover:ring-2 hover:ring-offset-1 hover:ring-blue-400 hover:z-10',
-                // Selection state
-                isSelected
-                    ? 'border-blue-500 shadow-lg shadow-blue-200 ring-2 ring-blue-400 ring-offset-1'
-                    : 'border-gray-300',
-                'focus:outline-none focus-visible:ring-3 focus-visible:ring-blue-500 focus-visible:ring-offset-1'
-            )}
+            className="relative flex flex-col items-center w-full h-full rounded-2xl overflow-hidden cursor-pointer select-none touch-manipulation transition-all duration-150 active:scale-[0.88] hover:z-10 focus:outline-none"
+            style={{
+                backgroundColor: '#FFFFFF',
+                boxShadow: isSelected
+                    ? `0 0 0 3px ${bgColor}, 0 6px 20px rgba(0,0,0,0.18)`
+                    : '0 2px 6px rgba(0,0,0,0.10)',
+            }}
             aria-label={node.label}
             aria-pressed={isSelected}
         >
             {/* ── Fitzgerald Key color strip ── */}
             <div
                 className="w-full flex-shrink-0"
-                style={{ backgroundColor: bgColor, height: 7 }}
+                style={{ backgroundColor: bgColor, height: 6, opacity: 0.85 }}
             />
 
             {/* ── Image / icon area ── occupies all flex space between bar and label */}
@@ -97,10 +90,10 @@ export const PictoCell = memo(function PictoCell({
 
             {/* ── Label strip ── */}
             <div
-                className="w-full flex-shrink-0 px-0.5 py-0.5 text-center"
-                style={{ backgroundColor: `${bgColor}22`, minHeight: 20 }}
+                className="w-full flex-shrink-0 px-1 py-0.5 text-center"
+                style={{ backgroundColor: `${bgColor}30`, minHeight: 20 }}
             >
-                <span className="text-[11px] font-bold text-gray-900 leading-tight line-clamp-2 block">
+                <span className="text-[10px] font-black text-gray-800 leading-tight line-clamp-2 block">
                     {node.label}
                 </span>
             </div>

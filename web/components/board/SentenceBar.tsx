@@ -16,6 +16,7 @@ import { Volume2, Delete, Send, X } from 'lucide-react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { cn } from '@/lib/utils';
 
 // ─── Sentence Chip ─────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function SentenceChip({
     return (
         <div
             className="relative flex-shrink-0 flex flex-col items-center
-                    bg-white border-2 rounded-xl shadow-sm overflow-hidden
+                    bg-white border-2 rounded-xl shadow-lg overflow-hidden
                     w-[72px] h-[68px] group cursor-default select-none"
             style={{ borderColor: color ? `${color}80` : '#93C5FD' }}
         >
@@ -86,13 +87,13 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
 
     return (
         <div
-            className="flex-shrink-0 flex items-stretch bg-white border-b-2 border-gray-200"
-            style={{ minHeight: 84 }}
+            className="flex-shrink-0 flex items-stretch bg-gray-900"
+            style={{ minHeight: 88 }}
         >
             {/* ── Sentence chips ── */}
             <div className="flex-1 flex items-center gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
                 {isEmpty ? (
-                    <p className="text-sm text-gray-400 italic select-none whitespace-nowrap font-medium">
+                    <p className="text-sm text-gray-500 italic select-none whitespace-nowrap font-medium">
                         Toca pictogramas para construir una frase…
                     </p>
                 ) : (
@@ -112,19 +113,20 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
             </div>
 
             {/* ── Action buttons ── */}
-            <div className="flex-shrink-0 flex items-center gap-2 px-3 border-l-2 border-gray-100">
+            <div className="flex-shrink-0 flex items-center gap-1.5 px-2.5 border-l border-white/10">
                 {/* Speak */}
                 <button
                     onClick={() => { if (!isEmpty) speak(sentence); }}
                     disabled={isEmpty}
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-30
-                        ${isSpeaking
-                            ? 'bg-green-100 text-green-600 animate-pulse'
-                            : 'bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-600'
-                        }`}
+                    className={cn(
+                        'w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 press-anim',
+                        isSpeaking
+                            ? 'bg-green-500 text-white animate-pulse'
+                            : 'bg-blue-500 text-white hover:bg-blue-400 active:bg-blue-600'
+                    )}
                     aria-label={isSpeaking ? 'Hablando' : 'Hablar frase'}
                 >
-                    <Volume2 size={22} />
+                    <Volume2 size={20} />
                 </button>
 
                 {/* Send to chat */}
@@ -132,12 +134,13 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
                     <button
                         onClick={() => { if (!isEmpty) { onSend(sentenceText); } }}
                         disabled={isEmpty}
-                        className="w-12 h-12 rounded-xl flex items-center justify-center
-                           bg-green-500 hover:bg-green-600 active:bg-green-700
-                           disabled:opacity-30 transition-colors shadow-sm"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center
+                           bg-emerald-500 text-white
+                           hover:bg-emerald-400 active:bg-emerald-600
+                           disabled:opacity-30 transition-all press-anim"
                         aria-label="Enviar mensaje"
                     >
-                        <Send size={20} className="text-white" />
+                        <Send size={18} />
                     </button>
                 )}
 
@@ -145,24 +148,24 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
                 <button
                     onClick={removeLastWord}
                     disabled={isEmpty}
-                    className="w-12 h-12 rounded-xl flex items-center justify-center
-                       bg-gray-100 hover:bg-gray-200 active:bg-gray-300
-                       disabled:opacity-30 transition-colors"
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center
+                       bg-white/10 hover:bg-white/20 active:bg-white/30 text-white
+                       disabled:opacity-30 transition-all press-anim"
                     aria-label="Borrar última palabra"
                 >
-                    <Delete size={22} className="text-gray-700" />
+                    <Delete size={20} />
                 </button>
 
-                {/* Clear all — large black circle (Proloquo2Go X button) */}
+                {/* Clear all */}
                 <button
                     onClick={clearSentence}
                     disabled={isEmpty}
-                    className="w-12 h-12 rounded-full flex items-center justify-center
-                       bg-gray-900 hover:bg-gray-700 active:bg-black
-                       disabled:opacity-30 transition-colors shadow-md"
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center
+                       bg-red-500/70 hover:bg-red-500 active:bg-red-600 text-white
+                       disabled:opacity-30 transition-all press-anim"
                     aria-label="Limpiar toda la frase"
                 >
-                    <X size={22} className="text-white" strokeWidth={3} />
+                    <X size={18} strokeWidth={2.5} />
                 </button>
             </div>
         </div>

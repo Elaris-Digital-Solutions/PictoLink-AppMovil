@@ -53,23 +53,24 @@ function Breadcrumb({
     if (path.length === 0) return null;
 
     return (
-        <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1
-                    bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+        <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-hide"
+            style={{ backgroundColor: '#2A2A2A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
             <button
                 onClick={onHome}
-                className="flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors flex-shrink-0"
+                className="flex items-center gap-1.5 flex-shrink-0"
                 aria-label="Inicio"
             >
-                <Home size={13} />
-                <span className="text-xs font-bold">Inicio</span>
+                <Home size={13} style={{ color: 'rgba(255,255,255,0.5)' }} />
+                <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>Inicio</span>
             </button>
 
             {nodes.map((node, idx) => (
-                <span key={node.id} className="flex items-center gap-1 flex-shrink-0">
-                    <ChevronRight size={12} className="text-gray-400" />
+                <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
+                    <ChevronRight size={11} style={{ color: 'rgba(255,255,255,0.25)' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+                        className="text-xs font-bold text-white whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -152,7 +153,7 @@ export default function BoardPage() {
             />
 
             {/* ③ PICTO GRID — fills ALL remaining space */}
-            <div className="flex-1 overflow-hidden bg-gray-100">
+            <div className="flex-1 overflow-hidden bg-gray-200">
                 <PictoGrid
                     items={currentItems}
                     columns={gridColumns}

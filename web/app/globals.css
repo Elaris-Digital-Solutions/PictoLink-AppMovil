@@ -5,6 +5,10 @@
 /* ─── CSS Variables ──────────────────────────────────────────────────────── */
 :root {
   --font-inter: 'Inter', sans-serif;
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-active: 0 4px 16px rgba(59,130,246,0.18), 0 1px 3px rgba(59,130,246,0.12);
+  --shadow-nav: 0 -1px 0 rgba(0,0,0,0.05), 0 -6px 24px rgba(0,0,0,0.04);
+  --radius-cell: 16px;
 }
 
 /* ─── Base reset ─────────────────────────────────────────────────────────── */
@@ -20,17 +24,42 @@ body,
   height: 100%;
   width: 100%;
   overflow: hidden;
-  /* Full-screen AAC — no page scroll */
   touch-action: manipulation;
-  /* Eliminate 300ms tap delay on iOS */
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #F8FAFC;
 }
 
 /* ─── Focus ring (AAC: thick and visible) ────────────────────────────────── */
 :focus-visible {
   outline: 3px solid #3B82F6;
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
+}
+
+/* ─── Tactile press animation ────────────────────────────────────────────── */
+@keyframes press {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.press-anim:active {
+  animation: press 140ms ease-out;
+}
+
+/* ─── Bottom nav shadow ──────────────────────────────────────────────────── */
+.nav-shadow {
+  box-shadow: var(--shadow-nav);
+}
+
+/* ─── Card shadow ────────────────────────────────────────────────────────── */
+.card-shadow {
+  box-shadow: var(--shadow-card);
 }
 
 /* ─── Disable text selection on boards ───────────────────────────────────── */
