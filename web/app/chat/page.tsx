@@ -25,12 +25,10 @@ import {
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
 import { usePhraseLogStore, type PhraseEntry } from '@/lib/store/usePhraseLogStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
-import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
-import { FolderRow } from '@/components/board/FolderRow';
 import { getCurrentBoardItems, getPathNodes, getPictoImageUrl } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
@@ -66,18 +64,18 @@ function Breadcrumb({
     if (path.length === 0) return null;
     return (
         <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide"
-            style={{ backgroundColor: '#2A2A2A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ backgroundColor: '#F5F5F5', borderBottom: '1px solid #D9D9D9' }}
         >
             <button onClick={onHome} className="flex items-center gap-1.5 flex-shrink-0">
-                <Home size={13} style={{ color: 'rgba(255,255,255,0.5)' }} />
-                <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>Inicio</span>
+                <Home size={13} style={{ color: '#666666' }} />
+                <span className="text-xs font-bold" style={{ color: '#666666' }}>Inicio</span>
             </button>
             {nodes.map((node, idx) => (
                 <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
-                    <ChevronRight size={11} style={{ color: 'rgba(255,255,255,0.25)' }} />
+                    <ChevronRight size={11} style={{ color: '#9A9A9A' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-white whitespace-nowrap"
+                        className="text-xs font-bold text-gray-900 whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -90,14 +88,14 @@ function Breadcrumb({
 // ─── Mini pictogram chip (inside thread) ─────────────────────────────────────
 
 function PictoChip({ label, arasaacId, color, size = 'sm' }: {
-    label: string; arasaacId?: number; color?: string; size?: 'sm' | 'lg';
+    label: string; arasaacId?: number; color?: string; size?: 'sm' | 'md' | 'lg';
 }) {
     const bg = color ?? '#6B7280';
-    const w       = size === 'lg' ? 72  : 48;
-    const imgSize = size === 'lg' ? 50  : 30;
-    const imgH    = size === 'lg' ? 56  : 38;
-    const stripH  = size === 'lg' ? 5   : 4;
-    const lblCls  = size === 'lg' ? 'text-[10px]' : 'text-[8px]';
+    const w       = size === 'lg' ? 72 : size === 'md' ? 56 : 48;
+    const imgSize = size === 'lg' ? 50 : size === 'md' ? 34 : 30;
+    const imgH    = size === 'lg' ? 56 : size === 'md' ? 42 : 38;
+    const stripH  = size === 'lg' ? 5 : 4;
+    const lblCls  = size === 'lg' ? 'text-[10px]' : size === 'md' ? 'text-[9px]' : 'text-[8px]';
     return (
         <div
             className="flex flex-col items-center bg-white border rounded-xl overflow-hidden flex-shrink-0"
@@ -367,19 +365,19 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     }, [entries]);
 
     return (
-        <div className="flex flex-col h-full bg-white">
+        <div className="flex flex-col h-full bg-[#ECECEC]">
 
             {/* Header — clean, modern, no gradient */}
             <div
-                className="flex-shrink-0 px-5 pt-7 pb-5 bg-white"
-                style={{ borderBottom: '1px solid #F0F0F0' }}
+                className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#F5F5F5]"
+                style={{ borderBottom: '1px solid #D6D6D6' }}
             >
-                <h1 className="text-[34px] font-black text-gray-950 leading-none tracking-tight">Mensajes</h1>
-                <p className="text-[14px] text-gray-400 font-medium mt-1">¿Con quién quieres hablar?</p>
+                <h1 className="text-[30px] font-black text-black leading-none tracking-tight">Mensajes</h1>
+                <p className="text-[14px] text-black/60 font-semibold mt-1.5">¿Con quién quieres hablar?</p>
             </div>
 
-            {/* Contact list — WhatsApp-style rows */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Contact list — high-contrast cards */}
+            <div className="flex-1 overflow-y-auto px-3 py-2.5">
                 {contacts.map((contact) => {
                     const unread = unreadCount[contact.id] ?? 0;
                     const preview = lastReplies[contact.id];
@@ -390,51 +388,59 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                         <button
                             key={contact.id}
                             onClick={() => onSelect(contact)}
-                            className="w-full flex items-center gap-4 px-5 py-4 bg-white active:bg-gray-50 border-b border-gray-100 press-anim text-left"
+                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-black/20 shadow-[0_1px_3px_rgba(0,0,0,0.08)] active:bg-zinc-100 press-anim text-left"
                         >
                             {/* Avatar */}
                             <Avatar contact={contact} size="md" />
 
                             {/* Text */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <div className="flex items-center justify-between gap-2 mb-1">
                                     <span className="text-[16px] font-bold text-gray-900 truncate leading-none">
                                         {contact.name}
                                     </span>
-                                    {timeStr && (
-                                        <span
-                                            className="text-[12px] flex-shrink-0"
-                                            style={{ color: unread > 0 ? contact.avatarColor : '#9CA3AF', fontWeight: unread > 0 ? 700 : 400 }}
-                                        >
-                                            {timeStr}
-                                        </span>
-                                    )}
                                 </div>
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 min-w-0 flex items-center">
                                         {preview?.pictograms && preview.pictograms.length > 0 ? (
                                             <div className="flex gap-1 items-center">
-                                                {preview.pictograms.slice(0, 3).map((p, i) => (
-                                                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} />
+                                                {preview.pictograms.slice(0, 2).map((p, i) => (
+                                                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
                                                 ))}
+                                                {preview.pictograms.length > 2 && (
+                                                    <span className="text-[11px] font-bold text-black/50 pl-1">+{preview.pictograms.length - 2}</span>
+                                                )}
                                             </div>
                                         ) : preview ? (
-                                            <p className="text-[13px] text-gray-400 truncate">
+                                            <p className="text-[13px] text-gray-500 truncate font-medium">
                                                 {preview.direction === 'received' ? '← ' : '→ '}{preview.text}
                                             </p>
                                         ) : (
-                                            <p className="text-[13px] text-gray-300 italic">Sin mensajes</p>
+                                            <p className="text-[13px] text-gray-400 italic">Sin mensajes</p>
                                         )}
                                     </div>
-                                    {unread > 0 && (
-                                        <div
-                                            className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1"
-                                            style={{ backgroundColor: contact.avatarColor }}
-                                        >
-                                            {unread}
-                                        </div>
-                                    )}
                                 </div>
+                            </div>
+
+                            <div className="flex flex-col items-end justify-between self-stretch py-0.5 min-w-[42px]">
+                                {timeStr ? (
+                                    <span
+                                        className="text-[11px] leading-none"
+                                        style={{ color: unread > 0 ? '#111111' : '#7B7B7B', fontWeight: unread > 0 ? 700 : 500 }}
+                                    >
+                                        {timeStr}
+                                    </span>
+                                ) : (
+                                    <span className="text-[11px] text-transparent leading-none">00:00</span>
+                                )}
+
+                                {unread > 0 ? (
+                                    <div className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1 bg-black">
+                                        {unread}
+                                    </div>
+                                ) : (
+                                    <span className="w-[22px] h-[22px]" aria-hidden="true" />
+                                )}
                             </div>
                         </button>
                     );
@@ -458,7 +464,6 @@ function ConversationBoard({
     const [showThread, setShowThread] = useState(false);
 
     // Board state
-    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 8);
     const categoryPath = useBoardStore((s) => s.categoryPath);
     const sentence = useBoardStore((s) => s.sentence);
     const favorites = useBoardStore((s) => s.favorites);
@@ -484,6 +489,9 @@ function ConversationBoard({
         const favSet = new Set(favorites.map((f) => f.id));
         return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
     }, [currentItems, favorites]);
+
+    const boardColumns = 8;
+    const boardRows = 6;
 
     const handleSelectItem = useCallback((node: PictoNode) => {
         if (node.isFolder) enterFolder(node.id);
@@ -550,10 +558,11 @@ function ConversationBoard({
             <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
 
             {/* Picto grid */}
-            <div className="flex-1 overflow-hidden bg-gray-200">
+            <div className="flex-1 overflow-hidden bg-[#E4E4E4] p-1.5">
                 <PictoGrid
                     items={currentItems}
-                    columns={gridColumns}
+                    columns={boardColumns}
+                    rows={boardRows}
                     onSelectItem={handleSelectItem}
                     onLongPressItem={handleLongPress}
                     selectedIds={selectedIds}
@@ -561,9 +570,6 @@ function ConversationBoard({
                     emptyMessage="Selecciona una categoría"
                 />
             </div>
-
-            {/* Folder row */}
-            <FolderRow />
 
             {/* Thread slide-over */}
             {showThread && (

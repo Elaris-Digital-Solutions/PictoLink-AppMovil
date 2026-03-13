@@ -14,7 +14,6 @@ import { memo } from 'react';
 import { Home } from 'lucide-react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { getRootCategories, getPictoImageUrl } from '@/lib/pictograms/catalog';
-import { cn } from '@/lib/utils';
 
 export const FolderRow = memo(function FolderRow() {
     const categoryPath = useBoardStore((s) => s.categoryPath);
@@ -27,24 +26,24 @@ export const FolderRow = memo(function FolderRow() {
 
     return (
         <div
-            className="flex-shrink-0 flex items-stretch"
-            style={{ height: 88, backgroundColor: '#1C1C1E' }}
+            className="flex-shrink-0 flex items-stretch border-t border-black/25"
+            style={{ height: 92, backgroundColor: '#DCDCDC' }}
         >
             {/* ── Scrollable folder tabs ── */}
-            <div className="flex items-stretch gap-0 overflow-x-auto scrollbar-hide w-full">
+            <div className="flex items-stretch gap-1 overflow-x-auto scrollbar-hide w-full px-1.5 py-1">
 
                 {/* Home tab */}
                 <button
                     onClick={navigateHome}
-                    className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5 px-4 min-w-[72px] transition-all press-anim"
+                    className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-3 min-w-[78px] rounded-lg border transition-all press-anim"
                     style={isHome
-                        ? { backgroundColor: '#3B82F6', color: 'white' }
-                        : { color: 'rgba(255,255,255,0.55)' }
+                        ? { backgroundColor: '#111111', color: '#FFFFFF', borderColor: '#111111' }
+                        : { backgroundColor: '#FFFFFF', color: '#505050', borderColor: 'rgba(0,0,0,0.2)' }
                     }
                     aria-label="Inicio"
                     aria-pressed={isHome}
                 >
-                    <Home size={22} />
+                    <Home size={20} />
                     <span className="text-[10px] font-bold whitespace-nowrap">Inicio</span>
                 </button>
 
@@ -62,10 +61,19 @@ export const FolderRow = memo(function FolderRow() {
                                     enterFolder(cat.id);
                                 }
                             }}
-                            className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5 px-3 min-w-[78px] transition-all press-anim"
+                            className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-2.5 min-w-[82px] rounded-lg border transition-all press-anim"
                             style={isActive
-                                ? { backgroundColor: cat.color ?? '#3B82F6', color: 'white' }
-                                : { color: 'rgba(255,255,255,0.6)' }
+                                ? {
+                                    backgroundColor: '#FFFFFF',
+                                    color: '#111111',
+                                    borderColor: cat.color ?? '#3B82F6',
+                                    boxShadow: `inset 0 0 0 2px ${cat.color ?? '#3B82F6'}`,
+                                }
+                                : {
+                                    backgroundColor: '#F8F8F8',
+                                    color: '#505050',
+                                    borderColor: 'rgba(0,0,0,0.15)',
+                                }
                             }
                             aria-pressed={isActive}
                             aria-label={cat.label}
@@ -77,7 +85,7 @@ export const FolderRow = memo(function FolderRow() {
                                     <img
                                         src={getPictoImageUrl(cat.arasaacId, 300)}
                                         alt={cat.label}
-                                        className="w-8 h-8 object-contain"
+                                        className="w-7 h-7 object-contain"
                                     />
                                 ) : (
                                     <span className="text-2xl leading-none">{cat.icon ?? '📁'}</span>

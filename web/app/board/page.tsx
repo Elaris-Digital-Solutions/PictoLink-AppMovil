@@ -21,7 +21,7 @@
  * Zero page-level scrolling — only the grid scrolls if items overflow.
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Home, ChevronRight } from 'lucide-react';
 
 import { useBoardStore } from '@/lib/store/useBoardStore';
@@ -30,7 +30,6 @@ import { usePhraseLogStore } from '@/lib/store/usePhraseLogStore';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
-import { FolderRow } from '@/components/board/FolderRow';
 
 import type { PictoNode } from '@/types';
 import {
@@ -54,23 +53,23 @@ function Breadcrumb({
 
     return (
         <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-hide"
-            style={{ backgroundColor: '#2A2A2A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ backgroundColor: '#F5F5F5', borderBottom: '1px solid #D9D9D9' }}
         >
             <button
                 onClick={onHome}
                 className="flex items-center gap-1.5 flex-shrink-0"
                 aria-label="Inicio"
             >
-                <Home size={13} style={{ color: 'rgba(255,255,255,0.5)' }} />
-                <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>Inicio</span>
+                <Home size={13} style={{ color: '#666666' }} />
+                <span className="text-xs font-bold" style={{ color: '#666666' }}>Inicio</span>
             </button>
 
             {nodes.map((node, idx) => (
                 <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
-                    <ChevronRight size={11} style={{ color: 'rgba(255,255,255,0.25)' }} />
+                    <ChevronRight size={11} style={{ color: '#9A9A9A' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-white whitespace-nowrap"
+                        className="text-xs font-bold text-gray-900 whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -110,6 +109,10 @@ export default function BoardPage() {
         return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
     }, [currentItems, favorites]);
 
+    // Fixed tablet board density (Proloquo-like): same slot count on every folder.
+    const boardColumns = Math.max(8, gridColumns);
+    const boardRows = 6;
+
     // ── Event handlers ────────────────────────────────────────────────────────
     const handleSelectItem = useCallback(
         (node: PictoNode) => {
@@ -140,7 +143,7 @@ export default function BoardPage() {
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         // Outer shell: fills the AppShell <main> which is flex-1 overflow-hidden
-        <div className="flex flex-col w-full h-full overflow-hidden bg-white">
+        <div className="flex flex-col w-full h-full overflow-hidden bg-[#ECECEC]">
 
             {/* ① SENTENCE BAR — top, light */}
             <SentenceBar onSend={handleSend} />
@@ -153,10 +156,11 @@ export default function BoardPage() {
             />
 
             {/* ③ PICTO GRID — fills ALL remaining space */}
-            <div className="flex-1 overflow-hidden bg-gray-200">
+            <div className="flex-1 overflow-hidden bg-[#E4E4E4] p-1.5">
                 <PictoGrid
                     items={currentItems}
-                    columns={gridColumns}
+                    columns={boardColumns}
+                    rows={boardRows}
                     onSelectItem={handleSelectItem}
                     onLongPressItem={handleLongPress}
                     selectedIds={selectedIds}
@@ -164,9 +168,6 @@ export default function BoardPage() {
                     emptyMessage="Selecciona una categoría en la barra inferior"
                 />
             </div>
-
-            {/* ④ FOLDER ROW — bottom category navigation */}
-            <FolderRow />
         </div>
     );
 }

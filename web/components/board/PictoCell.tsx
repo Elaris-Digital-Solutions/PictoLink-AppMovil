@@ -20,7 +20,6 @@ import { useState, memo } from 'react';
 import { ChevronRight, Star } from 'lucide-react';
 import { getPictoImageUrl } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
-import { cn } from '@/lib/utils';
 
 interface PictoCellProps {
     node: PictoNode;
@@ -49,12 +48,12 @@ export const PictoCell = memo(function PictoCell({
         <button
             onClick={() => onPress(node)}
             onContextMenu={(e) => { e.preventDefault(); onLongPress?.(node); }}
-            className="relative flex flex-col items-center w-full h-full rounded-2xl overflow-hidden cursor-pointer select-none touch-manipulation transition-all duration-150 active:scale-[0.88] hover:z-10 focus:outline-none"
+            className="relative flex flex-col items-center w-full h-full rounded-[9px] overflow-hidden cursor-pointer select-none touch-manipulation transition-all duration-150 active:scale-[0.92] hover:z-10 focus:outline-none border border-black/20"
             style={{
                 backgroundColor: '#FFFFFF',
                 boxShadow: isSelected
-                    ? `0 0 0 3px ${bgColor}, 0 6px 20px rgba(0,0,0,0.18)`
-                    : '0 2px 6px rgba(0,0,0,0.10)',
+                    ? `0 0 0 2px ${bgColor}, 0 5px 14px rgba(0,0,0,0.14)`
+                    : '0 1px 3px rgba(0,0,0,0.16)',
             }}
             aria-label={node.label}
             aria-pressed={isSelected}
@@ -62,7 +61,7 @@ export const PictoCell = memo(function PictoCell({
             {/* ── Fitzgerald Key color strip ── */}
             <div
                 className="w-full flex-shrink-0"
-                style={{ backgroundColor: bgColor, height: 6, opacity: 0.85 }}
+                style={{ backgroundColor: bgColor, height: 7, opacity: 0.92 }}
             />
 
             {/* ── Image / icon area ── occupies all flex space between bar and label */}
@@ -73,7 +72,7 @@ export const PictoCell = memo(function PictoCell({
                         src={imageUrl}
                         alt={node.label}
                         className="object-contain max-w-full max-h-full"
-                        style={{ width: '78%', height: '78%' }}
+                        style={{ width: '76%', height: '76%' }}
                         onError={() => setImgError(true)}
                     />
                 ) : (
@@ -91,9 +90,9 @@ export const PictoCell = memo(function PictoCell({
             {/* ── Label strip ── */}
             <div
                 className="w-full flex-shrink-0 px-1 py-0.5 text-center"
-                style={{ backgroundColor: `${bgColor}30`, minHeight: 20 }}
+                style={{ backgroundColor: `${bgColor}2A`, minHeight: 23 }}
             >
-                <span className="text-[10px] font-black text-gray-800 leading-tight line-clamp-2 block">
+                <span className="text-[11px] font-black text-gray-900 leading-tight line-clamp-2 block">
                     {node.label}
                 </span>
             </div>
@@ -101,8 +100,8 @@ export const PictoCell = memo(function PictoCell({
             {/* ── Folder indicator ── */}
             {isFolder && (
                 <ChevronRight
-                    size={11}
-                    className="absolute top-1.5 right-1 opacity-70"
+                    size={12}
+                    className="absolute top-1 right-1 opacity-75"
                     style={{ color: bgColor }}
                 />
             )}
@@ -110,9 +109,9 @@ export const PictoCell = memo(function PictoCell({
             {/* ── Favourite star ── */}
             {isFavorite && (
                 <Star
-                    size={11}
+                    size={12}
                     fill="currentColor"
-                    className="absolute top-1.5 left-1 text-amber-400 drop-shadow"
+                    className="absolute top-1 left-1 text-amber-400 drop-shadow"
                 />
             )}
         </button>
