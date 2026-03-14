@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PictoNode } from '@/types';
 import { useProfileStore } from '@/lib/store/useProfileStore';
+import { translateText } from '@/lib/utils/translate';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ export function useSpeech(): UseSpeechReturn {
     const isSupported =
         typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-    // Load voices (Chrome fires voiceschanged asynchronously)
+    // Load ALL available system voices (no language filter)
     useEffect(() => {
         if (!isSupported) return;
 
@@ -49,32 +50,39 @@ export function useSpeech(): UseSpeechReturn {
         (input: PictoNode[] | string) => {
             if (!isSupported) return;
 
-            const text =
+            const spanishText =
                 typeof input === 'string'
                     ? input
                     : input.map((n) => n.label).join(' ');
 
-            if (!text.trim()) return;
+            if (!spanishText.trim()) return;
 
-            stop();
+            // Find the selected voice object
+            const selectedVoice =
+                voices.find((v) => v.voiceURI === profile?.tts_voice) ?? null;
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Resolve target language from the voice (default to es)
+            const targetLang = selectedVoice?.lang ?? 'es';
 
-            // Apply profile settings
-            utterance.rate = profile?.tts_rate ?? 1.0;
-            utterance.lang = 'es-ES'; // default to Spanish for AAC context
+            // Fire async: translate then speak
+            const doSpeak = async () => {
+                stop();
+                const text = await translateText(spanishText, targetLang);
 
-            if (profile?.tts_voice && voices.length > 0) {
-                const voice = voices.find((v) => v.voiceURI === profile.tts_voice);
-                if (voice) utterance.voice = voice;
-            }
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = profile?.tts_rate ?? 1.0;
+                utterance.lang = targetLang;
+                if (selectedVoice) utterance.voice = selectedVoice;
 
-            utterance.onstart = () => setIsSpeaking(true);
-            utterance.onend = () => setIsSpeaking(false);
-            utterance.onerror = () => setIsSpeaking(false);
+                utterance.onstart = () => setIsSpeaking(true);
+                utterance.onend = () => setIsSpeaking(false);
+                utterance.onerror = () => setIsSpeaking(false);
 
-            utteranceRef.current = utterance;
-            window.speechSynthesis.speak(utterance);
+                utteranceRef.current = utterance;
+                window.speechSynthesis.speak(utterance);
+            };
+
+            void doSpeak();
         },
         [isSupported, stop, profile, voices]
     );

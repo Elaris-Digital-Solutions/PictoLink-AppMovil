@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 /**
  * Mensajes — AAC communication hub
@@ -25,6 +25,7 @@ import {
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
 import { usePhraseLogStore, type PhraseEntry } from '@/lib/store/usePhraseLogStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
+import { useChatNavStore } from '@/lib/store/useChatNavStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
@@ -124,23 +125,21 @@ function PictoChip({ label, arasaacId, color, size = 'sm' }: {
 }
 
 // =============================================================================
-// Reply Banner — ALWAYS visible inside ConversationBoard
+// Inline Reply Viewer — Embedded in the main consolidated header
 // Shows the last message received from this contact.
-// Large, high-contrast, with auto-TTS so the person doesn't have to read.
+// Auto-TTS so the person doesn't have to read.
 // =============================================================================
 
-function ReplyBanner({ contact }: { contact: Contact }) {
+function InlineReply({ contact }: { contact: Contact }) {
     const entries = usePhraseLogStore((s) => s.entries);
     const { speak, isSpeaking } = useSpeech();
 
     const lastReply = useMemo(() => {
-        // entries are newest-first; find first received for this contact
         return entries.find(
             (e) => e.contactId === contact.id && e.direction === 'received'
         ) ?? null;
     }, [entries, contact.id]);
 
-    // Auto-speak whenever a new reply arrives
     const prevIdRef = useRef<string | null>(null);
     useEffect(() => {
         if (lastReply && lastReply.id !== prevIdRef.current) {
@@ -149,42 +148,19 @@ function ReplyBanner({ contact }: { contact: Contact }) {
         }
     }, [lastReply, speak]);
 
-    if (!lastReply) return null;
+    if (!lastReply) {
+        return <div className="flex-1 flex items-center text-sm font-bold text-white/50 italic px-4">Esperando mensaje...</div>;
+    }
 
     return (
-        <div
-            className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b-2"
-            style={{ backgroundColor: BRAND_SOFT, borderColor: BRAND_BORDER }}
-        >
-            {/* Avatar */}
-            <Avatar contact={contact} size="sm" />
-
-            {/* Pictograms — primary display for the person with CD */}
-            <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1">
-                {lastReply.pictograms.length > 0 ? (
-                    lastReply.pictograms.map((p, i) => (
-                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
-                    ))
-                ) : (
-                    // Fallback: new replies not yet processed by AI — show text
-                    <p className="text-base font-bold text-gray-900 leading-snug">{lastReply.text}</p>
-                )}
-            </div>
-
-            {/* Big speak button */}
-            <button
-                onClick={() => speak(lastReply.text)}
-                className={cn(
-                    'w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors shadow-sm',
-                    isSpeaking
-                        ? 'bg-[#E56F2C] text-white animate-pulse'
-                        : 'bg-white text-[#C85F27] hover:bg-[#FFF4ED] active:bg-[#FFE6D6]'
-                )}
-                style={{ border: `2px solid ${BRAND_BORDER}` }}
-                aria-label="Escuchar mensaje"
-            >
-                <Volume2 size={26} />
-            </button>
+        <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1 px-3">
+            {lastReply.pictograms.length > 0 ? (
+                lastReply.pictograms.map((p, i) => (
+                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
+                ))
+            ) : (
+                <p className="text-base font-bold text-white leading-snug line-clamp-2 drop-shadow">{lastReply.text}</p>
+            )}
         </div>
     );
 }
@@ -219,25 +195,26 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 
     return (
         <>
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/25 z-20" onClick={onClose} />
+            {/* Backdrop strictly fixed over everything */}
+            <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
 
-            {/* Panel */}
-            <div className="absolute inset-y-0 right-0 w-full sm:max-w-sm flex flex-col bg-white shadow-2xl z-30">
+            {/* Panel strictly fixed to the right */}
+            <div className="fixed top-0 right-0 h-full w-full sm:max-w-[400px] flex flex-col bg-white shadow-[0_0_40px_rgba(0,0,0,0.3)] z-50 animate-in slide-in-from-right">
 
                 {/* Header */}
-                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-[#FFD5BF] bg-[#FFF8F3]">
+                <div className="flex-shrink-0 flex items-center gap-3 px-5 py-4 border-b-2 border-[#FFD5BF] bg-[#FFF8F3] shadow-sm">
                     <Avatar contact={contact} size="sm" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-gray-900 truncate">{contact.name}</p>
-                        <p className="text-xs text-gray-400">{contact.role}</p>
+                        <p className="text-lg font-black text-gray-900 truncate">{contact.name}</p>
+                        <p className="text-xs font-bold text-[#FF8844] uppercase tracking-widest">{contact.role}</p>
                     </div>
+                    {/* Big visible close button */}
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-xl bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center"
+                        className="w-14 h-14 rounded-2xl bg-white border-2 border-[#FFD5BF] hover:bg-[#FFE6D6] active:scale-95 flex items-center justify-center transition-all shadow-sm"
                         aria-label="Cerrar"
                     >
-                        <X size={20} className="text-[#C85F27]" />
+                        <X size={28} className="text-[#C85F27]" strokeWidth={3} />
                     </button>
                 </div>
 
@@ -514,70 +491,77 @@ function ConversationBoard({
     }, [addPhrase, sentence, contact.id, clearSentence]);
 
     return (
-        <div className="relative flex flex-col w-full h-full overflow-hidden bg-white">
+        <div className="relative flex flex-col w-full h-[100dvh] overflow-hidden bg-[#FFF0E6]">
 
-            {/* Header — flat contact color */}
-            <div
-                className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-                style={{ backgroundColor: BRAND_ORANGE }}
-            >
-                <button
-                    onClick={onBack}
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all press-anim"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
-                    aria-label="Volver a contactos"
-                >
-                    <ArrowLeft size={20} className="text-white" />
-                </button>
+            {/* TOP BAR / HEADER UNIFICADO (1 ÚNICA FRANJA) */}
+            <header className="flex-shrink-0 flex flex-col pt-safe bg-white border-b border-[#FFD5BF] z-10 shadow-sm">
+                
+                {/* 1. Fila principal consolidada: Nav + Avatar + Mensaje Recibido + Historial */}
+                <div className="flex items-center gap-3 h-[72px] px-3 bg-[#FF8844]">
+                    
+                    {/* Botón de volver */}
+                    <button
+                        onClick={onBack}
+                        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 transition-all text-white shadow-sm ml-1 border-2 border-white/30"
+                        aria-label="Volver a contactos"
+                    >
+                        <ArrowLeft size={26} strokeWidth={2.5} className="text-white" />
+                    </button>
 
-                <div style={{ border: '2px solid rgba(255,255,255,0.5)', borderRadius: '50%' }}>
-                    <Avatar contact={contact} size="sm" />
+                    {/* Avatar del contacto */}
+                    <div className="ml-1 border-2 border-white/40 rounded-full shadow-sm bg-white/10 p-0.5 relative z-10 hidden sm:block">
+                        <Avatar contact={contact} size="sm" />
+                    </div>
+
+                    {/* Último mensaje recibido (Pictogramas inline) */}
+                    <InlineReply contact={contact} />
+
+                    {/* Botón Historial sobre fondo naranja */}
+                    <button
+                        onClick={() => setShowThread(true)}
+                        className="h-12 px-5 md:px-6 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base transition-transform shadow-md bg-white text-[#FF8844] active:bg-[#FFF4ED] active:scale-95 ml-1 mr-1 border-b-4 border-[#FFD5BF]"
+                        aria-label="Cargar Historial"
+                    >
+                        <MessageSquare size={22} fill="currentColor" />
+                        <span className="hidden sm:inline">Historial</span>
+                        {msgCount > 0 && (
+                            <div className="bg-white text-[#C85F27] text-xs px-2 py-0.5 rounded-full ml-1">
+                                {msgCount}
+                            </div>
+                        )}
+                    </button>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                    <p className="text-base font-black text-white leading-none">{contact.name}</p>
-                    <p className="text-xs text-white/70 font-medium mt-0.5">{contact.role}</p>
+                {/* 2. Constructor de frase (SentenceBar) */}
+                <div className="bg-white border-t border-[#FFD5BF]/50">
+                    <SentenceBar actionMode="messages" onSend={handleSend} />
+                </div>
+            </header>
+
+            {/* TABLERO AAC MAIN AREA */}
+            <main className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Breadcrumb acts as a tiny toolbar at the very top */}
+                <div className="z-10 shadow-sm relative">
+                    <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
                 </div>
 
-                {/* Toggle thread */}
-                <button
-                    onClick={() => setShowThread((v) => !v)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-bold transition-all press-anim"
-                    style={{
-                        backgroundColor: showThread ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)',
-                        color: showThread ? BRAND_ORANGE_DARK : 'white',
-                    }}
-                    aria-label="Ver conversación"
-                >
-                    <MessageSquare size={16} />
-                    <span>{msgCount > 0 ? msgCount : 'Ver'}</span>
-                </button>
-            </div>
+                {/* Picto grid container - Maximizado */}
+                <div className="flex-1 overflow-hidden p-2 scrollbar-hide">
+                    {/* El grid gestiona su espacio CSS de manera fluida */}
+                    <PictoGrid
+                        items={currentItems}
+                        columns={boardColumns}
+                        rows={boardRows}
+                        onSelectItem={handleSelectItem}
+                        onLongPressItem={handleLongPress}
+                        selectedIds={selectedIds}
+                        favoriteIds={favoriteIds}
+                        emptyMessage="Selecciona una categoría"
+                    />
+                </div>
+            </main>
 
-            {/* Sentence bar */}
-            <SentenceBar actionMode="messages" onSend={handleSend} />
-
-            {/* Reply banner — last message from this contact, always visible */}
-            <ReplyBanner contact={contact} />
-
-            {/* Breadcrumb */}
-            <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
-
-            {/* Picto grid */}
-            <div className="flex-1 overflow-hidden bg-[#FFF0E6] p-1.5">
-                <PictoGrid
-                    items={currentItems}
-                    columns={boardColumns}
-                    rows={boardRows}
-                    onSelectItem={handleSelectItem}
-                    onLongPressItem={handleLongPress}
-                    selectedIds={selectedIds}
-                    favoriteIds={favoriteIds}
-                    emptyMessage="Selecciona una categoría"
-                />
-            </div>
-
-            {/* Thread slide-over */}
+            {/* HISTORIAL SLIDE-OVER STRICT FIXED OVERLAY */}
             {showThread && (
                 <ThreadPanel contact={contact} onClose={() => setShowThread(false)} />
             )}
@@ -590,16 +574,19 @@ function ConversationBoard({
 // =============================================================================
 
 export default function ChatPage() {
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const contacts = useContactStore((s) => s.contacts);
+    const { selectedContactId, setSelectedContactId, clearSelectedContact } = useChatNavStore();
+
+    const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
 
     if (!selectedContact) {
-        return <ContactGrid onSelect={setSelectedContact} />;
+        return <ContactGrid onSelect={(c) => setSelectedContactId(c.id)} />;
     }
 
     return (
         <ConversationBoard
             contact={selectedContact}
-            onBack={() => setSelectedContact(null)}
+            onBack={clearSelectedContact}
         />
     );
 }

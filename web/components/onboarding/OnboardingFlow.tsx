@@ -170,7 +170,9 @@ export function OnboardingFlow() {
     };
     setProfile(profile);
     completeOnboarding();
-    router.replace('/board');
+    // Caregiver and institution profiles go to the support network interface.
+    const dest = userType === 'communicator' ? '/board' : '/cuidador';
+    router.replace(dest);
   }
 
   // ── Step: Welcome ────────────────────────────────────────────────────────────
