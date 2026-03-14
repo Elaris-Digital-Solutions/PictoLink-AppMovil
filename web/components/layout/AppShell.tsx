@@ -1,10 +1,16 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 import { BottomNav } from './TopBar';
 
-// ─── AppShell ─────────────────────────────────────────────────────────────────
+// ─── AppShell ───────────────────────────────────────────────────────────────────
 // Single-column layout: page content fills all space, universal bottom nav
-// is always pinned at the very bottom.
+// is always pinned at the very bottom (hidden during onboarding).
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const hideNav = pathname?.startsWith('/onboarding');
+
     return (
         <div className="flex flex-col h-dvh w-full overflow-hidden bg-white">
             {/* Page content — flex-1 so it fills everything above the nav */}
@@ -12,8 +18,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {children}
             </main>
 
-            {/* Universal bottom navigation */}
-            <BottomNav />
+            {/* Universal bottom navigation — hidden during onboarding */}
+            {!hideNav && <BottomNav />}
         </div>
     );
 }

@@ -19,6 +19,8 @@ export interface PictogramCatalog {
 // ─── User profile ─────────────────────────────────────────────────────────────
 
 export type CommunicationMode = 'communicator' | 'caregiver' | 'therapist';
+export type UserType = 'communicator' | 'companion' | 'institution';
+export type Plan = 'free' | 'basic' | 'premium';
 
 export interface Profile {
   id: string;
@@ -31,6 +33,8 @@ export interface Profile {
   tts_rate: number;       // 0.5 – 2.0
   tts_voice?: string;     // SpeechSynthesis voiceURI
   created_at: string;
+  user_type?: UserType;
+  plan?: Plan;
 }
 
 // ─── Messaging ────────────────────────────────────────────────────────────────

@@ -33,6 +33,11 @@ import { getCurrentBoardItems, getPathNodes, getPictoImageUrl } from '@/lib/pict
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
 
+const BRAND_ORANGE = '#FF8844';
+const BRAND_ORANGE_DARK = '#C85F27';
+const BRAND_SOFT = '#FFF1E8';
+const BRAND_BORDER = '#FFD5BF';
+
 // =============================================================================
 // Shared sub-components
 // =============================================================================
@@ -64,18 +69,18 @@ function Breadcrumb({
     if (path.length === 0) return null;
     return (
         <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide"
-            style={{ backgroundColor: '#F5F5F5', borderBottom: '1px solid #D9D9D9' }}
+            style={{ backgroundColor: '#FFF4ED', borderBottom: `1px solid ${BRAND_BORDER}` }}
         >
             <button onClick={onHome} className="flex items-center gap-1.5 flex-shrink-0">
-                <Home size={13} style={{ color: '#666666' }} />
-                <span className="text-xs font-bold" style={{ color: '#666666' }}>Inicio</span>
+                <Home size={13} style={{ color: BRAND_ORANGE_DARK }} />
+                <span className="text-xs font-bold" style={{ color: BRAND_ORANGE_DARK }}>Inicio</span>
             </button>
             {nodes.map((node, idx) => (
                 <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
-                    <ChevronRight size={11} style={{ color: '#9A9A9A' }} />
+                    <ChevronRight size={11} style={{ color: '#E38A59' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-gray-900 whitespace-nowrap"
+                        className="text-xs font-bold text-slate-800 whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -149,7 +154,7 @@ function ReplyBanner({ contact }: { contact: Contact }) {
     return (
         <div
             className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b-2"
-            style={{ backgroundColor: contact.avatarColor + '18', borderColor: contact.avatarColor + '44' }}
+            style={{ backgroundColor: BRAND_SOFT, borderColor: BRAND_BORDER }}
         >
             {/* Avatar */}
             <Avatar contact={contact} size="sm" />
@@ -172,10 +177,10 @@ function ReplyBanner({ contact }: { contact: Contact }) {
                 className={cn(
                     'w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors shadow-sm',
                     isSpeaking
-                        ? 'bg-green-400 text-white animate-pulse'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                        ? 'bg-[#E56F2C] text-white animate-pulse'
+                        : 'bg-white text-[#C85F27] hover:bg-[#FFF4ED] active:bg-[#FFE6D6]'
                 )}
-                style={{ border: `2px solid ${contact.avatarColor}55` }}
+                style={{ border: `2px solid ${BRAND_BORDER}` }}
                 aria-label="Escuchar mensaje"
             >
                 <Volume2 size={26} />
@@ -221,7 +226,7 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
             <div className="absolute inset-y-0 right-0 w-full sm:max-w-sm flex flex-col bg-white shadow-2xl z-30">
 
                 {/* Header */}
-                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-[#FFD5BF] bg-[#FFF8F3]">
                     <Avatar contact={contact} size="sm" />
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-black text-gray-900 truncate">{contact.name}</p>
@@ -229,10 +234,10 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                        className="w-10 h-10 rounded-xl bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center"
                         aria-label="Cerrar"
                     >
-                        <X size={20} className="text-gray-600" />
+                        <X size={20} className="text-[#C85F27]" />
                     </button>
                 </div>
 
@@ -265,12 +270,12 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => speak(entry.text)}
-                                                    className="w-8 h-8 rounded-full bg-blue-50 hover:bg-blue-100 flex items-center justify-center flex-shrink-0"
+                                                    className="w-8 h-8 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0"
                                                     aria-label="Escuchar"
                                                 >
-                                                    <Volume2 size={14} className="text-blue-500" />
+                                                    <Volume2 size={14} className="text-[#FF8844]" />
                                                 </button>
-                                                <div className="bg-blue-500 text-white px-3 py-2 rounded-2xl rounded-br-none text-sm font-semibold max-w-[200px] leading-snug">
+                                                <div className="bg-[#FF8844] text-white px-3 py-2 rounded-2xl rounded-br-none text-sm font-semibold max-w-[200px] leading-snug">
                                                     &ldquo;{entry.text}&rdquo;
                                                 </div>
                                             </div>
@@ -288,7 +293,7 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                                     </div>
                                                 ) : (
                                                     // New reply, still pending AI translation
-                                                    <div className="bg-gray-100 text-gray-800 px-3 py-2 rounded-2xl rounded-bl-none text-sm font-medium max-w-[200px] leading-snug">
+                                                    <div className="bg-[#FFF1E8] text-slate-700 px-3 py-2 rounded-2xl rounded-bl-none text-sm font-medium max-w-[200px] leading-snug">
                                                         {entry.text}
                                                     </div>
                                                 )}
@@ -310,20 +315,20 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                 </div>
 
                 {/* Reply input — caregiver types here */}
-                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-3 border-t border-gray-100 bg-gray-50">
+                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-3 border-t border-[#FFD5BF] bg-[#FFF8F3]">
                     <input
                         type="text"
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleReply(); }}
                         placeholder={`${contact.name} responde…`}
-                        className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm
-                                   focus:outline-none focus:border-blue-400 bg-white"
+                        className="flex-1 px-3 py-2.5 rounded-xl border border-[#FFD5BF] text-sm
+                                   focus:outline-none focus:border-[#FF8844] bg-white"
                     />
                     <button
                         onClick={handleReply}
                         disabled={!replyText.trim()}
-                        className="w-11 h-11 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700
+                        className="w-11 h-11 rounded-xl bg-[#FF8844] hover:bg-[#F57D37] active:bg-[#E56F2C]
                                    disabled:opacity-30 flex items-center justify-center transition-colors"
                         aria-label="Enviar respuesta"
                     >
@@ -365,15 +370,15 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     }, [entries]);
 
     return (
-        <div className="flex flex-col h-full bg-[#ECECEC]">
+        <div className="flex flex-col h-full bg-[#FFF7F2]">
 
             {/* Header — clean, modern, no gradient */}
             <div
-                className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#F5F5F5]"
-                style={{ borderBottom: '1px solid #D6D6D6' }}
+                className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#FFF4ED]"
+                style={{ borderBottom: `1px solid ${BRAND_BORDER}` }}
             >
-                <h1 className="text-[30px] font-black text-black leading-none tracking-tight">Mensajes</h1>
-                <p className="text-[14px] text-black/60 font-semibold mt-1.5">¿Con quién quieres hablar?</p>
+                <h1 className="text-[30px] font-black text-[#FF8844] leading-none tracking-tight">Mensajes</h1>
+                <p className="text-[14px] text-slate-500 font-semibold mt-1.5">¿Con quién quieres hablar?</p>
             </div>
 
             {/* Contact list — high-contrast cards */}
@@ -388,7 +393,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                         <button
                             key={contact.id}
                             onClick={() => onSelect(contact)}
-                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-black/20 shadow-[0_1px_3px_rgba(0,0,0,0.08)] active:bg-zinc-100 press-anim text-left"
+                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-[#FFD5BF] shadow-[0_1px_3px_rgba(200,95,39,0.14)] active:bg-[#FFF4ED] press-anim text-left"
                         >
                             {/* Avatar */}
                             <Avatar contact={contact} size="md" />
@@ -408,7 +413,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                                     <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
                                                 ))}
                                                 {preview.pictograms.length > 2 && (
-                                                    <span className="text-[11px] font-bold text-black/50 pl-1">+{preview.pictograms.length - 2}</span>
+                                                    <span className="text-[11px] font-bold text-slate-500 pl-1">+{preview.pictograms.length - 2}</span>
                                                 )}
                                             </div>
                                         ) : preview ? (
@@ -426,7 +431,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                 {timeStr ? (
                                     <span
                                         className="text-[11px] leading-none"
-                                        style={{ color: unread > 0 ? '#111111' : '#7B7B7B', fontWeight: unread > 0 ? 700 : 500 }}
+                                        style={{ color: unread > 0 ? '#C85F27' : '#7B7B7B', fontWeight: unread > 0 ? 700 : 500 }}
                                     >
                                         {timeStr}
                                     </span>
@@ -435,7 +440,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                 )}
 
                                 {unread > 0 ? (
-                                    <div className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1 bg-black">
+                                    <div className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1 bg-[#FF8844]">
                                         {unread}
                                     </div>
                                 ) : (
@@ -490,7 +495,8 @@ function ConversationBoard({
         return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
     }, [currentItems, favorites]);
 
-    const boardColumns = 8;
+    // Match the board density to Proloquo-like layout.
+    const boardColumns = 11;
     const boardRows = 6;
 
     const handleSelectItem = useCallback((node: PictoNode) => {
@@ -513,7 +519,7 @@ function ConversationBoard({
             {/* Header — flat contact color */}
             <div
                 className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-                style={{ backgroundColor: contact.avatarColor }}
+                style={{ backgroundColor: BRAND_ORANGE }}
             >
                 <button
                     onClick={onBack}
@@ -539,7 +545,7 @@ function ConversationBoard({
                     className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-bold transition-all press-anim"
                     style={{
                         backgroundColor: showThread ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)',
-                        color: showThread ? contact.avatarColor : 'white',
+                        color: showThread ? BRAND_ORANGE_DARK : 'white',
                     }}
                     aria-label="Ver conversación"
                 >
@@ -549,7 +555,7 @@ function ConversationBoard({
             </div>
 
             {/* Sentence bar */}
-            <SentenceBar onSend={handleSend} />
+            <SentenceBar actionMode="messages" onSend={handleSend} />
 
             {/* Reply banner — last message from this contact, always visible */}
             <ReplyBanner contact={contact} />
@@ -558,7 +564,7 @@ function ConversationBoard({
             <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
 
             {/* Picto grid */}
-            <div className="flex-1 overflow-hidden bg-[#E4E4E4] p-1.5">
+            <div className="flex-1 overflow-hidden bg-[#FFF0E6] p-1.5">
                 <PictoGrid
                     items={currentItems}
                     columns={boardColumns}

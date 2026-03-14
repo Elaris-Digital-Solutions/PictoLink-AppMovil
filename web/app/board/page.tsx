@@ -25,8 +25,6 @@ import { useMemo, useCallback } from 'react';
 import { Home, ChevronRight } from 'lucide-react';
 
 import { useBoardStore } from '@/lib/store/useBoardStore';
-import { useProfileStore } from '@/lib/store/useProfileStore';
-import { usePhraseLogStore } from '@/lib/store/usePhraseLogStore';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
@@ -53,23 +51,23 @@ function Breadcrumb({
 
     return (
         <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-hide"
-            style={{ backgroundColor: '#F5F5F5', borderBottom: '1px solid #D9D9D9' }}
+            style={{ backgroundColor: '#FFF4ED', borderBottom: '1px solid #FFD5BF' }}
         >
             <button
                 onClick={onHome}
                 className="flex items-center gap-1.5 flex-shrink-0"
                 aria-label="Inicio"
             >
-                <Home size={13} style={{ color: '#666666' }} />
-                <span className="text-xs font-bold" style={{ color: '#666666' }}>Inicio</span>
+                <Home size={13} style={{ color: '#C85F27' }} />
+                <span className="text-xs font-bold" style={{ color: '#C85F27' }}>Inicio</span>
             </button>
 
             {nodes.map((node, idx) => (
                 <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
-                    <ChevronRight size={11} style={{ color: '#9A9A9A' }} />
+                    <ChevronRight size={11} style={{ color: '#E38A59' }} />
                     <button
                         onClick={() => onNavigateTo(path.slice(0, idx + 1))}
-                        className="text-xs font-bold text-gray-900 whitespace-nowrap"
+                        className="text-xs font-bold text-slate-800 whitespace-nowrap"
                     >
                         {node.label}
                     </button>
@@ -83,7 +81,6 @@ function Breadcrumb({
 
 export default function BoardPage() {
     // ── Stores (primitives only) ──────────────────────────────────────────────
-    const gridColumns = useProfileStore((s) => s.profile?.grid_columns ?? 8);
     const categoryPath = useBoardStore((s) => s.categoryPath);
     const sentence = useBoardStore((s) => s.sentence);
     const favorites = useBoardStore((s) => s.favorites);
@@ -92,9 +89,6 @@ export default function BoardPage() {
     const navigateHome = useBoardStore((s) => s.navigateHome);
     const navigateToPath = useBoardStore((s) => s.navigateToPath);
     const toggleFavorite = useBoardStore((s) => s.toggleFavorite);
-    const clearSentence = useBoardStore((s) => s.clearSentence);
-
-    const addPhrase = usePhraseLogStore((s) => s.addEntry);
 
     // ── Derived data (O(1) catalog lookups) ───────────────────────────────────
     const currentItems = useMemo<PictoNode[]>(
@@ -109,8 +103,8 @@ export default function BoardPage() {
         return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
     }, [currentItems, favorites]);
 
-    // Fixed tablet board density (Proloquo-like): same slot count on every folder.
-    const boardColumns = Math.max(8, gridColumns);
+    // Proloquo-like density from reference layout: 11 columns x 6 rows.
+    const boardColumns = 11;
     const boardRows = 6;
 
     // ── Event handlers ────────────────────────────────────────────────────────
@@ -130,23 +124,13 @@ export default function BoardPage() {
         [toggleFavorite]
     );
 
-    const handleSend = useCallback(
-        (text: string) => {
-            if (sentence.length > 0) {
-                addPhrase([...sentence], text);
-            }
-            clearSentence();
-        },
-        [addPhrase, sentence, clearSentence]
-    );
-
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         // Outer shell: fills the AppShell <main> which is flex-1 overflow-hidden
-        <div className="flex flex-col w-full h-full overflow-hidden bg-[#ECECEC]">
+        <div className="flex flex-col w-full h-full overflow-hidden bg-[#FFF7F2]">
 
             {/* ① SENTENCE BAR — top, light */}
-            <SentenceBar onSend={handleSend} />
+            <SentenceBar actionMode="board" />
 
             {/* ② BREADCRUMB — only when inside a sub-folder */}
             <Breadcrumb
@@ -156,7 +140,7 @@ export default function BoardPage() {
             />
 
             {/* ③ PICTO GRID — fills ALL remaining space */}
-            <div className="flex-1 overflow-hidden bg-[#E4E4E4] p-1.5">
+            <div className="flex-1 overflow-hidden bg-[#FFF0E6] p-1.5">
                 <PictoGrid
                     items={currentItems}
                     columns={boardColumns}

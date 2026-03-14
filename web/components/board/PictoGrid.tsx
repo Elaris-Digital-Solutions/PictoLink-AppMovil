@@ -112,7 +112,7 @@ export const PictoGrid = memo(function PictoGrid({
                 {Array.from({ length: placeholderCount }).map((_, idx) => (
                     <div
                         key={`slot-empty-${idx}`}
-                        className="rounded-lg border border-dashed border-black/10 bg-white/35"
+                        className="rounded-lg border border-dashed border-[#FFD5BF] bg-white/60"
                         aria-hidden="true"
                     />
                 ))}
@@ -123,20 +123,20 @@ export const PictoGrid = memo(function PictoGrid({
                     <button
                         onClick={() => setPage((prev) => Math.max(0, prev - 1))}
                         disabled={currentPage === 0}
-                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-black/15 disabled:opacity-40"
+                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-[#FFD5BF] text-[#C85F27] disabled:opacity-40"
                         aria-label="Página anterior"
                     >
                         ◀
                     </button>
 
-                    <span className="text-xs font-semibold text-black/70 min-w-[58px] text-center">
+                    <span className="text-xs font-semibold text-[#C85F27] min-w-[58px] text-center">
                         {currentPage + 1} / {totalPages}
                     </span>
 
                     <button
                         onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
                         disabled={currentPage >= totalPages - 1}
-                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-black/15 disabled:opacity-40"
+                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-[#FFD5BF] text-[#C85F27] disabled:opacity-40"
                         aria-label="Página siguiente"
                     >
                         ▶

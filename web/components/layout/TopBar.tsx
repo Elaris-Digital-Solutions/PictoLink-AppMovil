@@ -22,7 +22,7 @@ export function BottomNav() {
 
     return (
         <nav
-            className="flex-shrink-0 flex items-stretch bg-white safe-area-pb border-t border-black/20"
+            className="flex-shrink-0 flex items-stretch bg-white safe-area-pb border-t border-[#FFD5BF]"
             style={{ height: 64 }}
         >
             {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -32,8 +32,8 @@ export function BottomNav() {
                         key={href}
                         href={href}
                         className={cn(
-                            'flex-1 flex flex-col items-center justify-center gap-0.5 relative press-anim border-r border-black/10 last:border-r-0 transition-colors',
-                            active ? 'bg-black text-white' : 'bg-white text-black'
+                            'flex-1 flex flex-col items-center justify-center gap-0.5 relative press-anim border-r border-[#FFE2D0] last:border-r-0 transition-colors',
+                            active ? 'bg-[#FF8844] text-white' : 'bg-white text-slate-700'
                         )}
                     >
                         <Icon
@@ -41,13 +41,13 @@ export function BottomNav() {
                             strokeWidth={active ? 2.8 : 2.2}
                             className={cn(
                                 'transition-colors duration-150',
-                                active ? 'text-white' : 'text-black'
+                                active ? 'text-white' : 'text-[#C85F27]'
                             )}
                         />
 
                         <span className={cn(
                             'text-[10px] font-semibold leading-none transition-colors duration-150',
-                            active ? 'text-white' : 'text-black/85'
+                            active ? 'text-white' : 'text-slate-600'
                         )}>
                             {label}
                         </span>

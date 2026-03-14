@@ -48,12 +48,12 @@ export const PictoCell = memo(function PictoCell({
         <button
             onClick={() => onPress(node)}
             onContextMenu={(e) => { e.preventDefault(); onLongPress?.(node); }}
-            className="relative flex flex-col items-center w-full h-full rounded-[9px] overflow-hidden cursor-pointer select-none touch-manipulation transition-all duration-150 active:scale-[0.92] hover:z-10 focus:outline-none border border-black/20"
+            className="relative flex flex-col items-center w-full h-full rounded-[9px] overflow-hidden cursor-pointer select-none touch-manipulation transition-all duration-150 active:scale-[0.92] hover:z-10 focus:outline-none border border-[#FFD5BF]"
             style={{
                 backgroundColor: '#FFFFFF',
                 boxShadow: isSelected
-                    ? `0 0 0 2px ${bgColor}, 0 5px 14px rgba(0,0,0,0.14)`
-                    : '0 1px 3px rgba(0,0,0,0.16)',
+                    ? `0 0 0 2px #FF8844, 0 6px 14px rgba(255,136,68,0.28)`
+                    : '0 1px 3px rgba(200,95,39,0.2)',
             }}
             aria-label={node.label}
             aria-pressed={isSelected}
@@ -111,7 +111,7 @@ export const PictoCell = memo(function PictoCell({
                 <Star
                     size={12}
                     fill="currentColor"
-                    className="absolute top-1 left-1 text-amber-400 drop-shadow"
+                    className="absolute top-1 left-1 text-[#FF8844] drop-shadow"
                 />
             )}
         </button>

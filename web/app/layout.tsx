@@ -14,11 +14,17 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'PictoLink — AAC Communication Platform',
   description: 'Augmentative and Alternative Communication via pictograms',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#FF8844',
   maximumScale: 1,    // prevent zoom on tap (AAC UX)
   userScalable: false,
 };

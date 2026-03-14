@@ -12,7 +12,7 @@
  */
 
 import { memo } from 'react';
-import { Volume2, Delete, Send, X } from 'lucide-react';
+import { Volume2, Delete, Send } from 'lucide-react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { getPictoImageUrl } from '@/lib/pictograms/catalog';
@@ -72,21 +72,26 @@ function SentenceChip({
 // ─── SentenceBar ───────────────────────────────────────────────────────────────
 
 interface SentenceBarProps {
+    actionMode?: 'board' | 'messages';
     onSend?: (text: string) => void;
 }
 
-export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProps) {
+export const SentenceBar = memo(function SentenceBar({
+    actionMode = 'board',
+    onSend,
+}: SentenceBarProps) {
     const sentence = useBoardStore((s) => s.sentence);
     const removeLastWord = useBoardStore((s) => s.removeLastWord);
-    const clearSentence = useBoardStore((s) => s.clearSentence);
     const { speak, isSpeaking } = useSpeech();
 
     const isEmpty = sentence.length === 0;
     const sentenceText = sentence.map((p) => p.label).join(' ');
+    const showSpeak = actionMode === 'board';
+    const showSend = actionMode === 'messages' && !!onSend;
 
     return (
         <div
-            className="flex-shrink-0 flex items-stretch bg-[#F1F1F1] border-b border-black/20"
+            className="flex-shrink-0 flex items-stretch bg-[#FFF1E8] border-b border-[#FFD5BF]"
             style={{ minHeight: 90 }}
         >
             {/* ── Sentence chips ── */}
@@ -112,30 +117,32 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
             </div>
 
             {/* ── Action buttons ── */}
-            <div className="flex-shrink-0 flex items-center gap-1.5 px-2 border-l border-black/20 bg-[#E8E8E8]">
+            <div className="flex-shrink-0 flex items-center gap-1.5 px-2 border-l border-[#FFD5BF] bg-[#FFE9DC]">
                 {/* Speak */}
-                <button
-                    onClick={() => { if (!isEmpty) speak(sentence); }}
-                    disabled={isEmpty}
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 press-anim border border-black/20 ${
-                        isSpeaking
-                            ? 'bg-green-500 text-white animate-pulse'
-                            : 'bg-black text-white hover:bg-zinc-800 active:bg-zinc-950'
-                    }`}
-                    style={{ opacity: isEmpty ? 0.6 : 1 }}
-                    aria-label={isSpeaking ? 'Hablando' : 'Hablar frase'}
-                >
-                    <Volume2 size={20} />
-                </button>
+                {showSpeak && (
+                    <button
+                        onClick={() => { if (!isEmpty) speak(sentence); }}
+                        disabled={isEmpty}
+                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 press-anim border border-[#FFD5BF] ${
+                            isSpeaking
+                                ? 'bg-[#E56F2C] text-white animate-pulse'
+                                : 'bg-[#FF8844] text-white hover:bg-[#F57D37] active:bg-[#E56F2C]'
+                        }`}
+                        style={{ opacity: isEmpty ? 0.6 : 1 }}
+                        aria-label={isSpeaking ? 'Hablando' : 'Escuchar frase'}
+                    >
+                        <Volume2 size={20} />
+                    </button>
+                )}
 
                 {/* Send to chat */}
-                {onSend && (
+                {showSend && onSend && (
                     <button
                         onClick={() => { if (!isEmpty) { onSend(sentenceText); } }}
                         disabled={isEmpty}
                         className="w-12 h-12 rounded-lg flex items-center justify-center
-                           bg-emerald-600 text-white border border-black/20
-                           hover:bg-emerald-500 active:bg-emerald-700
+                                    bg-[#FF8844] text-white border border-[#FFD5BF]
+                                    hover:bg-[#F57D37] active:bg-[#E56F2C]
                            disabled:opacity-30 transition-all press-anim"
                         style={{ opacity: isEmpty ? 0.6 : 1 }}
                         aria-label="Enviar mensaje"
@@ -149,25 +156,12 @@ export const SentenceBar = memo(function SentenceBar({ onSend }: SentenceBarProp
                     onClick={removeLastWord}
                     disabled={isEmpty}
                           className="w-11 h-11 rounded-lg flex items-center justify-center
-                              bg-white hover:bg-zinc-100 active:bg-zinc-200 text-black border border-black/20
+                              bg-white hover:bg-[#FFF4ED] active:bg-[#FFE6D6] text-slate-800 border border-[#FFD5BF]
                        disabled:opacity-30 transition-all press-anim"
                     style={{ opacity: isEmpty ? 0.6 : 1 }}
                     aria-label="Borrar última palabra"
                 >
                     <Delete size={20} />
-                </button>
-
-                {/* Clear all */}
-                <button
-                    onClick={clearSentence}
-                    disabled={isEmpty}
-                          className="w-11 h-11 rounded-lg flex items-center justify-center
-                              bg-red-600 hover:bg-red-500 active:bg-red-700 text-white border border-black/20
-                       disabled:opacity-30 transition-all press-anim"
-                    style={{ opacity: isEmpty ? 0.6 : 1 }}
-                    aria-label="Limpiar toda la frase"
-                >
-                    <X size={18} strokeWidth={2.5} />
                 </button>
             </div>
         </div>
