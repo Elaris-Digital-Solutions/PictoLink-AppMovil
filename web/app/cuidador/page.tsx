@@ -11,15 +11,19 @@
  */
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import {
     ArrowLeft, Send, Volume2, Image as ImageIcon,
-    Search, Plus, Check, CheckCheck,
+    Search, Plus, Check, CheckCheck, Settings, UserRound
 } from 'lucide-react';
 
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
-import { usePhraseLogStore, type PhraseEntry } from '@/lib/store/usePhraseLogStore';
+import { useChatStore, type ChatMessage } from '@/lib/store/useChatStore';
+import { useProfileStore } from '@/lib/store/useProfileStore';
+import { textToPictos } from '@/lib/ai/picto-nlp';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { cn } from '@/lib/utils';
+import { ContactForm } from '@/components/ContactForm';
 
 const BRAND = '#FF8844';
 const BRAND_DARK = '#C85F27';
@@ -66,30 +70,41 @@ function ContactList({
     selectedId,
     entries,
     onSelect,
+    onAdd,
 }: {
     contacts: Contact[];
     selectedId: string | null;
-    entries: PhraseEntry[];
+    entries: ChatMessage[];
     onSelect: (c: Contact) => void;
+    onAdd: () => void;
 }) {
     const [query, setQuery] = useState('');
 
+    const profileId = useProfileStore(s => s.profile?.id);
+
     const lastMsg = useMemo(() => {
-        const map: Record<string, PhraseEntry> = {};
+        const map: Record<string, ChatMessage> = {};
         for (const e of entries) {
-            if (e.contactId && !map[e.contactId]) map[e.contactId] = e;
+            // El cuidador quiere ver el último mensaje de cada chat
+            // Para simplificar (ya que el store de chat tiene todos), asumimos 1 a 1 por ahora 
+            // o lo agrupamos por participante en base a las conversations.
+            const otherId = e.sender_id === profileId ? e.receiver_id : e.sender_id;
+            map[otherId] = e; // P2P mapping
         }
         return map;
-    }, [entries]);
+    }, [entries, profileId]);
 
     const unread = useMemo(() => {
         const map: Record<string, number> = {};
         for (const e of entries) {
-            if (e.contactId && e.direction === 'received')
-                map[e.contactId] = (map[e.contactId] ?? 0) + 1;
+            // Un mensaje recibido es aquel cuyo sender NO es el perfil actual.
+            // Sumamos al contactId que nos lo envió.
+            if (profileId && e.sender_id !== profileId && !e.read) {
+                map[e.sender_id] = (map[e.sender_id] ?? 0) + 1;
+            }
         }
         return map;
-    }, [entries]);
+    }, [entries, profileId]);
 
     const filtered = contacts.filter(c =>
         c.name.toLowerCase().includes(query.toLowerCase())
@@ -101,6 +116,18 @@ function ContactList({
             <div className="flex-shrink-0 px-4 pt-5 pb-3 bg-[#FFF8F3] border-b border-[#FFD5BF]">
                 <div className="flex items-center justify-between mb-3">
                     <h1 className="text-xl font-black text-[#C85F27]">Mensajes</h1>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={onAdd}
+                            className="p-2 text-[#C85F27] hover:bg-[#FFE6D6] rounded-full transition-colors"
+                            aria-label="Añadir contacto"
+                        >
+                            <Plus size={20} />
+                        </button>
+                        <Link href="/settings" className="p-2 -mr-2 text-[#C85F27] hover:bg-[#FFE6D6] rounded-full transition-colors" aria-label="Ajustes">
+                            <Settings size={20} />
+                        </Link>
+                    </div>
                 </div>
                 {/* Search */}
                 <div className="flex items-center gap-2 bg-white border border-[#FFD5BF] rounded-2xl px-3 py-2">
@@ -115,10 +142,21 @@ function ContactList({
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-[#FFF0E8]">
-                {filtered.map(contact => {
-                    const preview = lastMsg[contact.id];
-                    const count = unread[contact.id] ?? 0;
+            <div className="flex-1 overflow-y-auto divide-y divide-[#FFF0E8] flex flex-col">
+                {contacts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16 text-gray-400">
+                        <UserRound size={48} className="opacity-20" />
+                        <p className="text-sm font-semibold">No tienes contactos aún</p>
+                        <button
+                            onClick={onAdd}
+                            className="text-sm font-bold text-[#FF8844] underline"
+                        >
+                            Añadir el primero
+                        </button>
+                    </div>
+                ) : filtered.map(contact => {
+                    const preview = lastMsg[contact.contact_id];
+                    const count = unread[contact.contact_id] ?? 0;
                     const isActive = contact.id === selectedId;
                     return (
                         <button
@@ -137,16 +175,14 @@ function ContactList({
                                     <span className="text-sm font-bold text-gray-900 truncate">{contact.name}</span>
                                     {preview && (
                                         <span className={cn('text-[10px] flex-shrink-0', count > 0 ? 'text-[#C85F27] font-bold' : 'text-gray-400')}>
-                                            {timeLabel(preview.timestamp)}
+                                            {timeLabel(preview.created_at)}
                                         </span>
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between gap-2 mt-0.5">
                                     <p className="text-xs text-gray-500 truncate">
-                                        {preview
-                                            ? (preview.direction === 'received' ? preview.text : `Tú: ${preview.text}`)
-                                            : <span className="italic text-gray-300">Sin mensajes aún</span>
-                                        }
+                                        {/* TODO: Connect preview properly with Supabase conversations */}
+                                        <span className="italic text-gray-300">Click para ver mensajes</span>
                                     </p>
                                     {count > 0 && (
                                         <span className="flex-shrink-0 bg-[#FF8844] text-white text-[10px] font-black min-w-[20px] h-5 rounded-full flex items-center justify-center px-1">
@@ -167,9 +203,8 @@ function ContactList({
 // Message Bubble
 // =============================================================================
 
-function Bubble({ entry, contact }: { entry: PhraseEntry; contact: Contact }) {
+function Bubble({ entry, contact, isSent }: { entry: ChatMessage; contact: Contact; isSent: boolean }) {
     const { speak, isSpeaking } = useSpeech();
-    const isSent = entry.direction !== 'received';
 
     return (
         <div className={cn('flex items-end gap-2 max-w-[80%]', isSent ? 'self-end flex-row-reverse' : 'self-start')}>
@@ -177,7 +212,7 @@ function Bubble({ entry, contact }: { entry: PhraseEntry; contact: Contact }) {
 
             <div className="flex flex-col gap-1">
                 {/* Pictogram strip — shown when AAC message has pictograms */}
-                {entry.pictograms.length > 0 && (
+                {entry.pictograms && entry.pictograms.length > 0 && (
                     <div className={cn(
                         'flex flex-wrap gap-1 p-2 rounded-2xl border max-w-[280px]',
                         isSent
@@ -216,10 +251,10 @@ function Bubble({ entry, contact }: { entry: PhraseEntry; contact: Contact }) {
                             ? 'bg-[#FF8844] text-white rounded-br-sm'
                             : 'bg-white text-gray-800 border border-slate-200 rounded-bl-sm'
                     )}>
-                        {entry.text}
+                        {entry.content}
                     </div>
                     <button
-                        onClick={() => speak(entry.text)}
+                        onClick={() => speak(entry.content)}
                         className={cn(
                             'w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors',
                             isSpeaking ? 'bg-[#FF8844] text-white' : 'bg-slate-100 text-slate-500 hover:bg-[#FFF0E8] hover:text-[#FF8844]'
@@ -232,7 +267,7 @@ function Bubble({ entry, contact }: { entry: PhraseEntry; contact: Contact }) {
 
                 {/* Timestamp + read receipt */}
                 <div className={cn('flex items-center gap-1 px-1', isSent ? 'justify-end' : 'justify-start')}>
-                    <span className="text-[10px] text-gray-400">{timeLabel(entry.timestamp)}</span>
+                    <span className="text-[10px] text-gray-400">{timeLabel(entry.created_at)}</span>
                     {isSent && <CheckCheck size={12} className="text-[#FF8844]" />}
                 </div>
             </div>
@@ -251,26 +286,56 @@ function ThreadPanel({
     contact: Contact;
     onBack: () => void;
 }) {
-    const entries = usePhraseLogStore(s => s.entries);
-    const addReply = usePhraseLogStore(s => s.addReply);
+    const profile = useProfileStore(s => s.profile);
+    const messages = useChatStore(s => s.messages);
+    const setCurrentContact = useChatStore(s => s.setCurrentContact);
+    const unsubscribeFromMessages = useChatStore(s => s.unsubscribeFromMessages);
+    
     const [text, setText] = useState('');
+    const [isTranslating, setIsTranslating] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    const thread = useMemo(
-        () => [...entries.filter(e => e.contactId === contact.id)].reverse(),
-        [entries, contact.id]
-    );
+    // Initialise chat — only re-run when IDs change, NOT when store reference changes
+    useEffect(() => {
+        if (profile?.id && contact.contact_id) {
+            setCurrentContact(contact.contact_id, profile.id);
+        }
+        return () => unsubscribeFromMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profile?.id, contact.contact_id]);
+
+    const thread = useMemo(() => messages, [messages]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [thread.length]);
 
-    const handleSend = useCallback(() => {
+    const sendMessage = useChatStore(s => s.sendMessage);
+
+    const handleSend = useCallback(async () => {
         const t = text.trim();
-        if (!t) return;
-        addReply(contact.id, t);
-        setText('');
-    }, [addReply, contact.id, text]);
+        if (!t || !profile?.id || !contact.contact_id) return;
+        
+        setIsTranslating(true);
+        try {
+            // Translador de Hugging Face: Texto -> Pictos  (para favorecer comprensión del usuario AAC)
+            const hfRes = await textToPictos(t);
+            const pictosMapped = hfRes.pictograms.map(p => ({
+                id: p.id.toString(),
+                label: p.labels?.es || '?',
+                arasaacId: p.id,
+                color: '#FFF0E8'
+            }));
+
+            // Grabar en Supabase
+            await sendMessage(pictosMapped, t, profile.id, contact.contact_id);
+            setText('');
+        } catch (e) {
+            console.error('[Cuidador Send Error]', e);
+        } finally {
+            setIsTranslating(false);
+        }
+    }, [text, profile?.id, contact.contact_id, sendMessage]);
 
     return (
         <div className="flex flex-col h-full bg-[#F8F4F1]">
@@ -313,7 +378,7 @@ function ThreadPanel({
                     </div>
                 ) : (
                     thread.map(entry => (
-                        <Bubble key={entry.id} entry={entry} contact={contact} />
+                        <Bubble key={entry.id} entry={entry} contact={contact} isSent={entry.sender_id === profile?.id} />
                     ))
                 )}
                 <div ref={bottomRef} />
@@ -328,14 +393,15 @@ function ThreadPanel({
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder={`Escribe a ${contact.name}…`}
                     className="flex-1 h-11 bg-[#F8F4F1] border border-[#FFD5BF] rounded-2xl px-4 text-sm outline-none focus:border-[#FF8844] focus:ring-2 focus:ring-[#FF8844]/10 transition-all text-gray-800 placeholder:text-gray-400"
+                    disabled={isTranslating}
                 />
 
                 <button
                     onClick={handleSend}
-                    disabled={!text.trim()}
+                    disabled={!text.trim() || isTranslating}
                     className={cn(
                         'w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transition-all active:scale-95',
-                        text.trim()
+                        text.trim() && !isTranslating
                             ? 'bg-[#FF8844] text-white hover:bg-[#E56F2C]'
                             : 'bg-[#FFD5BF] text-white cursor-not-allowed'
                     )}
@@ -372,8 +438,24 @@ function NoChat() {
 
 export default function CuidadorPage() {
     const contacts = useContactStore(s => s.contacts);
-    const entries = usePhraseLogStore(s => s.entries);
+    const { addContact, loadContacts } = useContactStore();
+    const profile = useProfileStore(s => s.profile);
+    const chatStore = useChatStore();
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [showAddContact, setShowAddContact] = useState(false);
+
+    // Carga inicial de contactos
+    useEffect(() => {
+        if (profile?.id) {
+            loadContacts(profile.id);
+        }
+    }, [profile?.id, loadContacts]);
+
+    async function handleAddContact(data: Omit<Contact, 'id'>) {
+        if (!profile?.id) return;
+        await addContact(data, profile.id);
+        setShowAddContact(false);
+    }
 
     // On mobile: hide list when contact selected. On md+: show both side-by-side.
     const showThread = !!selectedContact;
@@ -389,8 +471,9 @@ export default function CuidadorPage() {
                 <ContactList
                     contacts={contacts}
                     selectedId={selectedContact?.id ?? null}
-                    entries={entries}
+                    entries={chatStore.messages}
                     onSelect={setSelectedContact}
+                    onAdd={() => setShowAddContact(true)}
                 />
             </aside>
 
@@ -404,6 +487,14 @@ export default function CuidadorPage() {
                     : <NoChat />
                 }
             </div>
+
+            {/* Add Contact Modal */}
+            {showAddContact && (
+                <ContactForm
+                    onSave={handleAddContact}
+                    onCancel={() => setShowAddContact(false)}
+                />
+            )}
         </div>
     );
 }

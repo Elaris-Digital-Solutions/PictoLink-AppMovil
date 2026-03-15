@@ -1,13 +1,12 @@
 /**
  * lib/store/useChatStore.ts
  *
- * Zustand store for the Conversation Engine.
+ * Zustand store for the Conversation Engine (Legacy Schema P2P mapping).
  *
  * Responsibilities:
- *  • Send a message (pictograms → Supabase insert)
- *  • Load message history for a conversation
+ *  • Send a message (pictograms → Supabase 'messages' insert)
+ *  • Load message history directly between two users (sender_id ↔ receiver_id)
  *  • Subscribe to Supabase realtime for live updates
- *  • Unsubscribe when switching conversations
  */
 
 'use client';
@@ -15,41 +14,26 @@
 import { create } from 'zustand';
 import { getSupabase } from '@/lib/supabase/client';
 import type { PictoNode } from '@/types';
-import type { DbMessage, DbConversation } from '@/lib/supabase/types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ChatMessage {
     id: string;
-    conversation_id: string;
     sender_id: string;
+    receiver_id: string;
+    content: string; // The Legacy text value
     pictograms: PictoNode[];
-    text: string;
     created_at: string;
-}
-
-export interface Conversation {
-    id: string;
-    participants: string[];
-    title: string | null;
-    created_at: string;
-    updated_at: string;
+    read: boolean;
 }
 
 // ─── State interface ───────────────────────────────────────────────────────────
 
 interface ChatStore {
-    // ── Conversations ──────────────────────────────────────────────────────────
-    conversations: Conversation[];
-    currentConversationId: string | null;
-    isLoadingConversations: boolean;
-
-    loadConversations: (profileId: string) => Promise<void>;
-    setCurrentConversation: (id: string) => void;
-
-    /** Create a new conversation between two participants */
-    createConversation: (participantIds: string[]) => Promise<string | null>;
+    // ── Contacts / Routing ─────────────────────────────────────────────────────
+    currentContactId: string | null;
+    setCurrentContact: (contactId: string, currentProfileId: string) => void;
 
     // ── Messages ───────────────────────────────────────────────────────────────
     messages: ChatMessage[];
@@ -57,12 +41,12 @@ interface ChatStore {
     isLoading: boolean;
     error: string | null;
 
-    loadMessages: (conversationId: string) => Promise<void>;
+    loadMessages: (contactId: string, profileId: string) => Promise<void>;
     sendMessage: (
         pictograms: PictoNode[],
         text: string,
         senderId: string,
-        conversationId?: string
+        receiverId?: string
     ) => Promise<void>;
     clearMessages: () => void;
 
@@ -70,8 +54,8 @@ interface ChatStore {
     appendMessage: (msg: ChatMessage) => void;
 
     // ── Realtime subscription ──────────────────────────────────────────────────
-    subscribeToConversation: (conversationId: string) => void;
-    unsubscribeFromConversation: () => void;
+    subscribeToMessages: (contactId: string, profileId: string) => void;
+    unsubscribeFromMessages: () => void;
     _channel: RealtimeChannel | null;
 }
 
@@ -79,55 +63,14 @@ interface ChatStore {
 
 export const useChatStore = create<ChatStore>()((set, get) => ({
 
-    // ── Conversations ──────────────────────────────────────────────────────────
-    conversations: [],
-    currentConversationId: null,
-    isLoadingConversations: false,
+    currentContactId: null,
 
-    loadConversations: async (profileId) => {
-        set({ isLoadingConversations: true });
-        try {
-            const sb = getSupabase();
-            const { data, error } = await sb
-                .from('conversations')
-                .select('*')
-                .contains('participants', [profileId])
-                .order('updated_at', { ascending: false });
-
-            if (error) throw error;
-            set({ conversations: (data ?? []) as Conversation[] });
-        } catch (e) {
-            console.error('[chat] loadConversations:', e);
-        } finally {
-            set({ isLoadingConversations: false });
-        }
-    },
-
-    setCurrentConversation: (id) => {
-        const { unsubscribeFromConversation, subscribeToConversation, loadMessages } = get();
-        unsubscribeFromConversation();
-        set({ currentConversationId: id, messages: [] });
-        loadMessages(id);
-        subscribeToConversation(id);
-    },
-
-    createConversation: async (participantIds) => {
-        try {
-            const sb = getSupabase();
-            const { data, error } = await sb
-                .from('conversations')
-                .insert({ participants: participantIds })
-                .select()
-                .single();
-
-            if (error) throw error;
-            const conv = data as DbConversation;
-            set((s) => ({ conversations: [conv as Conversation, ...s.conversations] }));
-            return conv.id;
-        } catch (e) {
-            console.error('[chat] createConversation:', e);
-            return null;
-        }
+    setCurrentContact: (contactId, profileId) => {
+        const { unsubscribeFromMessages, subscribeToMessages, loadMessages } = get();
+        unsubscribeFromMessages();
+        set({ currentContactId: contactId, messages: [] });
+        loadMessages(contactId, profileId);
+        subscribeToMessages(contactId, profileId);
     },
 
     // ── Messages ───────────────────────────────────────────────────────────────
@@ -136,14 +79,15 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     isLoading: false,
     error: null,
 
-    loadMessages: async (conversationId) => {
+    loadMessages: async (contactId, profileId) => {
         set({ isLoading: true, error: null });
         try {
             const sb = getSupabase();
+            // Fetch P2P messages in both directions
             const { data, error } = await sb
                 .from('messages')
                 .select('*')
-                .eq('conversation_id', conversationId)
+                .or(`and(sender_id.eq.${profileId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profileId})`)
                 .order('created_at', { ascending: true })
                 .limit(100);
 
@@ -157,10 +101,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }
     },
 
-    sendMessage: async (pictograms, text, senderId, conversationId) => {
-        const targetConvId = conversationId ?? get().currentConversationId;
-        if (!targetConvId) {
-            console.warn('[chat] sendMessage: no conversation selected');
+    sendMessage: async (pictograms, text, senderId, receiverId) => {
+        const targetReceiverId = receiverId ?? get().currentContactId;
+        if (!targetReceiverId) {
+            console.warn('[chat] sendMessage: no contact selected');
             return;
         }
 
@@ -179,10 +123,11 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             const { data, error } = await sb
                 .from('messages')
                 .insert({
-                    conversation_id: targetConvId,
                     sender_id: senderId,
+                    receiver_id: targetReceiverId,
                     pictograms: pictoPayload,
-                    text,
+                    content: text, // 'text' in UI maps to 'content' in Legacy DB
+                    read: false
                 })
                 .select()
                 .single();
@@ -190,8 +135,8 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             if (error) throw error;
 
             // Optimistic: append immediately (realtime will also fire, deduplication via id)
-            const newMsg = data as DbMessage;
-            get().appendMessage(newMsg as ChatMessage);
+            const newMsg = data as ChatMessage;
+            get().appendMessage(newMsg);
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Error enviando mensaje';
             set({ error: msg });
@@ -213,21 +158,28 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     // ── Realtime ───────────────────────────────────────────────────────────────
     _channel: null,
 
-    subscribeToConversation: (conversationId) => {
+    subscribeToMessages: (contactId, profileId) => {
         const sb = getSupabase();
-
+        
+        // Listen to all inserts on messages. We filter purely in Javascript 
+        // because Supabase realtime filters limit OR logic across two columns easily.
         const channel = sb
-            .channel(`messages:${conversationId}`)
+            .channel(`p2p_messages:${profileId}_${contactId}`)
             .on(
                 'postgres_changes',
                 {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
-                    filter: `conversation_id=eq.${conversationId}`,
                 },
                 (payload) => {
-                    get().appendMessage(payload.new as ChatMessage);
+                    const msg = payload.new as ChatMessage;
+                    if (
+                        (msg.sender_id === profileId && msg.receiver_id === contactId) ||
+                        (msg.sender_id === contactId && msg.receiver_id === profileId)
+                    ) {
+                        get().appendMessage(msg);
+                    }
                 }
             )
             .subscribe();
@@ -235,7 +187,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         set({ _channel: channel });
     },
 
-    unsubscribeFromConversation: () => {
+    unsubscribeFromMessages: () => {
         const { _channel } = get();
         if (_channel) {
             getSupabase().removeChannel(_channel);

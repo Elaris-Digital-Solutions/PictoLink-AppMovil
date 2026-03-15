@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProfileStore } from '@/lib/store/useProfileStore';
+import { createClient } from '@/lib/supabase/client';
 
 // Root → redirect based on onboarding status and user profile after store hydration.
 // - Not onboarded          → /onboarding
@@ -22,14 +23,21 @@ export default function RootPage() {
   useEffect(() => {
     if (!ready) return;
 
-    if (!isOnboarded) {
-      router.replace('/onboarding');
-      return;
+    async function checkAuthAndRoute() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session || !isOnboarded) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      // Route by profile mode so the browser back button never crosses interfaces
+      const dest = profile?.mode === 'caregiver' ? '/cuidador' : '/board';
+      router.replace(dest);
     }
 
-    // Route by profile mode so the browser back button never crosses interfaces
-    const dest = profile?.mode === 'caregiver' ? '/cuidador' : '/board';
-    router.replace(dest);
+    checkAuthAndRoute();
   }, [ready, isOnboarded, profile?.mode, router]);
 
   return (

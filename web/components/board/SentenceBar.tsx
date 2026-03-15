@@ -12,10 +12,11 @@
  */
 
 import { memo } from 'react';
-import { Volume2, Delete, Send } from 'lucide-react';
+import { Volume2, Delete, Send, Loader2 } from 'lucide-react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { cn } from '@/lib/utils';
 
 // ─── Sentence Chip ─────────────────────────────────────────────────────────────
 
@@ -73,12 +74,14 @@ function SentenceChip({
 
 interface SentenceBarProps {
     actionMode?: 'board' | 'messages';
-    onSend?: (text: string) => void;
+    onSend?: () => void;
+    isProcessing?: boolean;
 }
 
 export const SentenceBar = memo(function SentenceBar({
     actionMode = 'board',
     onSend,
+    isProcessing = false,
 }: SentenceBarProps) {
     const sentence = useBoardStore((s) => s.sentence);
     const removeLastWord = useBoardStore((s) => s.removeLastWord);
@@ -138,16 +141,16 @@ export const SentenceBar = memo(function SentenceBar({
                 {/* Send to chat */}
                 {showSend && onSend && (
                     <button
-                        onClick={() => { if (!isEmpty) { onSend(sentenceText); } }}
-                        disabled={isEmpty}
+                        onClick={() => { if (!isEmpty && !isProcessing) { onSend(); } }}
+                        disabled={isEmpty || isProcessing}
                         className="w-12 h-12 rounded-lg flex items-center justify-center
                                     bg-[#FF8844] text-white border border-[#FFD5BF]
                                     hover:bg-[#F57D37] active:bg-[#E56F2C]
                            disabled:opacity-30 transition-all press-anim"
-                        style={{ opacity: isEmpty ? 0.6 : 1 }}
+                        style={{ opacity: isEmpty || isProcessing ? 0.6 : 1 }}
                         aria-label="Enviar mensaje"
                     >
-                        <Send size={18} />
+                        {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                     </button>
                 )}
 

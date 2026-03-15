@@ -11,11 +11,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Volume2, ChevronRight, Check, Play, LayoutGrid, Languages } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Volume2, ChevronRight, Check, Play, LayoutGrid, Languages, LogOut, CreditCard } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
+import type { Plan } from '@/types';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { langName } from '@/lib/utils/translate';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 
 const BRAND = '#FF8844';
 const BRAND_DARK = '#C85F27';
@@ -70,6 +73,7 @@ function Row({ label, desc, right, onPress, border = true }: {
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
+    const router = useRouter();
     const profile = useProfileStore(s => s.profile);
     const updateProfile = useProfileStore(s => s.updateProfile);
     const { speak, isSpeaking, voices } = useSpeech();
@@ -228,6 +232,61 @@ export default function SettingsPage() {
                         <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
                     </Link>
                 </Section>
+
+                {/* Account Section */}
+                <Section icon={CreditCard} title="Cuenta y Suscripción">
+                    <div className="p-5 border-b border-[#FFF0E8]">
+                        <p className="text-sm font-bold text-gray-900 mb-1">Plan actual</p>
+                        <p className="text-xs text-gray-500 mb-4">
+                            Selecciona el plan que mejor se adapte a tus necesidades.
+                        </p>
+                        
+                        <div className="flex flex-col gap-2">
+                            {(['free', 'basic', 'premium'] as Plan[]).map((p) => {
+                                const selected = profile?.plan_type === p;
+                                const labels = { free: 'Gratis', basic: 'Básico ($10/mes)', premium: 'Premium ($15/mes)' };
+                                return (
+                                    <button
+                                        key={p}
+                                        onClick={async () => {
+                                            if (!profile?.id) return;
+                                            const supabase = createClient();
+                                            await supabase.from('profiles').update({ plan_type: p }).eq('id', profile.id);
+                                            updateProfile({ plan_type: p });
+                                        }}
+                                        className={cn(
+                                            "flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all active:scale-95 text-left",
+                                            selected 
+                                                ? "border-[#FF8844] bg-[#FFF8F3]" 
+                                                : "border-[#FFF0E8] bg-white hover:bg-gray-50 text-gray-700"
+                                        )}
+                                    >
+                                        <span className={cn("font-bold text-sm", selected && "text-[#C85F27]")}>
+                                            {labels[p]}
+                                        </span>
+                                        {selected && <Check size={18} className="text-[#FF8844]" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </Section>
+
+                {/* Account Section */}
+                <div className="mb-6 px-3">
+                    <button 
+                        onClick={async () => {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                            useProfileStore.setState({ profile: null, isOnboarded: false });
+                            router.replace('/');
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-5 py-4 hover:bg-red-50 active:bg-red-100 transition-colors bg-white border border-red-100 rounded-2xl shadow-sm text-red-600 font-bold"
+                    >
+                        <LogOut size={18} />
+                        Cerrar sesión
+                    </button>
+                </div>
 
             </div>
         </div>

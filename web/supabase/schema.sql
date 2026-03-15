@@ -1,95 +1,85 @@
--- ─── PictoLink Supabase Schema ────────────────────────────────────────────────
+-- ─── PictoLink Supabase Migration Schema ──────────────────────────────────────
 -- Run this in the Supabase SQL editor (Dashboard → SQL Editor → New query)
+-- This script adapts the EXISTING legacy database for the new Next.js app.
 
--- ─── Enable UUID extension ──────────────────────────────────────────────────
-create extension if not exists "uuid-ossp";
+-- ─── Profiles Update ────────────────────────────────────────────────────────
+-- Legacy 'profiles' has: id (auth), name, created_at, updated_at
+alter table public.profiles add column if not exists display_name text;
+alter table public.profiles add column if not exists avatar_emoji text not null default '😊';
+alter table public.profiles add column if not exists mode text not null default 'communicator';
+alter table public.profiles add column if not exists plan_type text not null default 'free';
+alter table public.profiles add column if not exists color_theme text not null default 'blue';
+alter table public.profiles add column if not exists grid_columns int not null default 4;
+alter table public.profiles add column if not exists tts_enabled boolean not null default true;
+alter table public.profiles add column if not exists tts_rate float not null default 1.0;
+alter table public.profiles add column if not exists tts_voice text;
 
--- ─── Profiles ───────────────────────────────────────────────────────────────
-create table if not exists public.profiles (
-  id            uuid primary key default uuid_generate_v4(),
-  display_name  text not null,
-  avatar_emoji  text not null default '😊',
-  mode          text not null default 'communicator'
-                  check (mode in ('communicator', 'caregiver', 'therapist')),
-  color_theme   text not null default 'blue',
-  grid_columns  int  not null default 4,
-  tts_enabled   boolean not null default true,
-  tts_rate      float   not null default 1.0,
-  tts_voice     text,
-  created_at    timestamptz not null default now()
+-- ─── Data Cleanup (Requested by User) ───────────────────────────────────────
+-- Delete old users that don't have a specific mode or plan yet.
+-- Using 'auth.users' cascades deletes down to profiles, contacts, messages, etc.
+delete from auth.users 
+where id in (
+  select id from public.profiles 
+  where mode = 'communicator' and plan_type = 'free'
 );
 
--- ─── Conversations ──────────────────────────────────────────────────────────
-create table if not exists public.conversations (
-  id            uuid primary key default uuid_generate_v4(),
-  participants  uuid[] not null default '{}',  -- profile ids
-  title         text,                           -- optional display name
-  created_at    timestamptz not null default now(),
-  updated_at    timestamptz not null default now()
-);
+-- Run a backfill of data in case display_name is empty but legacy name exists
+update public.profiles set display_name = name where display_name is null;
 
--- Index for fast participant lookup
-create index if not exists conversations_participants_idx
-  on public.conversations using gin (participants);
+-- ─── Messages Update ────────────────────────────────────────────────────────
+-- Legacy 'messages' has: id, sender_id, receiver_id, content, created_at, read
+alter table public.messages add column if not exists pictograms jsonb not null default '[]'::jsonb;
+-- Ensure content matches our text expectations if needed (legacy uses content, we use it as text)
+-- The Next.js app will just write to 'content'.
 
--- ─── Messages ───────────────────────────────────────────────────────────────
-create table if not exists public.messages (
-  id               uuid primary key default uuid_generate_v4(),
-  conversation_id  uuid not null references public.conversations (id) on delete cascade,
-  sender_id        uuid not null references public.profiles (id),
-  -- Pictogram payload: serialised PictoNode[]
-  pictograms       jsonb not null default '[]',
-  -- Human-readable sentence generated from pictogram labels
-  text             text not null default '',
-  created_at       timestamptz not null default now()
-);
+-- ─── Contacts Update ────────────────────────────────────────────────────────
+-- Legacy 'contacts' has: id, user_id, contact_id, created_at
+alter table public.contacts add column if not exists custom_name text;
+alter table public.contacts add column if not exists custom_name text;
+alter table public.contacts add column if not exists role text not null default 'Familia';
+alter table public.contacts add column if not exists avatar_color text not null default '#F97316';
+alter table public.contacts add column if not exists avatar_emoji text not null default '👩';
 
--- Indexes for fast conversation fetches
-create index if not exists messages_conversation_idx
-  on public.messages (conversation_id, created_at desc);
+-- ─── Profiles RLS Policies (Fix for Error {}) ───────────────────────────────
+-- Ensure RLS is enabled and allows users to manage their own profile during Onboarding
+alter table public.profiles enable row level security;
 
-create index if not exists messages_sender_idx
-  on public.messages (sender_id);
+drop policy if exists "Users can view their own profile" on public.profiles;
+create policy "Users can view their own profile" 
+on public.profiles for select 
+using (auth.uid() = id);
 
--- ─── Row Level Security ──────────────────────────────────────────────────────
-alter table public.profiles      enable row level security;
-alter table public.conversations enable row level security;
-alter table public.messages      enable row level security;
+drop policy if exists "Users can view any profile" on public.profiles;
+-- Caregivers need to see AAC users' profiles, and viceversa
+create policy "Users can view any profile" 
+on public.profiles for select 
+using (true);
 
--- Profiles: anyone can read; only owner can write
-create policy "profiles_read"   on public.profiles for select using (true);
-create policy "profiles_insert" on public.profiles for insert with check (true);
-create policy "profiles_update" on public.profiles for update using (id = auth.uid());
+drop policy if exists "Users can insert their own profile" on public.profiles;
+create policy "Users can insert their own profile" 
+on public.profiles for insert 
+with check (auth.uid() = id);
 
--- Conversations: participants can read; anyone can create
-create policy "conversations_read"
-  on public.conversations for select
-  using (auth.uid()::uuid = any(participants) or array_length(participants, 1) is null);
+drop policy if exists "Users can update their own profile" on public.profiles;
+create policy "Users can update their own profile" 
+on public.profiles for update 
+using (auth.uid() = id);
 
-create policy "conversations_insert"
-  on public.conversations for insert with check (true);
+-- ─── Contacts RLS Policies ───────────────────────────────────────────────────
+-- The contacts table uses user_id (owner) and contact_id (the other person).
+alter table public.contacts enable row level security;
 
--- Messages: conversation participants can read + insert
-create policy "messages_read"
-  on public.messages for select
-  using (
-    exists (
-      select 1 from public.conversations c
-      where c.id = conversation_id
-        and auth.uid()::uuid = any(c.participants)
-    )
-  );
+drop policy if exists "Users can view their own contacts" on public.contacts;
+create policy "Users can view their own contacts"
+on public.contacts for select
+using (auth.uid() = user_id);
 
-create policy "messages_insert"
-  on public.messages for insert
-  with check (
-    exists (
-      select 1 from public.conversations c
-      where c.id = conversation_id
-        and auth.uid()::uuid = any(c.participants)
-    )
-  );
+drop policy if exists "Users can insert their own contacts" on public.contacts;
+create policy "Users can insert their own contacts"
+on public.contacts for insert
+with check (auth.uid() = user_id);
 
--- ─── Realtime ────────────────────────────────────────────────────────────────
--- Enable Realtime on messages table (in Supabase Dashboard → Realtime)
--- or run: alter publication supabase_realtime add table public.messages;
+drop policy if exists "Users can delete their own contacts" on public.contacts;
+create policy "Users can delete their own contacts"
+on public.contacts for delete
+using (auth.uid() = user_id);
