@@ -34,7 +34,7 @@ import { pictosToText } from '@/lib/ai/picto-nlp';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
-import { getCurrentBoardItems, getPathNodes, getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { getCurrentBoardItems, getPathNodes, getPictoImageUrl, GRID_COLS, GRID_ROWS } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
 import { ContactForm } from '@/components/ContactForm';
@@ -536,13 +536,26 @@ function ConversationBoard({
     }, [currentItems, favorites]);
 
     // Match the board density to Proloquo-like layout.
-    const boardColumns = 11;
-    const boardRows = 6;
+    const boardColumns = GRID_COLS;
+    const boardRows = GRID_ROWS;
 
     const handleSelectItem = useCallback((node: PictoNode) => {
-        if (node.isFolder) enterFolder(node.id);
-        else addWord(node);
-    }, [enterFolder, addWord]);
+        // Handle AAC grid navigation actions
+        if (node.action === 'back') {
+            if (node.folderId) {
+                const newPath = categoryPath.slice(0, -1);
+                navigateToPath(newPath.length > 0 ? newPath : []);
+            } else {
+                navigateToPath(categoryPath.slice(0, -1));
+            }
+        } else if (node.isFolder && node.folderId) {
+            enterFolder(node.folderId);
+        } else if (node.isFolder) {
+            enterFolder(node.id);
+        } else {
+            addWord(node);
+        }
+    }, [enterFolder, addWord, categoryPath, navigateToPath]);
 
     const handleLongPress = useCallback((node: PictoNode) => {
         if (!node.isFolder) toggleFavorite(node);
