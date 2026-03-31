@@ -9,8 +9,6 @@ export interface PictoNode {
   isFolder?: boolean;      // true = navigates deeper; false = adds to sentence
   pictograms?: PictoNode[]; // leaf pictograms inside this node
   children?: PictoNode[];  // sub-folders
-  folderId?: string;       // AAC grid: target page ID for folder/navigation cells
-  action?: string;         // AAC grid: 'speak' | 'navigate' | 'back' | 'clear'
 }
 
 export interface PictogramCatalog {

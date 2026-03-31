@@ -1,22 +1,19 @@
 /**
  * lib/pictograms/catalog.ts
  *
- * AAC Board catalog engine — Proloquo2Go-style grid layout.
+ * Optimized pictogram catalog engine.
  *
  * Strategy:
- *  • Imports the positional grid pages from aac-grid-layout.ts
- *  • Converts GridCell → PictoNode on the fly with proper field mapping
- *  • Page-based navigation: path = ['personas', 'familia'] etc.
- *  • Grid is 9 columns × 5 rows (positions 0–44)
+ *  • At module load time we walk the JSON once and build:
+ *      nodeIndex   – id → PictoNode          (O(1) lookup)
+ *      childrenMap – id → PictoNode[]        (O(1) children fetch)
+ *      allPictograms – flat PictoNode[]      (cached prediction pool)
+ *  • All public functions are pure, referentially stable, and never
+ *    re-scan the catalog tree at runtime.
  */
 
-import { AAC_PAGES, type GridCell, type CellType } from '@/data/aac-grid-layout';
+import catalogData from '@/data/pictogram_catalog.json';
 import type { PictoNode } from '@/types';
-
-// ─── Constants ─────────────────────────────────────────────────────────────────
-
-export const GRID_COLS = 9;
-export const GRID_ROWS = 5;
 
 // ─── Image URL ─────────────────────────────────────────────────────────────────
 
@@ -24,148 +21,87 @@ export function getPictoImageUrl(arasaacId: number, size: 300 | 500 = 300): stri
     return `https://static.arasaac.org/pictograms/${arasaacId}/${arasaacId}_${size}.png`;
 }
 
-// ─── Fitzgerald Key colors ─────────────────────────────────────────────────────
+// ─── Index build ───────────────────────────────────────────────────────────────
+// Runs ONCE at module load. All subsequent calls read from Maps.
 
-const FITZGERALD_COLORS: Record<CellType, string> = {
-    pronoun: '#FFD600',       // Yellow
-    verb: '#4CAF50',          // Green
-    noun: '#FF9800',          // Orange
-    adjective: '#2196F3',     // Blue
-    adverb: '#E91E63',        // Pink
-    preposition: '#9C27B0',   // Purple
-    folder: '#607D8B',        // Blue-gray
-    navigation: '#78909C',    // Gray
-    phrase: '#FF9800',        // Orange (same as noun)
-};
+const nodeIndex = new Map<string, PictoNode>();          // id → node
+const childrenMap = new Map<string, PictoNode[]>();        // folder id → its items
+const allPictogramsCache: PictoNode[] = [];                // flat list of all pictos
 
-// ─── GridCell → PictoNode conversion ───────────────────────────────────────────
-
-function cellToNode(cell: GridCell): PictoNode {
-    const isFolder = cell.type === 'folder' || cell.type === 'navigation';
-    return {
-        id: cell.id,
-        label: cell.label,
-        color: cell.bgColor ?? FITZGERALD_COLORS[cell.type] ?? '#6B7280',
-        arasaacId: cell.pictogramId,
-        isFolder,
-        // Encode navigation info in the id for folder navigation
-        ...(cell.folderTarget ? { folderId: cell.folderTarget } : {}),
-        // Pass action metadata through
-        ...(cell.action ? { action: cell.action } : {}),
-    } as PictoNode & { folderId?: string; action?: string };
-}
-
-// ─── Page cache ────────────────────────────────────────────────────────────────
-// Convert all pages once at module load time
-
-type AACNode = PictoNode & { folderId?: string; action?: string };
-
-const pageCache = new Map<string, AACNode[]>();
-const allPictogramsCache: PictoNode[] = [];
-
-// Build full 45-slot arrays (9×5) for each page, with null for empty slots
-const pageFullGridCache = new Map<string, (AACNode | null)[]>();
-
-function buildPageCache(): void {
-    const pages = AAC_PAGES as Record<string, GridCell[]>;
-    for (const [pageId, cells] of Object.entries(pages)) {
-        const nodes = cells.map(cellToNode) as AACNode[];
-        pageCache.set(pageId, nodes);
-
-        // Build full 45-slot grid
-        const fullGrid: (AACNode | null)[] = new Array(GRID_COLS * GRID_ROWS).fill(null);
-        for (const cell of cells) {
-            const node = cellToNode(cell) as AACNode;
-            if (cell.pos >= 0 && cell.pos < GRID_COLS * GRID_ROWS) {
-                fullGrid[cell.pos] = node;
-            }
-        }
-        pageFullGridCache.set(pageId, fullGrid);
-
-        // Collect non-folder pictograms for search/prediction
-        for (const node of nodes) {
-            if (!node.isFolder) {
-                allPictogramsCache.push(node);
-            }
-        }
-    }
-}
-
-buildPageCache();
-
-// Also index all nodes by id for breadcrumb resolution
-const nodeIndex = new Map<string, PictoNode>();
-for (const nodes of pageCache.values()) {
-    for (const node of nodes) {
+function buildIndex(nodes: PictoNode[], parentId: string | null = null): void {
+    for (const raw of nodes) {
+        // Normalise: mark folders explicitly
+        const node: PictoNode = { ...raw, isFolder: !!raw.children };
         nodeIndex.set(node.id, node);
+
+        // Children list for this folder: sub-folders + direct pictograms
+        const folderChildren: PictoNode[] = [];
+
+        if (raw.children && raw.children.length > 0) {
+            const subFolders = raw.children.map((c: PictoNode) => ({ ...c, isFolder: true }));
+            folderChildren.push(...subFolders);
+            buildIndex(raw.children as PictoNode[], node.id);  // recurse into sub-folders
+        }
+
+        if ((raw as unknown as { pictograms?: PictoNode[] }).pictograms) {
+            const pictos = (raw as unknown as { pictograms: PictoNode[] }).pictograms;
+            folderChildren.push(...pictos);
+            allPictogramsCache.push(...pictos);
+            // Also index individual pictograms
+            for (const p of pictos) nodeIndex.set(p.id, p);
+        }
+
+        if (folderChildren.length > 0) {
+            childrenMap.set(node.id, folderChildren);
+        }
+
+        void parentId; // kept for potential parent-lookup extension
     }
 }
+
+// Trigger index build from root on module initialisation
+buildIndex(catalogData.categories as PictoNode[]);
+
+// Root-level items: top-level folders
+const ROOT_ITEMS: PictoNode[] = (catalogData.categories as PictoNode[]).map(
+    (c) => ({ ...c, isFolder: true })
+);
 
 // ─── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * Returns the PictoNode items for the current board view.
- * 
- * path = []            → root page
- * path = ['personas']  → personas page  
- * path = ['personas', 'familia'] → familia page
- * 
- * Returns items ordered by position (0–44), with null gaps removed.
- */
-export function getCurrentBoardItems(path: string[]): PictoNode[] {
-    const pageId = path.length === 0 ? 'root' : path[path.length - 1];
-    return pageCache.get(pageId) ?? [];
-}
-
-/**
- * Returns the full 45-slot grid for a page (with nulls for empty positions).
- * Used by PictoGrid for positional rendering.
- */
-export function getCurrentBoardGrid(path: string[]): (PictoNode | null)[] {
-    const pageId = path.length === 0 ? 'root' : path[path.length - 1];
-    return pageFullGridCache.get(pageId) ?? new Array(GRID_COLS * GRID_ROWS).fill(null);
-}
-
-/**
- * Resolve a navigation path to PictoNode labels for breadcrumb display.
- * Creates synthetic nodes for each path segment.
- */
-export function getPathNodes(path: string[]): PictoNode[] {
-    return path.map((pageId) => {
-        // Try to find a folder cell that navigated TO this page
-        for (const nodes of pageCache.values()) {
-            for (const node of nodes as AACNode[]) {
-                if (node.folderId === pageId) {
-                    return node;
-                }
-            }
-        }
-        // Fallback: create a synthetic node
-        return {
-            id: pageId,
-            label: pageId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-            color: '#607D8B',
-            isFolder: true,
-        } as PictoNode;
-    });
+/** All root-level category folders. */
+export function getRootCategories(): PictoNode[] {
+    return ROOT_ITEMS;
 }
 
 /**
  * O(1) node lookup by id.
+ * Returns undefined if the id doesn't exist in the catalog.
  */
 export function getNodeById(id: string): PictoNode | undefined {
     return nodeIndex.get(id);
 }
 
 /**
- * Get children of a folder (returns the page items for that folder's target).
+ * O(1) children fetch for a folder id.
+ * Returns [] for unknown ids or leaf pictogram ids.
  */
 export function getChildren(id: string): PictoNode[] {
-    return pageCache.get(id) ?? [];
+    return childrenMap.get(id) ?? [];
 }
 
 /**
- * Legacy compat — resolves last segment in path.
+ * Resolve an array of node ids to their PictoNode objects.
+ * Used to render the breadcrumb path.
+ * O(k) where k = path.length — individual lookups are O(1).
+ */
+export function getPathNodes(path: string[]): PictoNode[] {
+    return path.map((id) => nodeIndex.get(id)).filter(Boolean) as PictoNode[];
+}
+
+/**
+ * Legacy compatibility — resolves the last segment in a path.
+ * O(1).
  */
 export function getNodeByPath(path: string[]): PictoNode | null {
     if (path.length === 0) return null;
@@ -173,21 +109,30 @@ export function getNodeByPath(path: string[]): PictoNode | null {
 }
 
 /**
- * Root-level categories (same as root page items).
+ * Returns the items that should appear in the pictogram grid.
+ *
+ * path = []          → root categories (folder tiles)
+ * path = ['food']    → food's children (sub-folders + inline pictos)
+ * path = ['food', 'food.fruits'] → fruits' pictograms
+ *
+ * O(1): reads directly from childrenMap.
  */
-export function getRootCategories(): PictoNode[] {
-    return pageCache.get('root') ?? [];
+export function getCurrentBoardItems(path: string[]): PictoNode[] {
+    if (path.length === 0) return ROOT_ITEMS;
+    const lastId = path[path.length - 1];
+    return childrenMap.get(lastId) ?? [];
 }
 
 /**
- * Parent path helper.
+ * Parent path helper (removes last segment).
  */
 export function getParentCategory(path: string[]): string[] {
     return path.slice(0, -1);
 }
 
 /**
- * Flat list of all non-folder pictograms for prediction/search.
+ * Cached flat list of every pictogram in the catalog (no folders).
+ * Returned by reference — do NOT mutate.
  */
 export function flattenPictogramsForPrediction(): PictoNode[] {
     return allPictogramsCache;
@@ -195,6 +140,7 @@ export function flattenPictogramsForPrediction(): PictoNode[] {
 
 /**
  * Full-text search across all pictograms.
+ * O(n) but n is bounded to the catalog size.
  */
 export function searchCatalog(query: string): PictoNode[] {
     const q = query.toLowerCase().trim();
@@ -204,5 +150,5 @@ export function searchCatalog(query: string): PictoNode[] {
         .slice(0, 30);
 }
 
-// Export maps for external consumers
-export { nodeIndex };
+// ─── Export index for external consumers (e.g. testing) ───────────────────────
+export { nodeIndex, childrenMap };
