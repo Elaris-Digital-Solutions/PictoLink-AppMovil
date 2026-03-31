@@ -32,7 +32,10 @@ import { PictoGrid } from '@/components/board/PictoGrid';
 import type { PictoNode } from '@/types';
 import {
     getCurrentBoardItems,
+    getCurrentBoardGrid,
     getPathNodes,
+    GRID_COLS,
+    GRID_ROWS,
 } from '@/lib/pictograms/catalog';
 
 // ─── Mini breadcrumb shown above the grid when deep in a folder ───────────────
@@ -103,20 +106,39 @@ export default function BoardPage() {
         return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
     }, [currentItems, favorites]);
 
-    // Proloquo-like density from reference layout: 11 columns x 6 rows.
-    const boardColumns = 11;
-    const boardRows = 6;
+    // Proloquo-like density from AAC grid layout: 9 columns × 5 rows.
+    const boardColumns = GRID_COLS;
+    const boardRows = GRID_ROWS;
 
     // ── Event handlers ────────────────────────────────────────────────────────
+    // Full grid with null gaps for positional rendering
+    const currentGrid = useMemo(
+        () => getCurrentBoardGrid(categoryPath),
+        [categoryPath]
+    );
+
     const handleSelectItem = useCallback(
         (node: PictoNode) => {
-            if (node.isFolder) {
+            // Handle AAC grid navigation actions
+            if (node.action === 'back') {
+                // "Atrás" button: navigate back to the folder target or go back
+                if (node.folderId) {
+                    // Navigate to a specific page (replace the path)
+                    const newPath = categoryPath.slice(0, -1);
+                    navigateToPath(newPath.length > 0 ? newPath : []);
+                } else {
+                    navigateToPath(categoryPath.slice(0, -1));
+                }
+            } else if (node.isFolder && node.folderId) {
+                // Folder or "Más" navigation: push the target page
+                enterFolder(node.folderId);
+            } else if (node.isFolder) {
                 enterFolder(node.id);
             } else {
                 addWord(node);
             }
         },
-        [enterFolder, addWord]
+        [enterFolder, addWord, categoryPath, navigateToPath]
     );
 
     const handleLongPress = useCallback(

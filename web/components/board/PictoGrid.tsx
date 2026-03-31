@@ -5,21 +5,16 @@
  *
  * Design goals:
  *  • Fills 100% of its parent (flex-1) with NO external scroll
- *  • Cells are square (aspect-ratio 1/1) enforced by wrapper divs
- *  • CSS grid with N columns — auto-rows so extra rows fill downward
- *  • Grid scrolls internally only if items overflow the visible height
- *
- * Usage:
- *  <div className="flex-1 overflow-hidden">
- *    <PictoGrid items={...} columns={5} ... />
- *  </div>
+ *  • Cells render at their exact grid POSITION (0–44 for 9×5)
+ *  • Empty positions show as dashed placeholder slots
+ *  • No external pagination — AAC layout has built-in "Más"/"Atrás" cells
  */
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { PictoCell } from './PictoCell';
 import type { PictoNode } from '@/types';
 
-// ─── Empty State ───────────────────────────────────────────────────────────────
+// ─── Empty State ────────────────────────────────────────────────────────────────
 
 function EmptyState({ message }: { message: string }) {
     return (
@@ -30,7 +25,7 @@ function EmptyState({ message }: { message: string }) {
     );
 }
 
-// ─── PictoGrid ────────────────────────────────────────────────────────────────
+// ─── PictoGrid ──────────────────────────────────────────────────────────────────
 
 interface PictoGridProps {
     items: PictoNode[];
@@ -45,35 +40,31 @@ interface PictoGridProps {
 
 export const PictoGrid = memo(function PictoGrid({
     items,
-    columns = 8,
-    rows = 6,
+    columns = 9,
+    rows = 5,
     onSelectItem,
     onLongPressItem,
     selectedIds = [],
     favoriteIds = [],
     emptyMessage = 'Selecciona una categoría',
 }: PictoGridProps) {
-    const [page, setPage] = useState(0);
-
     if (items.length === 0) {
         return <EmptyState message={emptyMessage} />;
     }
 
-    const slotsPerPage = Math.max(1, columns * rows);
-    const totalPages = Math.max(1, Math.ceil(items.length / slotsPerPage));
+    const totalSlots = columns * rows;
 
-    useEffect(() => {
-        setPage(0);
-    }, [items, slotsPerPage]);
-
-    const currentPage = Math.min(page, totalPages - 1);
-
-    const pagedItems = useMemo(() => {
-        const start = currentPage * slotsPerPage;
-        return items.slice(start, start + slotsPerPage);
-    }, [currentPage, items, slotsPerPage]);
-
-    const placeholderCount = Math.max(0, slotsPerPage - pagedItems.length);
+    // Build a position-indexed array for O(1) lookup
+    // Items from AAC layout have an inherent ordering that matches positions
+    const positionedGrid = useMemo(() => {
+        const grid: (PictoNode | null)[] = new Array(totalSlots).fill(null);
+        // Items come in order — simply place them sequentially
+        // The catalog already handles position mapping
+        for (let i = 0; i < items.length && i < totalSlots; i++) {
+            grid[i] = items[i];
+        }
+        return grid;
+    }, [items, totalSlots]);
 
     return (
         <div className="flex flex-col h-full w-full min-h-0">
@@ -91,58 +82,28 @@ export const PictoGrid = memo(function PictoGrid({
                     overflow: 'hidden',
                 }}
             >
-                {pagedItems.map((node) => (
+                {positionedGrid.map((node, idx) => (
                     <div
-                        key={node.id}
-                        style={{
-                            minWidth: 0,
-                            minHeight: 0,
-                        }}
+                        key={node?.id ?? `slot-empty-${idx}`}
+                        style={{ minWidth: 0, minHeight: 0 }}
                     >
-                        <PictoCell
-                            node={node}
-                            onPress={onSelectItem}
-                            onLongPress={onLongPressItem}
-                            isSelected={selectedIds.includes(node.id)}
-                            isFavorite={favoriteIds.includes(node.id)}
-                        />
+                        {node ? (
+                            <PictoCell
+                                node={node}
+                                onPress={onSelectItem}
+                                onLongPress={onLongPressItem}
+                                isSelected={selectedIds.includes(node.id)}
+                                isFavorite={favoriteIds.includes(node.id)}
+                            />
+                        ) : (
+                            <div
+                                className="w-full h-full rounded-lg border border-dashed border-[#FFD5BF] bg-white/60"
+                                aria-hidden="true"
+                            />
+                        )}
                     </div>
                 ))}
-
-                {Array.from({ length: placeholderCount }).map((_, idx) => (
-                    <div
-                        key={`slot-empty-${idx}`}
-                        className="rounded-lg border border-dashed border-[#FFD5BF] bg-white/60"
-                        aria-hidden="true"
-                    />
-                ))}
             </div>
-
-            {totalPages > 1 && (
-                <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1">
-                    <button
-                        onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-                        disabled={currentPage === 0}
-                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-[#FFD5BF] text-[#C85F27] disabled:opacity-40"
-                        aria-label="Página anterior"
-                    >
-                        ◀
-                    </button>
-
-                    <span className="text-xs font-semibold text-[#C85F27] min-w-[58px] text-center">
-                        {currentPage + 1} / {totalPages}
-                    </span>
-
-                    <button
-                        onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
-                        disabled={currentPage >= totalPages - 1}
-                        className="px-2 py-1 rounded-md text-xs font-bold bg-white border border-[#FFD5BF] text-[#C85F27] disabled:opacity-40"
-                        aria-label="Página siguiente"
-                    >
-                        ▶
-                    </button>
-                </div>
-            )}
         </div>
     );
 });
