@@ -17,27 +17,21 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import {
     ArrowLeft, MessageCircle, MessageSquare,
-    X, Send, Home, ChevronRight, Volume2, UserRound
+    X, Send, Home, ChevronRight, Volume2,
 } from 'lucide-react';
 
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
 import { usePhraseLogStore, type PhraseEntry } from '@/lib/store/usePhraseLogStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
-import { useChatNavStore } from '@/lib/store/useChatNavStore';
-import { useChatStore, type ChatMessage } from '@/lib/store/useChatStore';
-import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
-import { pictosToText } from '@/lib/ai/picto-nlp';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { PictoGrid } from '@/components/board/PictoGrid';
 import { getCurrentBoardItems, getPathNodes, getPictoImageUrl } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
-import { ContactForm } from '@/components/ContactForm';
 
 const BRAND_ORANGE = '#FF8844';
 const BRAND_ORANGE_DARK = '#C85F27';
@@ -99,14 +93,14 @@ function Breadcrumb({
 // ─── Mini pictogram chip (inside thread) ─────────────────────────────────────
 
 function PictoChip({ label, arasaacId, color, size = 'sm' }: {
-    label: string; arasaacId?: number; color?: string; size?: 'sm' | 'md' | 'lg' | 'xl';
+    label: string; arasaacId?: number; color?: string; size?: 'sm' | 'md' | 'lg';
 }) {
     const bg = color ?? '#6B7280';
-    const w       = size === 'xl' ? 96  : size === 'lg' ? 72 : size === 'md' ? 56 : 48;
-    const imgSize = size === 'xl' ? 64  : size === 'lg' ? 50 : size === 'md' ? 34 : 30;
-    const imgH    = size === 'xl' ? 70  : size === 'lg' ? 56 : size === 'md' ? 42 : 38;
-    const stripH  = size === 'xl' ? 6   : size === 'lg' ? 5 : 4;
-    const lblCls  = size === 'xl' ? 'text-[11px]' : size === 'lg' ? 'text-[10px]' : size === 'md' ? 'text-[9px]' : 'text-[8px]';
+    const w       = size === 'lg' ? 72 : size === 'md' ? 56 : 48;
+    const imgSize = size === 'lg' ? 50 : size === 'md' ? 34 : 30;
+    const imgH    = size === 'lg' ? 56 : size === 'md' ? 42 : 38;
+    const stripH  = size === 'lg' ? 5 : 4;
+    const lblCls  = size === 'lg' ? 'text-[10px]' : size === 'md' ? 'text-[9px]' : 'text-[8px]';
     return (
         <div
             className="flex flex-col items-center bg-white border rounded-xl overflow-hidden flex-shrink-0"
@@ -130,46 +124,67 @@ function PictoChip({ label, arasaacId, color, size = 'sm' }: {
 }
 
 // =============================================================================
-// Inline Reply Viewer — Embedded in the main consolidated header
+// Reply Banner — ALWAYS visible inside ConversationBoard
 // Shows the last message received from this contact.
-// Auto-TTS so the person doesn't have to read.
+// Large, high-contrast, with auto-TTS so the person doesn't have to read.
 // =============================================================================
 
-function InlineReply({ contact }: { contact: Contact }) {
-    const messages = useChatStore((s) => s.messages);
-    const profile = useProfileStore((s) => s.profile);
+function ReplyBanner({ contact }: { contact: Contact }) {
+    const entries = usePhraseLogStore((s) => s.entries);
     const { speak, isSpeaking } = useSpeech();
 
     const lastReply = useMemo(() => {
-        if (!profile?.id) return null;
-        // Search backwards for the last message *received* from this contact
-        const received = messages.filter(
-            (m) => m.sender_id === contact.contact_id && m.receiver_id === profile.id
-        );
-        return received.length > 0 ? received[received.length - 1] : null;
-    }, [messages, contact.contact_id, profile?.id]);
+        // entries are newest-first; find first received for this contact
+        return entries.find(
+            (e) => e.contactId === contact.id && e.direction === 'received'
+        ) ?? null;
+    }, [entries, contact.id]);
 
+    // Auto-speak whenever a new reply arrives
     const prevIdRef = useRef<string | null>(null);
     useEffect(() => {
         if (lastReply && lastReply.id !== prevIdRef.current) {
             prevIdRef.current = lastReply.id;
-            speak(lastReply.content);
+            speak(lastReply.text);
         }
     }, [lastReply, speak]);
 
-    if (!lastReply) {
-        return <div className="flex-1 flex items-center text-sm font-bold text-white/50 italic px-4">Esperando mensaje...</div>;
-    }
+    if (!lastReply) return null;
 
     return (
-        <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1 px-3">
-            {lastReply.pictograms.length > 0 ? (
-                lastReply.pictograms.map((p, i) => (
-                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
-                ))
-            ) : (
-                <p className="text-base font-bold text-white leading-snug line-clamp-2 drop-shadow">{lastReply.content}</p>
-            )}
+        <div
+            className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b-2"
+            style={{ backgroundColor: BRAND_SOFT, borderColor: BRAND_BORDER }}
+        >
+            {/* Avatar */}
+            <Avatar contact={contact} size="sm" />
+
+            {/* Pictograms — primary display for the person with CD */}
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1">
+                {lastReply.pictograms.length > 0 ? (
+                    lastReply.pictograms.map((p, i) => (
+                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
+                    ))
+                ) : (
+                    // Fallback: new replies not yet processed by AI — show text
+                    <p className="text-base font-bold text-gray-900 leading-snug">{lastReply.text}</p>
+                )}
+            </div>
+
+            {/* Big speak button */}
+            <button
+                onClick={() => speak(lastReply.text)}
+                className={cn(
+                    'w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors shadow-sm',
+                    isSpeaking
+                        ? 'bg-[#E56F2C] text-white animate-pulse'
+                        : 'bg-white text-[#C85F27] hover:bg-[#FFF4ED] active:bg-[#FFE6D6]'
+                )}
+                style={{ border: `2px solid ${BRAND_BORDER}` }}
+                aria-label="Escuchar mensaje"
+            >
+                <Volume2 size={26} />
+            </button>
         </div>
     );
 }
@@ -179,20 +194,16 @@ function InlineReply({ contact }: { contact: Contact }) {
 // =============================================================================
 
 function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => void }) {
-    const messages = useChatStore((s) => s.messages);
-    const sendMessage = useChatStore((s) => s.sendMessage);
-    const profile = useProfileStore((s) => s.profile);
+    const entries = usePhraseLogStore((s) => s.entries);
+    const addReply = usePhraseLogStore((s) => s.addReply);
     const { speak } = useSpeech();
     const [replyText, setReplyText] = useState('');
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Filter messages for this contact
+    // Oldest first for thread display
     const thread = useMemo(
-        () => messages.filter((m) => 
-            (m.sender_id === profile?.id && m.receiver_id === contact.contact_id) ||
-            (m.sender_id === contact.contact_id && m.receiver_id === profile?.id)
-        ),
-        [messages, contact.contact_id, profile?.id]
+        () => [...entries.filter((e) => e.contactId === contact.id)].reverse(),
+        [entries, contact.id]
     );
 
     useEffect(() => {
@@ -201,33 +212,32 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 
     const handleReply = () => {
         const t = replyText.trim();
-        if (!t || !profile?.id) return;
-        sendMessage([], t, profile.id, contact.contact_id);
+        if (!t) return;
+        addReply(contact.id, t);
         setReplyText('');
     };
 
     return (
         <>
-            {/* Backdrop strictly fixed over everything */}
-            <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/25 z-20" onClick={onClose} />
 
-            {/* Panel strictly fixed to the right */}
-            <div className="fixed top-0 right-0 h-full w-full sm:max-w-[400px] flex flex-col bg-white shadow-[0_0_40px_rgba(0,0,0,0.3)] z-50 animate-in slide-in-from-right">
+            {/* Panel */}
+            <div className="absolute inset-y-0 right-0 w-full sm:max-w-sm flex flex-col bg-white shadow-2xl z-30">
 
                 {/* Header */}
-                <div className="flex-shrink-0 flex items-center gap-4 px-6 py-5 border-b-2 border-[#FFD5BF] bg-[#FFF8F3] shadow-sm">
-                    <Avatar contact={contact} size="md" />
+                <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-[#FFD5BF] bg-[#FFF8F3]">
+                    <Avatar contact={contact} size="sm" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-xl font-black text-gray-900 truncate">{contact.name}</p>
-                        <p className="text-sm font-bold text-[#FF8844] uppercase tracking-widest">{contact.role}</p>
+                        <p className="text-sm font-black text-gray-900 truncate">{contact.name}</p>
+                        <p className="text-xs text-gray-400">{contact.role}</p>
                     </div>
-                    {/* Big visible close button */}
                     <button
                         onClick={onClose}
-                        className="w-16 h-16 rounded-2xl bg-white border-2 border-[#FFD5BF] hover:bg-[#FFE6D6] active:scale-95 flex items-center justify-center transition-all shadow-md"
+                        className="w-10 h-10 rounded-xl bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center"
                         aria-label="Cerrar"
                     >
-                        <X size={32} className="text-[#C85F27]" strokeWidth={3} />
+                        <X size={20} className="text-[#C85F27]" />
                     </button>
                 </div>
 
@@ -243,59 +253,59 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                         </div>
                     ) : (
                         thread.map((entry) => {
-                            const isSent = entry.sender_id === profile?.id;
+                            const isSent = entry.direction !== 'received';
                             return (
                                 <div key={entry.id} className={cn('flex flex-col gap-1.5', isSent ? 'items-end' : 'items-start')}>
                                     {isSent ? (
                                         <>
                                             {/* Pictogram strip */}
-                                            {entry.pictograms?.length > 0 && (
-                                                <div className="flex gap-2 flex-wrap justify-end max-w-[320px]">
+                                            {entry.pictograms.length > 0 && (
+                                                <div className="flex gap-1 flex-wrap justify-end max-w-[260px]">
                                                     {entry.pictograms.map((p, i) => (
-                                                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} />
                                                     ))}
                                                 </div>
                                             )}
                                             {/* Text bubble + speak */}
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => speak(entry.content)}
-                                                    className="w-10 h-10 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0 shadow-sm"
+                                                    onClick={() => speak(entry.text)}
+                                                    className="w-8 h-8 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0"
                                                     aria-label="Escuchar"
                                                 >
-                                                    <Volume2 size={20} className="text-[#FF8844]" />
+                                                    <Volume2 size={14} className="text-[#FF8844]" />
                                                 </button>
-                                                <div className="bg-[#FF8844] text-white px-5 py-3 rounded-[1.5rem] rounded-br-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
-                                                    &ldquo;{entry.content}&rdquo;
+                                                <div className="bg-[#FF8844] text-white px-3 py-2 rounded-2xl rounded-br-none text-sm font-semibold max-w-[200px] leading-snug">
+                                                    &ldquo;{entry.text}&rdquo;
                                                 </div>
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="flex items-start gap-3">
-                                            <Avatar contact={contact} size="md" />
-                                            <div className="flex flex-col gap-2">
+                                        <div className="flex items-start gap-2">
+                                            <Avatar contact={contact} size="sm" />
+                                            <div className="flex flex-col gap-1">
                                                 {/* Pictograms — primary display */}
-                                                {entry.pictograms?.length > 0 ? (
-                                                    <div className="flex gap-2 flex-wrap max-w-[280px]">
+                                                {entry.pictograms.length > 0 ? (
+                                                    <div className="flex gap-1 flex-wrap max-w-[220px]">
                                                         {entry.pictograms.map((p, i) => (
-                                                            <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                            <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} />
                                                         ))}
                                                     </div>
                                                 ) : (
                                                     // New reply, still pending AI translation
-                                                    <div className="bg-[#FFF1E8] text-slate-700 px-5 py-3 rounded-[1.5rem] rounded-bl-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
-                                                        {entry.content}
+                                                    <div className="bg-[#FFF1E8] text-slate-700 px-3 py-2 rounded-2xl rounded-bl-none text-sm font-medium max-w-[200px] leading-snug">
+                                                        {entry.text}
                                                     </div>
                                                 )}
                                                 {/* Text caption — for caregiver context */}
-                                                {entry.pictograms?.length > 0 && (
-                                                    <p className="text-xs text-gray-400 font-bold px-1 max-w-[280px]">{entry.content}</p>
+                                                {entry.pictograms.length > 0 && (
+                                                    <p className="text-[10px] text-gray-400 italic px-1 max-w-[220px]">{entry.text}</p>
                                                 )}
                                             </div>
                                         </div>
                                     )}
-                                    <span className="text-[10px] text-gray-400 font-bold px-1">
-                                        {new Date(entry.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                                    <span className="text-[9px] text-gray-400 px-1">
+                                        {new Date(entry.timestamp).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
                             );
@@ -336,46 +346,30 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 
 function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     const contacts = useContactStore((s) => s.contacts);
-    const { addContact } = useContactStore();
-    const messages = useChatStore((s) => s.messages);
-    const profile = useProfileStore((s) => s.profile);
-    const [showAddContact, setShowAddContact] = useState(false);
-
-    async function handleAddContact(data: Omit<Contact, 'id'>) {
-        if (!profile?.id) return;
-        await addContact(data, profile.id);
-        setShowAddContact(false);
-    }
+    const entries = usePhraseLogStore((s) => s.entries);
 
     // Last received reply per contact (full entry — pictograms + text)
     const lastReplies = useMemo(() => {
-        const map: Record<string, ChatMessage> = {};
-        if (!profile?.id) return map;
-        // Search from newest to oldest
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const m = messages[i];
-            const otherId = m.sender_id === profile.id ? m.receiver_id : m.sender_id;
-            if (!map[otherId] && m.sender_id !== profile.id) {
-                map[otherId] = m;
+        const map: Record<string, PhraseEntry> = {};
+        for (const e of entries) {
+            if (e.contactId && e.direction === 'received' && !map[e.contactId]) {
+                map[e.contactId] = e;
             }
         }
         return map;
-    }, [messages, profile?.id]);
+    }, [entries]);
 
     // Unread received count per contact
     const unreadCount = useMemo(() => {
         const map: Record<string, number> = {};
-        if (!profile?.id) return map;
-        for (const m of messages) {
-            if (m.receiver_id === profile.id && !m.read) {
-                map[m.sender_id] = (map[m.sender_id] ?? 0) + 1;
-            }
+        for (const e of entries) {
+            if (e.contactId && e.direction === 'received')
+                map[e.contactId] = (map[e.contactId] ?? 0) + 1;
         }
         return map;
-    }, [messages, profile?.id]);
+    }, [entries]);
 
     return (
-        <>
         <div className="flex flex-col h-full bg-[#FFF7F2]">
 
             {/* Header — clean, modern, no gradient */}
@@ -388,23 +382,12 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
             </div>
 
             {/* Contact list — high-contrast cards */}
-            <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col">
-                {contacts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16 text-gray-400">
-                        <UserRound size={48} className="opacity-20" />
-                        <p className="text-sm font-semibold">No tienes contactos aún</p>
-                        <button
-                            onClick={() => setShowAddContact(true)}
-                            className="text-sm font-bold text-[#FF8844] underline"
-                        >
-                            Añadir el primero
-                        </button>
-                    </div>
-                ) : contacts.map((contact) => {
-                    const unread = unreadCount[contact.contact_id] ?? 0;
-                    const preview = lastReplies[contact.contact_id];
+            <div className="flex-1 overflow-y-auto px-3 py-2.5">
+                {contacts.map((contact) => {
+                    const unread = unreadCount[contact.id] ?? 0;
+                    const preview = lastReplies[contact.id];
                     const timeStr = preview
-                        ? new Date(preview.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+                        ? new Date(preview.timestamp).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
                         : '';
                     return (
                         <button
@@ -426,7 +409,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                     <div className="flex-1 min-w-0 flex items-center">
                                         {preview?.pictograms && preview.pictograms.length > 0 ? (
                                             <div className="flex gap-1 items-center">
-                                                {preview.pictograms.slice(0, 2).map((p: PictoNode, i: number) => (
+                                                {preview.pictograms.slice(0, 2).map((p, i) => (
                                                     <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
                                                 ))}
                                                 {preview.pictograms.length > 2 && (
@@ -435,7 +418,7 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                             </div>
                                         ) : preview ? (
                                             <p className="text-[13px] text-gray-500 truncate font-medium">
-                                                ← {preview.content}
+                                                {preview.direction === 'received' ? '← ' : '→ '}{preview.text}
                                             </p>
                                         ) : (
                                             <p className="text-[13px] text-gray-400 italic">Sin mensajes</p>
@@ -469,15 +452,6 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                 })}
             </div>
         </div>
-
-        {/* Add Contact Modal */}
-        {showAddContact && (
-            <ContactForm
-                onSave={handleAddContact}
-                onCancel={() => setShowAddContact(false)}
-            />
-        )}
-    </>
     );
 }
 
@@ -493,21 +467,6 @@ function ConversationBoard({
     onBack: () => void;
 }) {
     const [showThread, setShowThread] = useState(false);
-    const [isTranslating, setIsTranslating] = useState(false);
-
-    // Profile & Chat layer
-    const profile = useProfileStore((s) => s.profile);
-    const setCurrentContact = useChatStore((s) => s.setCurrentContact);
-    const unsubscribeFromMessages = useChatStore((s) => s.unsubscribeFromMessages);
-
-    // Init conversation on mount
-    useEffect(() => {
-        if (profile?.id && contact.contact_id) {
-            setCurrentContact(contact.contact_id, profile.id);
-        }
-        return () => unsubscribeFromMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [profile?.id, contact.contact_id]);
 
     // Board state
     const categoryPath = useBoardStore((s) => s.categoryPath);
@@ -520,11 +479,12 @@ function ConversationBoard({
     const toggleFavorite = useBoardStore((s) => s.toggleFavorite);
     const clearSentence = useBoardStore((s) => s.clearSentence);
 
-    // Context messages
-    const messages = useChatStore((s) => s.messages);
+    // Phrase log
+    const addPhrase = usePhraseLogStore((s) => s.addEntry);
+    const entries = usePhraseLogStore((s) => s.entries);
     const msgCount = useMemo(
-        () => messages.length,
-        [messages]
+        () => entries.filter((e) => e.contactId === contact.id).length,
+        [entries, contact.id]
     );
 
     // Derived board data
@@ -548,105 +508,76 @@ function ConversationBoard({
         if (!node.isFolder) toggleFavorite(node);
     }, [toggleFavorite]);
 
-    const sendMessage = useChatStore((s) => s.sendMessage);
-
-    const handleSend = useCallback(async () => {
-        if (sentence.length === 0 || !profile?.id || !contact.contact_id) return;
-        
-        setIsTranslating(true);
-        try {
-            // Generar frase simple concatenando las etiquetas (No usamos IA para AAC -> Texto)
-            const content = sentence.map(p => p.label).join(' ');
-            
-            // Persistir en Supabase (sender_id = profile.id, receiver_id = contact.contact_id)
-            await sendMessage(
-                sentence, 
-                content, 
-                profile.id, 
-                contact.contact_id
-            );
-            
-            clearSentence();
-            console.log('[AAC Send Success] Mensaje guardado:', content);
-        } catch (err) {
-            console.error('[AAC Send Error]', err);
-        } finally {
-            setIsTranslating(false);
-        }
-    }, [sentence, profile?.id, contact.contact_id, sendMessage, clearSentence]);
+    const handleSend = useCallback((text: string) => {
+        if (sentence.length > 0) addPhrase([...sentence], text, contact.id);
+        clearSentence();
+    }, [addPhrase, sentence, contact.id, clearSentence]);
 
     return (
-        <div className="relative flex flex-col w-full h-[100dvh] overflow-hidden bg-[#FFF0E6]">
+        <div className="relative flex flex-col w-full h-full overflow-hidden bg-white">
 
-            {/* TOP BAR / HEADER UNIFICADO (1 ÚNICA FRANJA) */}
-            <header className="flex-shrink-0 flex flex-col pt-safe bg-white border-b border-[#FFD5BF] z-10 shadow-sm">
-                
-                {/* 1. Fila principal consolidada: Nav + Avatar + Mensaje Recibido + Historial */}
-                <div className="flex items-center gap-3 h-[72px] px-3 bg-[#FF8844]">
-                    
-                    {/* Botón de volver */}
-                    <button
-                        onClick={onBack}
-                        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 transition-all text-white shadow-sm ml-1 border-2 border-white/30"
-                        aria-label="Volver a contactos"
-                    >
-                        <ArrowLeft size={26} strokeWidth={2.5} className="text-white" />
-                    </button>
+            {/* Header — flat contact color */}
+            <div
+                className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+                style={{ backgroundColor: BRAND_ORANGE }}
+            >
+                <button
+                    onClick={onBack}
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all press-anim"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
+                    aria-label="Volver a contactos"
+                >
+                    <ArrowLeft size={20} className="text-white" />
+                </button>
 
-                    {/* Avatar del contacto */}
-                    <div className="ml-1 border-2 border-white/40 rounded-full shadow-sm bg-white/10 p-0.5 relative z-10 hidden sm:block">
-                        <Avatar contact={contact} size="sm" />
-                    </div>
-
-                    {/* Último mensaje recibido (Pictogramas inline) */}
-                    <InlineReply contact={contact} />
-
-                    {/* Botón Historial sobre fondo naranja */}
-                    <button
-                        onClick={() => setShowThread(true)}
-                        className="h-12 px-5 md:px-6 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base transition-transform shadow-md bg-white text-[#FF8844] active:bg-[#FFF4ED] active:scale-95 ml-1 mr-1 border-b-4 border-[#FFD5BF]"
-                        aria-label="Cargar Historial"
-                    >
-                        <MessageSquare size={22} fill="currentColor" />
-                        <span className="hidden sm:inline">Historial</span>
-                        {msgCount > 0 && (
-                            <div className="bg-white text-[#C85F27] text-xs px-2 py-0.5 rounded-full ml-1">
-                                {msgCount}
-                            </div>
-                        )}
-                    </button>
+                <div style={{ border: '2px solid rgba(255,255,255,0.5)', borderRadius: '50%' }}>
+                    <Avatar contact={contact} size="sm" />
                 </div>
 
-                {/* 2. Constructor de frase (SentenceBar) */}
-                <div className="bg-white border-t border-[#FFD5BF]/50">
-                    <SentenceBar actionMode="messages" onSend={handleSend} isProcessing={isTranslating} />
-                </div>
-            </header>
-
-            {/* TABLERO AAC MAIN AREA */}
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                {/* Breadcrumb acts as a tiny toolbar at the very top */}
-                <div className="z-10 shadow-sm relative">
-                    <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
+                <div className="flex-1 min-w-0">
+                    <p className="text-base font-black text-white leading-none">{contact.name}</p>
+                    <p className="text-xs text-white/70 font-medium mt-0.5">{contact.role}</p>
                 </div>
 
-                {/* Picto grid container - Maximizado */}
-                <div className="flex-1 overflow-hidden p-2 scrollbar-hide">
-                    {/* El grid gestiona su espacio CSS de manera fluida */}
-                    <PictoGrid
-                        items={currentItems}
-                        columns={boardColumns}
-                        rows={boardRows}
-                        onSelectItem={handleSelectItem}
-                        onLongPressItem={handleLongPress}
-                        selectedIds={selectedIds}
-                        favoriteIds={favoriteIds}
-                        emptyMessage="Selecciona una categoría"
-                    />
-                </div>
-            </main>
+                {/* Toggle thread */}
+                <button
+                    onClick={() => setShowThread((v) => !v)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-bold transition-all press-anim"
+                    style={{
+                        backgroundColor: showThread ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)',
+                        color: showThread ? BRAND_ORANGE_DARK : 'white',
+                    }}
+                    aria-label="Ver conversación"
+                >
+                    <MessageSquare size={16} />
+                    <span>{msgCount > 0 ? msgCount : 'Ver'}</span>
+                </button>
+            </div>
 
-            {/* HISTORIAL SLIDE-OVER STRICT FIXED OVERLAY */}
+            {/* Sentence bar */}
+            <SentenceBar actionMode="messages" onSend={handleSend} />
+
+            {/* Reply banner — last message from this contact, always visible */}
+            <ReplyBanner contact={contact} />
+
+            {/* Breadcrumb */}
+            <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
+
+            {/* Picto grid */}
+            <div className="flex-1 overflow-hidden bg-[#FFF0E6] p-1.5">
+                <PictoGrid
+                    items={currentItems}
+                    columns={boardColumns}
+                    rows={boardRows}
+                    onSelectItem={handleSelectItem}
+                    onLongPressItem={handleLongPress}
+                    selectedIds={selectedIds}
+                    favoriteIds={favoriteIds}
+                    emptyMessage="Selecciona una categoría"
+                />
+            </div>
+
+            {/* Thread slide-over */}
             {showThread && (
                 <ThreadPanel contact={contact} onClose={() => setShowThread(false)} />
             )}
@@ -659,28 +590,16 @@ function ConversationBoard({
 // =============================================================================
 
 export default function ChatPage() {
-    const contacts = useContactStore((s) => s.contacts);
-    const { loadContacts } = useContactStore();
-    const profile = useProfileStore((s) => s.profile);
-    const { selectedContactId, setSelectedContactId, clearSelectedContact } = useChatNavStore();
-
-    // Carga inicial de contactos
-    useEffect(() => {
-        if (profile?.id) {
-            loadContacts(profile.id);
-        }
-    }, [profile?.id, loadContacts]);
-
-    const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
     if (!selectedContact) {
-        return <ContactGrid onSelect={(c) => setSelectedContactId(c.id)} />;
+        return <ContactGrid onSelect={setSelectedContact} />;
     }
 
     return (
         <ConversationBoard
             contact={selectedContact}
-            onBack={clearSelectedContact}
+            onBack={() => setSelectedContact(null)}
         />
     );
 }

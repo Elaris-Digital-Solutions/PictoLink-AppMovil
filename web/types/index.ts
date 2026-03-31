@@ -34,7 +34,7 @@ export interface Profile {
   tts_voice?: string;     // SpeechSynthesis voiceURI
   created_at: string;
   user_type?: UserType;
-  plan_type?: Plan;
+  plan?: Plan;
 }
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
