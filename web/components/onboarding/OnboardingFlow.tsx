@@ -3,22 +3,15 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Check,
-  X,
-  ExternalLink,
-  MessageSquare,
-  Heart,
-  Building2,
-} from 'lucide-react';
+import { MessageSquare, Heart, Building2, ExternalLink, X, Check, ArrowLeft, Loader2 } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
+import { createClient } from '@/lib/supabase/client';
 import type { Profile, UserType, Plan } from '@/types';
 import logoPng from '@/assets/favicon.png';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 'welcome' | 'user-type' | 'plan' | 'institution';
+type Step = 'welcome' | 'auth' | 'name' | 'user-type' | 'plan' | 'institution';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -149,15 +142,35 @@ export function OnboardingFlow() {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [plan, setPlan] = useState<Plan>('free');
 
+  // Auth state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isLogin, setIsLogin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+
   function handleUserTypeSelect(type: UserType) {
     setUserType(type);
     setStep(type === 'institution' ? 'institution' : 'plan');
   }
 
-  function handleComplete() {
+  async function handleComplete() {
+    setIsLoading(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error('No se encontro usuario autenticado para completar el onboarding');
+      setAuthError('Error: Supabase requiere verificar tu correo para iniciar sesión. Para quitar este paso, ve a tu panel de Supabase > Authentication > Providers > Email y apaga "Confirm email".');
+      setStep('auth');
+      setIsLoading(false);
+      return;
+    }
+
     const profile: Profile = {
-      id: '',
-      display_name: '',
+      id: user.id,
+      display_name: displayName.trim() || 'Usuario',
       avatar_emoji: '😊',
       mode: userType === 'communicator' ? 'communicator' : 'caregiver',
       color_theme: 'blue',
@@ -165,12 +178,42 @@ export function OnboardingFlow() {
       tts_enabled: true,
       tts_rate: 1.0,
       created_at: new Date().toISOString(),
-      user_type: userType ?? 'communicator',
-      plan,
+      plan_type: plan,
     };
+
+    // Guardar el perfil en Supabase (upsert manual via REST)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          ...profile,
+          name: profile.display_name
+        })
+      });
+      
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('REST ERROR CRUDO DE SUPABASE:', errText);
+        setAuthError(`Error de DB: ${errText}`);
+        setIsLoading(false);
+        return;
+      }
+    } catch (e: any) {
+      console.error('FETCH ERROR:', e);
+    }
+    
     setProfile(profile);
     completeOnboarding();
-    router.replace('/board');
+    
+    const dest = userType === 'communicator' ? '/board' : '/cuidador';
+    router.replace(dest);
   }
 
   // ── Step: Welcome ────────────────────────────────────────────────────────────
@@ -203,17 +246,190 @@ export function OnboardingFlow() {
         </div>
 
         {/* CTA */}
-        <div className="pb-10 space-y-4">
+        <div className="pb-8 space-y-3">
           <button
-            onClick={() => setStep('user-type')}
+            onClick={() => { setStep('auth'); setIsLogin(false); }}
             className="w-full text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform"
             style={{ backgroundColor: BRAND_ORANGE }}
           >
-            Comenzar
+            Crear nueva cuenta
           </button>
-          <p className="text-center text-slate-400 text-xs">
-            Al continuar aceptas los Términos de uso y Política de privacidad
+          
+          <button
+            onClick={() => { setStep('auth'); setIsLogin(true); }}
+            className="w-full text-slate-600 font-bold text-base py-3.5 rounded-2xl border-2 border-[#FFE2D0] bg-[#FFF8F3] active:scale-95 transition-transform"
+          >
+            Ya tengo una cuenta
+          </button>
+          <p className="text-center text-slate-400 text-[11px] leading-snug pt-2">
+            Al continuar aceptas los Términos de uso<br/>y Política de privacidad
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step: Auth ──────────────────────────────────────────────────────────────
+  if (step === 'auth') {
+    const handleAuth = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsLoading(true);
+      setAuthError('');
+      const supabase = createClient();
+
+      if (isLogin) {
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setAuthError(error.message);
+        } else if (data.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (profile) {
+            setProfile(profile);
+            completeOnboarding();
+            const dest = profile.mode === 'caregiver' ? '/cuidador' : '/board';
+            router.replace(dest);
+            return;
+          } else {
+            setStep('name');
+          }
+        }
+      } else {
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              display_name: displayName
+            }
+          }
+        });
+        if (error) {
+          setAuthError(error.message);
+        } else {
+          setStep('name');
+        }
+      }
+      setIsLoading(false);
+    };
+
+    return (
+      <div className="flex flex-col h-dvh bg-white px-6">
+        <div className="flex items-center gap-3 pt-4 pb-2">
+          <button
+            onClick={() => setStep('welcome')}
+            className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
+            disabled={isLoading}
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="flex-1 flex flex-col pt-6 gap-6">
+          <div>
+            <h2 className="text-3xl font-black leading-tight text-[#FF8844]">
+              {isLogin ? '¡Hola de nuevo!' : 'Crea tu cuenta'}
+            </h2>
+            <p className="text-sm text-slate-500 mt-1.5 font-medium">
+              {isLogin ? 'Ingresa tus datos para continuar' : 'Usa tu correo para guardar tu progreso'}
+            </p>
+          </div>
+
+          <form onSubmit={handleAuth} className="flex flex-col gap-4 mt-2">
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border-2 border-[#FFD5BF] bg-white text-slate-900 focus:border-[#FF8844] focus:outline-none transition-colors"
+              required
+              disabled={isLoading}
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border-2 border-[#FFD5BF] bg-white text-slate-900 focus:border-[#FF8844] focus:outline-none transition-colors"
+              required
+              disabled={isLoading}
+              minLength={6}
+            />
+            
+            {authError && (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 font-medium leading-snug">
+                {authError === 'Invalid login credentials' ? 'Credenciales incorrectas' : authError === 'User already registered' ? 'El correo ya está registrado' : authError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform mt-4 disabled:opacity-70 flex items-center justify-center gap-2"
+              style={{ backgroundColor: BRAND_ORANGE }}
+            >
+              {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
+              {isLogin ? 'Ingresar' : 'Registrarme'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step: Name ──────────────────────────────────────────────────────────────
+  if (step === 'name') {
+    return (
+      <div className="flex flex-col h-dvh bg-white px-6">
+        {/* Nav */}
+        <div className="flex items-center gap-3 pt-4 pb-2">
+          <button
+            onClick={() => setStep('auth')}
+            className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <ProgressDots current={1} total={3} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col pt-6 gap-6">
+          <div>
+            <h2 className="text-3xl font-black leading-tight text-[#FF8844]">
+              ¿Cómo te llamas?
+            </h2>
+            <p className="text-sm text-slate-500 mt-1.5 font-medium">
+              Este nombre será visible para tus contactos
+            </p>
+          </div>
+
+          <form 
+            onSubmit={(e) => { e.preventDefault(); if (displayName.trim()) setStep('user-type'); }} 
+            className="flex flex-col gap-4 mt-2"
+          >
+            <input
+              type="text"
+              placeholder="Escribe tu nombre o apodo"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border-2 border-[#FFD5BF] bg-white text-slate-900 focus:border-[#FF8844] focus:outline-none transition-colors"
+              required
+              minLength={2}
+            />
+
+            <button
+              type="submit"
+              disabled={!displayName.trim()}
+              className="w-full text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform mt-4 disabled:opacity-70 flex items-center justify-center"
+              style={{ backgroundColor: BRAND_ORANGE }}
+            >
+              Continuar
+            </button>
+          </form>
         </div>
       </div>
     );
