@@ -33,8 +33,8 @@ import { useSpeech } from '@/lib/hooks/useSpeech';
 import { pictosToText } from '@/lib/ai/picto-nlp';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
-import { PictoGrid } from '@/components/board/PictoGrid';
-import { getCurrentBoardItems, getPathNodes, getPictoImageUrl } from '@/lib/pictograms/catalog';
+import { AACBoard } from '@/components/board/AACBoard';
+import { getPictoImageUrl, getPathNodes } from '@/lib/pictograms/catalog';
 import type { PictoNode } from '@/types';
 import { cn } from '@/lib/utils';
 import { ContactForm } from '@/components/ContactForm';
@@ -81,7 +81,7 @@ function Breadcrumb({
                 <Home size={13} style={{ color: BRAND_ORANGE_DARK }} />
                 <span className="text-xs font-bold" style={{ color: BRAND_ORANGE_DARK }}>Inicio</span>
             </button>
-            {nodes.map((node, idx) => (
+            {nodes.map((node: { id: string; label: string }, idx: number) => (
                 <span key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
                     <ChevronRight size={11} style={{ color: '#E38A59' }} />
                     <button
@@ -347,17 +347,27 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
         setShowAddContact(false);
     }
 
-    // Last received reply per contact (full entry — pictograms + text)
-    const lastReplies = useMemo(() => {
+    // Last message per contact (any direction) for preview
+    const lastMessages = useMemo(() => {
         const map: Record<string, ChatMessage> = {};
         if (!profile?.id) return map;
-        // Search from newest to oldest
+        // Newest to oldest — first hit per contact wins
         for (let i = messages.length - 1; i >= 0; i--) {
             const m = messages[i];
             const otherId = m.sender_id === profile.id ? m.receiver_id : m.sender_id;
-            if (!map[otherId] && m.sender_id !== profile.id) {
-                map[otherId] = m;
-            }
+            if (!map[otherId]) map[otherId] = m;
+        }
+        return map;
+    }, [messages, profile?.id]);
+
+    // Last *received* message per contact — shown as the preview text
+    const lastReplies = useMemo(() => {
+        const map: Record<string, ChatMessage> = {};
+        if (!profile?.id) return map;
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const m = messages[i];
+            const otherId = m.sender_id === profile.id ? m.receiver_id : m.sender_id;
+            if (!map[otherId] && m.sender_id !== profile.id) map[otherId] = m;
         }
         return map;
     }, [messages, profile?.id]);
@@ -402,9 +412,10 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                     </div>
                 ) : contacts.map((contact) => {
                     const unread = unreadCount[contact.contact_id] ?? 0;
-                    const preview = lastReplies[contact.contact_id];
-                    const timeStr = preview
-                        ? new Date(preview.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+                    const preview = lastReplies[contact.contact_id];   // last received (for content preview)
+                    const anyLast = lastMessages[contact.contact_id];  // any direction (for timestamp)
+                    const timeStr = anyLast
+                        ? new Date(anyLast.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
                         : '';
                     return (
                         <button
@@ -425,20 +436,22 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                 <div className="flex items-center gap-2">
                                     <div className="flex-1 min-w-0 flex items-center">
                                         {preview?.pictograms && preview.pictograms.length > 0 ? (
-                                            <div className="flex gap-1 items-center">
-                                                {preview.pictograms.slice(0, 2).map((p: PictoNode, i: number) => (
+                                            <div className="flex gap-1 items-center flex-wrap">
+                                                {preview.pictograms.map((p: PictoNode, i: number) => (
                                                     <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
                                                 ))}
-                                                {preview.pictograms.length > 2 && (
-                                                    <span className="text-[11px] font-bold text-slate-500 pl-1">+{preview.pictograms.length - 2}</span>
-                                                )}
                                             </div>
                                         ) : preview ? (
                                             <p className="text-[13px] text-gray-500 truncate font-medium">
                                                 ← {preview.content}
                                             </p>
+                                        ) : anyLast ? (
+                                            // AAC user sent the last message — show it with arrow indicator
+                                            <p className="text-[13px] text-gray-400 truncate font-medium">
+                                                → {anyLast.content}
+                                            </p>
                                         ) : (
-                                            <p className="text-[13px] text-gray-400 italic">Sin mensajes</p>
+                                            <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
                                         )}
                                     </div>
                                 </div>
@@ -510,14 +523,8 @@ function ConversationBoard({
     }, [profile?.id, contact.contact_id]);
 
     // Board state
-    const categoryPath = useBoardStore((s) => s.categoryPath);
-    const sentence = useBoardStore((s) => s.sentence);
-    const favorites = useBoardStore((s) => s.favorites);
     const addWord = useBoardStore((s) => s.addWord);
-    const enterFolder = useBoardStore((s) => s.enterFolder);
-    const navigateHome = useBoardStore((s) => s.navigateHome);
-    const navigateToPath = useBoardStore((s) => s.navigateToPath);
-    const toggleFavorite = useBoardStore((s) => s.toggleFavorite);
+    const sentence = useBoardStore((s) => s.sentence);
     const clearSentence = useBoardStore((s) => s.clearSentence);
 
     // Context messages
@@ -526,27 +533,6 @@ function ConversationBoard({
         () => messages.length,
         [messages]
     );
-
-    // Derived board data
-    const currentItems = useMemo(() => getCurrentBoardItems(categoryPath), [categoryPath]);
-    const selectedIds = useMemo(() => sentence.map((p) => p.id), [sentence]);
-    const favoriteIds = useMemo(() => {
-        const favSet = new Set(favorites.map((f) => f.id));
-        return currentItems.filter((n) => favSet.has(n.id)).map((n) => n.id);
-    }, [currentItems, favorites]);
-
-    // Match the board density to Proloquo-like layout.
-    const boardColumns = 11;
-    const boardRows = 6;
-
-    const handleSelectItem = useCallback((node: PictoNode) => {
-        if (node.isFolder) enterFolder(node.id);
-        else addWord(node);
-    }, [enterFolder, addWord]);
-
-    const handleLongPress = useCallback((node: PictoNode) => {
-        if (!node.isFolder) toggleFavorite(node);
-    }, [toggleFavorite]);
 
     const sendMessage = useChatStore((s) => s.sendMessage);
 
@@ -625,23 +611,11 @@ function ConversationBoard({
 
             {/* TABLERO AAC MAIN AREA */}
             <main className="flex-1 flex flex-col overflow-hidden relative">
-                {/* Breadcrumb acts as a tiny toolbar at the very top */}
-                <div className="z-10 shadow-sm relative">
-                    <Breadcrumb path={categoryPath} onHome={navigateHome} onNavigateTo={navigateToPath} />
-                </div>
-
-                {/* Picto grid container - Maximizado */}
-                <div className="flex-1 overflow-hidden p-2 scrollbar-hide">
-                    {/* El grid gestiona su espacio CSS de manera fluida */}
-                    <PictoGrid
-                        items={currentItems}
-                        columns={boardColumns}
-                        rows={boardRows}
-                        onSelectItem={handleSelectItem}
-                        onLongPressItem={handleLongPress}
-                        selectedIds={selectedIds}
-                        favoriteIds={favoriteIds}
-                        emptyMessage="Selecciona una categoría"
+                {/* AACBoard — manages its own internal navigation */}
+                <div className="flex-1 overflow-hidden">
+                    <AACBoard
+                        onWordAdd={addWord}
+                        onNavigate={(target) => console.log('[AACBoard] external folder:', target)}
                     />
                 </div>
             </main>

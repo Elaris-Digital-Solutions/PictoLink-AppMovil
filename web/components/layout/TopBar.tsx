@@ -9,10 +9,10 @@ import { useChatNavStore } from '@/lib/store/useChatNavStore';
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-    { href: '/board',     label: 'Tablero',  icon: LayoutGrid },
-    { href: '/chat',      label: 'Mensajes', icon: MessageCircle },
-    { href: '/dashboard', label: 'Inicio',   icon: Home },
-    { href: '/settings',  label: 'Ajustes',  icon: Settings },
+    { href: '/board',        label: 'Tablero',  icon: LayoutGrid },
+    { href: '/chat',         label: 'Mensajes', icon: MessageCircle },
+    { href: '/dashboard',    label: 'Inicio',   icon: Home },
+    { href: '/settings/aac', label: 'Ajustes',  icon: Settings },
 ] as const;
 
 // ─── BottomNav ────────────────────────────────────────────────────────────────

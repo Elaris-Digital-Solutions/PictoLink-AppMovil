@@ -1,0 +1,18 @@
+app/chat/page.tsx(37,70): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
+app/chat/page.tsx(84,25): error TS7006: Parameter 'node' implicitly has an 'any' type.
+app/chat/page.tsx(84,31): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+app/chat/page.tsx(535,37): error TS7006: Parameter 'n' implicitly has an 'any' type.
+app/chat/page.tsx(535,66): error TS7006: Parameter 'n' implicitly has an 'any' type.
+components/board/CategoryNav.tsx(6,49): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
+components/board/CategoryNav.tsx(23,35): error TS7006: Parameter 'node' implicitly has an 'any' type.
+components/board/CategoryNav.tsx(23,41): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+components/board/CategoryNav.tsx(45,30): error TS7006: Parameter 'crumb' implicitly has an 'any' type.
+components/board/CategoryNav.tsx(62,38): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+components/board/FolderRow.tsx(16,53): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
+components/board/FolderRow.tsx(51,32): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+components/board/PictoCell.tsx(21,34): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
+components/board/PredictionBar.tsx(6,66): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
+components/board/PredictionBar.tsx(68,22): error TS7006: Parameter 'p' implicitly has an 'any' type.
+components/board/PredictionBar.tsx(69,20): error TS7006: Parameter 'a' implicitly has an 'any' type.
+components/board/PredictionBar.tsx(69,23): error TS7006: Parameter 'b' implicitly has an 'any' type.
+components/board/SentenceBar.tsx(18,34): error TS2307: Cannot find module '@/lib/pictograms/catalog' or its corresponding type declarations.
