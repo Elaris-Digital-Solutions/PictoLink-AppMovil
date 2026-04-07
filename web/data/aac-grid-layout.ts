@@ -48,13 +48,13 @@ export const AAC_PAGES = {
 
         // Row 4
         { id: 'r1-27', pos: 27, label: "Cosas", type: "folder", folderTarget: "cosas", pictogramId: 35993 },
-        { id: 'r1-28', pos: 28, label: "Diversión", type: "folder", folderTarget: "diversion" },
+        { id: 'r1-28', pos: 28, label: "Diversión", type: "folder", folderTarget: "ocio" },
         { id: 'r1-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 },
         { id: 'r1-30', pos: 30, label: "ayudar", type: "verb", action: "speak", pictogramId: 32648 },
         { id: 'r1-31', pos: 31, label: "mirar", type: "verb", action: "speak", pictogramId: 6564 },
         { id: 'r1-32', pos: 32, label: "con", type: "preposition", action: "speak", pictogramId: 7064 },
         { id: 'r1-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'r1-34', pos: 34, label: "Palabritas", type: "folder", folderTarget: "palabritas" },
+        { id: 'r1-34', pos: 34, label: "Palabritas", type: "folder", folderTarget: "palabras_inicio" },
         { id: 'r1-35', pos: 35, label: "Tiempo", type: "folder", folderTarget: "tiempo", pictogramId: 7223 },
 
         // Row 5
@@ -76,10 +76,10 @@ export const AAC_PAGES = {
         { id: 'r2-2', pos: 2, label: "Cuál", type: "folder", folderTarget: "cual_cat", pictogramId: 26022 }, // Pregunta/Cual
         { id: 'r2-3', pos: 3, label: "Conjunciones", type: "folder", folderTarget: "conjunciones", pictogramId: 28359 }, // Enlace/Conjuncion
         { id: 'r2-4', pos: 4, label: "Números", type: "folder", folderTarget: "numeros", pictogramId: 2879 }, // Numeros (12345)
-        { id: 'r2-5', pos: 5, label: "Escuela", type: "folder", folderTarget: "escuela", pictogramId: 32446 }, // Escuela building
+        { id: 'r2-5', pos: 5, label: "Escuela", type: "folder", folderTarget: "escolares", pictogramId: 32446 }, // Escuela building
         { id: 'r2-6', pos: 6, label: "Religión", type: "folder", folderTarget: "religion", pictogramId: 24471 }, // Religion
-        { id: 'r2-7', pos: 7, label: "Actividades", type: "folder", folderTarget: "actividades", pictogramId: 8008 }, // Similar a acciones
-        { id: 'r2-8', pos: 8, label: "Cosas de la casa", type: "folder", folderTarget: "casa_cosas", pictogramId: 36465 }, // Casa
+        { id: 'r2-7', pos: 7, label: "Actividades", type: "folder", folderTarget: "actividades_de_ejemplo", pictogramId: 8008 }, // Similar a acciones
+        { id: 'r2-8', pos: 8, label: "Cosas de la casa", type: "folder", folderTarget: "hogar", pictogramId: 36465 }, // Casa
 
         // Row 2
         { id: 'r2-9', pos: 9, label: "Mes CAA", type: "folder", folderTarget: "mes_caa", pictogramId: 7161 }, // Placeholder
@@ -3550,37 +3550,246 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'lugares': [
+        // Fila 1 (Core)
+        { id: 'lug-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
+        { id: 'lug-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
+        { id: 'lug-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
+        { id: 'lug-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'lug-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'lug-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'lug-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
+        { id: 'lug-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'lug-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        // Fila 2 (Specific Verbs + Folders)
+        { id: 'lug-9',  pos: 9,  label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
+        { id: 'lug-10', pos: 10, label: "ir", type: "verb", action: "speak", pictogramId: 8142 },
+        { id: 'lug-11', pos: 11, label: "venir", type: "verb", action: "speak", pictogramId: 32669 },
+        { id: 'lug-12', pos: 12, label: "buscar", type: "verb", action: "speak", pictogramId: 32662 },
+        { id: 'lug-13', pos: 13, label: "Casa", type: "folder", action: "navigate", folderTarget: "hogar", pictogramId: 2299 },
+        { id: 'lug-14', pos: 14, label: "Escuela", type: "folder", action: "navigate", folderTarget: "escolares", pictogramId: 2317 },
+        { id: 'lug-15', pos: 15, label: "Supermercado", type: "folder", action: "navigate", folderTarget: "supermercado", pictogramId: 3116 },
+        { id: 'lug-16', pos: 16, label: "Edificios", type: "folder", action: "navigate", folderTarget: "edificios", pictogramId: 29145 },
+        { id: 'lug-17', pos: 17, label: "Naturaleza", type: "folder", action: "navigate", folderTarget: "naturaleza", pictogramId: 31140 },
+
+        // Fila 3 (Places from catalog)
+        { id: 'lug-18', pos: 18, label: "hospital", type: "noun", action: "speak", pictogramId: 3082 },
+        { id: 'lug-19', pos: 19, label: "parque", type: "noun", action: "speak", pictogramId: 2859 },
+        { id: 'lug-20', pos: 20, label: "iglesia", type: "noun", action: "speak", pictogramId: 9116 },
+        { id: 'lug-21', pos: 21, label: "restaurante", type: "noun", action: "speak", pictogramId: 3389 },
+        { id: 'lug-22', pos: 22, label: "ciudad", type: "noun", action: "speak", pictogramId: 2341 },
+        { id: 'lug-23', pos: 23, label: "playa", type: "noun", action: "speak", pictogramId: 32234 },
+        { id: 'lug-24', pos: 24, label: "montaña", type: "noun", action: "speak", pictogramId: 6211 },
+        { id: 'lug-25', pos: 25, label: "jardín", type: "noun", action: "speak", pictogramId: 2434 },
+        { id: 'lug-26', pos: 26, label: "biblioteca", type: "noun", action: "speak", pictogramId: 10283 },
+
+        // Fila 4
+        { id: 'lug-27', pos: 27, label: "gimnasio", type: "noun", action: "speak", pictogramId: 2826 },
+        { id: 'lug-28', pos: 28, label: "trabajo", type: "noun", action: "speak", pictogramId: 3142 },
+        { id: 'lug-29', pos: 29, label: "cine", type: "noun", action: "speak", pictogramId: 31154 },
+        { id: 'lug-30', pos: 30, label: "museo", type: "noun", action: "speak", pictogramId: 31157 },
+
         { id: 'lug-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'acciones': [
+        // Fila 1 (Core)
+        { id: 'acc-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
+        { id: 'acc-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
+        { id: 'acc-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
+        { id: 'acc-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'acc-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'acc-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'acc-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
+        { id: 'acc-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'acc-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        // Fila 2 (Actions 1)
+        { id: 'acc-9',  pos: 9,  label: "comer", type: "verb", action: "speak", pictogramId: 2432 },
+        { id: 'acc-10', pos: 10, label: "beber", type: "verb", action: "speak", pictogramId: 11708 },
+        { id: 'acc-11', pos: 11, label: "caminar", type: "verb", action: "speak", pictogramId: 7271 },
+        { id: 'acc-12', pos: 12, label: "correr", type: "verb", action: "speak", pictogramId: 5465 },
+        { id: 'acc-13', pos: 13, label: "jugar", type: "verb", action: "speak", pictogramId: 5581 },
+        { id: 'acc-14', pos: 14, label: "dormir", type: "verb", action: "speak", pictogramId: 11749 },
+        { id: 'acc-15', pos: 15, label: "ayudar", type: "verb", action: "speak", pictogramId: 2474 },
+        { id: 'acc-16', pos: 16, label: "mirar", type: "verb", action: "speak", pictogramId: 2439 },
+        { id: 'acc-17', pos: 17, label: "escuchar", type: "verb", action: "speak", pictogramId: 2599 },
+
+        // Fila 3 (Actions 2)
+        { id: 'acc-18', pos: 18, label: "hablar", type: "verb", action: "speak", pictogramId: 2387 },
+        { id: 'acc-19', pos: 19, label: "leer", type: "verb", action: "speak", pictogramId: 6457 },
+        { id: 'acc-20', pos: 20, label: "escribir", type: "verb", action: "speak", pictogramId: 8109 },
+        { id: 'acc-21', pos: 21, label: "cantar", type: "verb", action: "speak", pictogramId: 7195 },
+        { id: 'acc-22', pos: 22, label: "bailar", type: "verb", action: "speak", pictogramId: 4570 },
+        { id: 'acc-23', pos: 23, label: "nadar", type: "verb", action: "speak", pictogramId: 6946 },
+        { id: 'acc-24', pos: 24, label: "saltar", type: "verb", action: "speak", pictogramId: 6469 },
+        { id: 'acc-25', pos: 25, label: "abrir", type: "verb", action: "speak", pictogramId: 6634 },
+        { id: 'acc-26', pos: 26, label: "cerrar", type: "verb", action: "speak", pictogramId: 24976 },
+
+        // Fila 4 (Hubs)
+        { id: 'acc-27', pos: 27, label: "Deportes", type: "folder", action: "navigate", folderTarget: "deportes_cosas", pictogramId: 7010 },
+
         { id: 'acc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'describir': [
+        // Fila 1 (Core)
+        { id: 'desc-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
+        { id: 'desc-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
+        { id: 'desc-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
+        { id: 'desc-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'desc-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'desc-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'desc-6', pos: 6, label: "cómo", type: "adverb", action: "speak", pictogramId: 5440 },
+        { id: 'desc-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'desc-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        // Fila 2 (Folders)
+        { id: 'desc-9',  pos: 9,  label: "Colores", type: "folder", action: "navigate", folderTarget: "colores", pictogramId: 2808 },
+        { id: 'desc-10', pos: 10, label: "Formas", type: "folder", action: "navigate", folderTarget: "formas", pictogramId: 26038 },
+
         { id: 'desc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'estados': [
+        // Fila 1 (Core)
+        { id: 'est-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
+        { id: 'est-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
+        { id: 'est-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
+        { id: 'est-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'est-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'est-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'est-6', pos: 6, label: "cómo", type: "adverb", action: "speak", pictogramId: 5440 },
+        { id: 'est-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'est-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        // Fila 2 (Feelings 1)
+        { id: 'est-9',  pos: 9,  label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
+        { id: 'est-10', pos: 10, label: "sentir", type: "verb", action: "speak", pictogramId: 35545 },
+        { id: 'est-11', pos: 11, label: "feliz", type: "adjective", action: "speak", pictogramId: 2606 },
+        { id: 'est-12', pos: 12, label: "triste", type: "adjective", action: "speak", pictogramId: 2374 },
+        { id: 'est-13', pos: 13, label: "enojado", type: "adjective", action: "speak", pictogramId: 10261 },
+        { id: 'est-14', pos: 14, label: "asustado", type: "adjective", action: "speak", pictogramId: 35565 },
+        { id: 'est-15', pos: 15, label: "bien", type: "adjective", action: "speak", pictogramId: 2314 },
+        { id: 'est-16', pos: 16, label: "mal", type: "adjective", action: "speak", pictogramId: 2245 },
+        { id: 'est-17', pos: 17, label: "emocionado", type: "adjective", action: "speak", pictogramId: 30391 },
+
+        // Fila 3 (Feelings 2)
+        { id: 'est-18', pos: 18, label: "sorprendido", type: "adjective", action: "speak", pictogramId: 3245 },
+        { id: 'est-19', pos: 19, label: "aburrido", type: "adjective", action: "speak", pictogramId: 3239 },
+        { id: 'est-20', pos: 20, label: "nervioso", type: "adjective", action: "speak", pictogramId: 13354 },
+        { id: 'est-21', pos: 21, label: "tranquilo", type: "adjective", action: "speak", pictogramId: 11178 },
+        { id: 'est-22', pos: 22, label: "amor", type: "noun", action: "speak", pictogramId: 2418 },
+        { id: 'est-23', pos: 23, label: "miedo", type: "noun", action: "speak", pictogramId: 38936 },
+
         { id: 'est-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'conversacion': [
+        // Fila 1 (Greetings)
+        { id: 'conv-0', pos: 0, label: "hola", type: "phrase", action: "speak", pictogramId: 34567 },
+        { id: 'conv-1', pos: 1, label: "adiós", type: "phrase", action: "speak", pictogramId: 34568 },
+        { id: 'conv-2', pos: 2, label: "buenos días", type: "phrase", action: "speak", pictogramId: 6009 },
+        { id: 'conv-3', pos: 3, label: "buenas tardes", type: "phrase", action: "speak", pictogramId: 5896 },
+        { id: 'conv-4', pos: 4, label: "buenas noches", type: "phrase", action: "speak", pictogramId: 6944 },
+        { id: 'conv-5', pos: 5, label: "hasta luego", type: "phrase", action: "speak", pictogramId: 6943 },
+        { id: 'conv-6', pos: 6, label: "cómo estás?", type: "phrase", action: "speak", pictogramId: 6945 },
+        { id: 'conv-7', pos: 7, label: "estoy bien", type: "phrase", action: "speak", pictogramId: 2314 },
+        { id: 'conv-8', pos: 8, label: "gracias", type: "phrase", action: "speak", pictogramId: 8194 },
+
+        // Fila 2 (Manners)
+        { id: 'conv-9',  pos: 9,  label: "por favor", type: "phrase", action: "speak", pictogramId: 6942 },
+        { id: 'conv-10', pos: 10, label: "de nada", type: "phrase", action: "speak", pictogramId: 8128 },
+        { id: 'conv-11', pos: 11, label: "perdón", type: "phrase", action: "speak", pictogramId: 6936 },
+        { id: 'conv-12', pos: 12, label: "sí", type: "phrase", action: "speak", pictogramId: 4576 },
+        { id: 'conv-13', pos: 13, label: "no", type: "phrase", action: "speak", pictogramId: 4550 },
+        { id: 'conv-14', pos: 14, label: "me gusta", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'conv-15', pos: 15, label: "no me gusta", type: "verb", action: "speak", pictogramId: 5526 },
+
         { id: 'conv-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'ayuda': [
+        // Fila 1 (Core)
+        { id: 'ayu-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
+        { id: 'ayu-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
+        { id: 'ayu-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
+        { id: 'ayu-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'ayu-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
+        { id: 'ayu-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'ayu-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
+        { id: 'ayu-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'ayu-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        // Fila 2 (Verbs + Key Needs)
+        { id: 'ayu-9',  pos: 9,  label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
+        { id: 'ayu-10', pos: 10, label: "ayuda", type: "verb", action: "speak", pictogramId: 39122 },
+        { id: 'ayu-11', pos: 11, label: "necesitar", type: "verb", action: "speak", pictogramId: 5596 },
+        { id: 'ayu-12', pos: 12, label: "por favor", type: "phrase", action: "speak", pictogramId: 6942 },
+        { id: 'ayu-13', pos: 13, label: "Gracias", type: "phrase", action: "speak", pictogramId: 8194 },
+        { id: 'ayu-14', pos: 14, label: "baño", type: "noun", action: "speak", pictogramId: 15905 },
+        { id: 'ayu-15', pos: 15, label: "agua", type: "noun", action: "speak", pictogramId: 2370 },
+        { id: 'ayu-16', pos: 16, label: "hambre", type: "noun", action: "speak", pictogramId: 2349 },
+        { id: 'ayu-17', pos: 17, label: "sed", type: "noun", action: "speak", pictogramId: 2276 },
+
+        // Fila 3 (More Needs)
+        { id: 'ayu-18', pos: 18, label: "dolor", type: "noun", action: "speak", pictogramId: 2369 },
+        { id: 'ayu-19', pos: 19, label: "cansado", type: "adjective", action: "speak", pictogramId: 19524 },
+        { id: 'ayu-20', pos: 20, label: "calor", type: "noun", action: "speak", pictogramId: 2367 },
+        { id: 'ayu-21', pos: 21, label: "frío", type: "noun", action: "speak", pictogramId: 8163 },
+        { id: 'ayu-22', pos: 22, label: "descansar", type: "verb", action: "speak", pictogramId: 3299 },
+        { id: 'ayu-23', pos: 23, label: "dormir", type: "verb", action: "speak", pictogramId: 2863 },
+        { id: 'ayu-24', pos: 24, label: "medicina", type: "noun", action: "speak", pictogramId: 35559 },
+
         { id: 'ayu-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'preguntas': [
+        // Fila 1
+        { id: 'pre-0', pos: 0, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'pre-1', pos: 1, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
+        { id: 'pre-2', pos: 2, label: "quién", type: "adverb", action: "speak", pictogramId: 9853 },
+        { id: 'pre-3', pos: 3, label: "cuándo", type: "adverb", action: "speak", pictogramId: 22621 },
+        { id: 'pre-4', pos: 4, label: "por qué", type: "adverb", action: "speak", pictogramId: 32442 },
+        { id: 'pre-5', pos: 5, label: "cómo", type: "adverb", action: "speak", pictogramId: 5440 },
+        { id: 'pre-6', pos: 6, label: "cuál", type: "adverb", action: "speak", pictogramId: 26022 },
+        { id: 'pre-7', pos: 7, label: "cuánto", type: "adverb", action: "speak", pictogramId: 31742 },
+
         { id: 'pre-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
-    'pistas': [{ id: 'pis-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
-    'donde_cat': [{ id: 'dcat-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
-    'cual_cat': [{ id: 'ccat-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
-    'conjunciones': [{ id: 'conj-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
+    'pistas': [
+        { id: 'pis-0', pos: 0, label: "mirar", type: "verb", action: "speak", pictogramId: 2439 },
+        { id: 'pis-1', pos: 1, label: "escuchar", type: "verb", action: "speak", pictogramId: 2599 },
+        { id: 'pis-2', pos: 2, label: "pensar", type: "verb", action: "speak", pictogramId: 26310 },
+        { id: 'pis-3', pos: 3, label: "esperar", type: "verb", action: "speak", pictogramId: 3147 },
+        { id: 'pis-4', pos: 4, label: "ayuda", type: "noun", action: "speak", pictogramId: 12252 },
+        { id: 'pis-5', pos: 5, label: "silencio", type: "adjective", action: "speak", pictogramId: 5526 },
+        { id: 'pis-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'donde_cat': [
+        { id: 'dcat-0', pos: 0, label: "aquí", type: "adverb", action: "speak", pictogramId: 2299 },
+        { id: 'dcat-1', pos: 1, label: "allí", type: "adverb", action: "speak", pictogramId: 2341 },
+        { id: 'dcat-2', pos: 2, label: "arriba", type: "adverb", action: "speak", pictogramId: 32051 },
+        { id: 'dcat-3', pos: 3, label: "abajo", type: "adverb", action: "speak", pictogramId: 32052 },
+        { id: 'dcat-4', pos: 4, label: "adentro", type: "adverb", action: "speak", pictogramId: 7034 },
+        { id: 'dcat-5', pos: 5, label: "afuera", type: "adverb", action: "speak", pictogramId: 7194 },
+        { id: 'dcat-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'cual_cat': [
+        { id: 'ccat-0', pos: 0, label: "este", type: "pronoun", action: "speak", pictogramId: 7095 },
+        { id: 'ccat-1', pos: 1, label: "ese", type: "pronoun", action: "speak", pictogramId: 7091 },
+        { id: 'ccat-2', pos: 2, label: "aquel", type: "pronoun", action: "speak", pictogramId: 7091 },
+        { id: 'ccat-3', pos: 3, label: "otro", type: "pronoun", action: "speak", pictogramId: 17054 },
+        { id: 'ccat-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'conjunciones': [
+        { id: 'conj-0', pos: 0, label: "y", type: "preposition", action: "speak", pictogramId: 7064 },
+        { id: 'conj-1', pos: 1, label: "o", type: "preposition", action: "speak", pictogramId: 7064 },
+        { id: 'conj-2', pos: 2, label: "pero", type: "adverb", action: "speak", pictogramId: 5526 },
+        { id: 'conj-3', pos: 3, label: "porque", type: "adverb", action: "speak", pictogramId: 22620 },
+        { id: 'conj-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
     'numeros': [
         // Fila 1
         { id: 'num-0', pos: 0, label: "0", type: "folder", action: "speak", pictogramId: 2626 },
@@ -3603,7 +3812,13 @@ export const AAC_PAGES = {
         { id: 'num-44', pos: 44, label: "Más...", type: "navigation", action: "navigate", folderTarget: "numeros_2", pictogramId: 37162 }
     ] as GridCell[],
 
-    'puntuacion': [{ id: 'pun-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "numeros", pictogramId: 37086 }] as GridCell[],
+    'puntuacion': [
+        { id: 'pun-0', pos: 0, label: ".", type: "adverb", action: "speak" },
+        { id: 'pun-1', pos: 1, label: ",", type: "adverb", action: "speak" },
+        { id: 'pun-2', pos: 2, label: "?", type: "adverb", action: "speak" },
+        { id: 'pun-3', pos: 3, label: "!", type: "adverb", action: "speak" },
+        { id: 'pun-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "numeros", pictogramId: 37086 }
+    ] as GridCell[],
 
     'ropa_de_cama': [{ id: 'rdc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
 
@@ -3623,18 +3838,57 @@ export const AAC_PAGES = {
         }))
     ] as GridCell[],
     'escuela': [{ id: 'escu-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
-    'religion': [{ id: 'rel-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
+    'religion': [
+        { id: 'rel-0', pos: 0, label: "iglesia", type: "noun", action: "speak", pictogramId: 9116 },
+        { id: 'rel-1', pos: 1, label: "orar", type: "verb", action: "speak", pictogramId: 30850 },
+        { id: 'rel-2', pos: 2, label: "biblia", type: "noun", action: "speak", pictogramId: 18115 },
+        { id: 'rel-3', pos: 3, label: "sacerdote", type: "noun", action: "speak", pictogramId: 24392 },
+        { id: 'rel-4', pos: 4, label: "Dios", type: "noun", action: "speak", pictogramId: 3210 },
+        { id: 'rel-5', pos: 5, label: "Días festivos", type: "folder", action: "navigate", folderTarget: "dias_festivos", pictogramId: 8128 },
+        { id: 'rel-6', pos: 6, label: "Navidad", type: "folder", action: "navigate", folderTarget: "festivas", pictogramId: 3134 },
+        { id: 'rel-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
     'actividades': [{ id: 'acti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
     'casa_cosas': [{ id: 'casa-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
     'mes_caa': [{ id: 'mes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
 
     // Sub-folders of Personas
-    'quien_es': [{ id: 'qes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
-    'maestros': [{ id: 'mae-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
-    'terapeutas': [{ id: 'tera-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
-    'quien_eres': [{ id: 'qer-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
-    'noticias': [{ id: 'noti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
-    'pronombres': [{ id: 'pron-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }] as GridCell[],
+    'quien_es': [
+        { id: 'qes-0', pos: 0, label: "amigo", type: "noun", action: "speak", pictogramId: 2458 },
+        { id: 'qes-1', pos: 1, label: "vecino", type: "noun", action: "speak", pictogramId: 34560 },
+        { id: 'qes-2', pos: 2, label: "extraño", type: "noun", action: "speak", pictogramId: 37367 },
+        { id: 'qes-3', pos: 3, label: "visitante", type: "noun", action: "speak", pictogramId: 27126 },
+        { id: 'qes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
+    'maestros': [
+        { id: 'mae-0', pos: 0, label: "maestra", type: "noun", action: "speak", pictogramId: 4703 },
+        { id: 'mae-1', pos: 1, label: "profesor", type: "noun", action: "speak", pictogramId: 2960 },
+        { id: 'mae-2', pos: 2, label: "director", type: "noun", action: "speak", pictogramId: 4631 },
+        { id: 'mae-3', pos: 3, label: "secretaria", type: "noun", action: "speak", pictogramId: 4742 },
+        { id: 'mae-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
+    'terapeutas': [
+        { id: 'tera-0', pos: 0, label: "fisioterapeuta", type: "noun", action: "speak", pictogramId: 26094 },
+        { id: 'tera-1', pos: 1, label: "logopeda", type: "noun", action: "speak", pictogramId: 2454 },
+        { id: 'tera-2', pos: 2, label: "psicólogo", type: "noun", action: "speak", pictogramId: 3377 },
+        { id: 'tera-3', pos: 3, label: "terapeuta ocupacional", type: "noun", action: "speak", pictogramId: 16082 },
+        { id: 'tera-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
+    'quien_eres': [
+        { id: 'qer-0', pos: 0, label: "mi nombre es", type: "phrase", action: "speak", pictogramId: 34560 },
+        { id: 'qer-1', pos: 1, label: "yo soy", type: "phrase", action: "speak", pictogramId: 6632 },
+        { id: 'qer-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
+    'noticias': [
+        { id: 'noti-0', pos: 0, label: "Noticias del día", type: "folder", action: "navigate", folderTarget: "noticias_cat", pictogramId: 7784 },
+        { id: 'noti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
+    'pronombres': [
+        { id: 'pron-0', pos: 0, label: "nosotros", type: "pronoun", action: "speak", pictogramId: 2392 },
+        { id: 'pron-1', pos: 1, label: "ellos", type: "pronoun", action: "speak", pictogramId: 7796 },
+        { id: 'pron-2', pos: 2, label: "ustedes", type: "pronoun", action: "speak", pictogramId: 12281 },
+        { id: 'pron-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
+    ] as GridCell[],
 
     // Sub-folders of Cosas_2
     'adaptivo': [
