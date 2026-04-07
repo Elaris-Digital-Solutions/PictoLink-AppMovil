@@ -1,0 +1,19 @@
+﻿--- REVISI├ôN DE CAT├üLOGO ---
+Carpetas totales definidas: 177
+Carpetas alcanzables desde inicio: 179
+Carpetas NO alcanzables (Hu├⌐rfanas): 3
+
+--- CARPETAS HU├ëRFANAS (No se puede llegar a ellas) ---
+alcohol, limpieza_2, musica_cosas_2
+
+Enlaces rotos (apuntan a carpetas inexistentes): 5
+
+--- ENLACES ROTOS ---
+numeros -> puntuacion (MISSING)
+hogar -> ropa_de_cama (MISSING)
+actividades_de_ejemplo -> harry_potter (MISSING)
+actividades_de_ejemplo -> a_comer (MISSING)
+actividades_de_ejemplo -> hoy_escuela (MISSING)
+
+Carpetas finales (hojas) alcanzables: 6
+numeros_2, puntuacion, hoy_escuela, a_comer, harry_potter, ropa_de_cama...

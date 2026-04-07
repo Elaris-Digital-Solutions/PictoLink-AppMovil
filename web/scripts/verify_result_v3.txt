@@ -1,0 +1,31 @@
+﻿--- REVISI├ôN DE CAT├üLOGO ---
+Orphans (definidas pero inaccesibles): 0
+
+Broken links (alcanzables pero apuntan al vac├¡o): 0
+
+
+--- POSIBLES CARPETAS QUE SE CORTARON (Etiquetadas como sustantivos) ---
+En "familia": "familia" es SUSTANTIVO pero existe una p├ígina "familia"
+En "noticias_cat": "noticias" es SUSTANTIVO pero existe una p├ígina "noticias"
+En "cuerpo": "cuerpo" es SUSTANTIVO pero existe una p├ígina "cuerpo"
+En "ropa": "ropa" es SUSTANTIVO pero existe una p├ígina "ropa"
+En "maquillaje": "maquillaje" es SUSTANTIVO pero existe una p├ígina "maquillaje"
+En "muebles": "muebles" es SUSTANTIVO pero existe una p├ígina "muebles"
+En "comida": "comida" es SUSTANTIVO pero existe una p├ígina "comida"
+En "desayuno": "desayuno" es SUSTANTIVO pero existe una p├ígina "desayuno"
+En "almuerzo": "almuerzo" es SUSTANTIVO pero existe una p├ígina "almuerzo"
+En "cena": "cena" es SUSTANTIVO pero existe una p├ígina "cena"
+En "verduras": "verduras" es SUSTANTIVO pero existe una p├ígina "verduras"
+En "ingredientes": "ingredientes" es SUSTANTIVO pero existe una p├ígina "ingredientes"
+En "computadora": "computadora" es SUSTANTIVO pero existe una p├ígina "computadora"
+En "electronica": "computadora" es SUSTANTIVO pero existe una p├ígina "computadora"
+En "naturaleza": "tiempo" es SUSTANTIVO pero existe una p├ígina "tiempo"
+En "arte_y_manualidades": "arte" es SUSTANTIVO pero existe una p├ígina "arte"
+En "medico_cosas": "alcohol" es SUSTANTIVO pero existe una p├ígina "alcohol"
+En "boliche": "Boliche" es SUSTANTIVO pero existe una p├ígina "boliche"
+En "herramientas": "herramientas" es SUSTANTIVO pero existe una p├ígina "herramientas"
+En "cricket": "cricket" es SUSTANTIVO pero existe una p├ígina "cricket"
+En "burbujas": "burbujas" es SUSTANTIVO pero existe una p├ígina "burbujas"
+En "supermercado": "dinero" es SUSTANTIVO pero existe una p├ígina "dinero"
+
+--- P├üGINAS "Siguiente" (2, 3...) NO ENLAZADAS ---

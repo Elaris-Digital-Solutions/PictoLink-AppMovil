@@ -155,7 +155,7 @@ export const AAC_PAGES = {
         { id: 'p2-5', pos: 5, label: "señor", type: "noun", action: "speak", pictogramId: 4744 },
         { id: 'p2-6', pos: 6, label: "abuelo", type: "noun", action: "speak", pictogramId: 23718 },
 
-        { id: 'p2-7', pos: 7, label: "amigos", type: "noun", action: "speak", pictogramId: 25790 },
+        { id: 'p2-7', pos: 7, label: "amigos", type: "folder", action: "navigate", folderTarget: "amigos", pictogramId: 25790 },
 
         // Navigation Back Button
         { id: 'p2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
@@ -1737,7 +1737,7 @@ export const AAC_PAGES = {
         { id: 'beb-35', pos: 35, label: "inka cola", type: "noun", action: "speak", pictogramId: 38324 },
 
         // Row 5 (Folders & More)
-        { id: 'beb-36', pos: 36, label: "alcohol", type: "noun", action: "speak", pictogramId: 2984 },
+        { id: 'beb-36', pos: 36, label: "alcohol", type: "folder", action: "navigate", folderTarget: "alcohol", pictogramId: 2984 },
         // Empty slots 37-43
         { id: 'beb-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "bebidas_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -3599,8 +3599,19 @@ export const AAC_PAGES = {
         { id: 'num-11', pos: 11, label: "Puntuación", type: "folder", action: "navigate", folderTarget: "puntuacion" }, // blanco
 
         // Navegación
+        { id: 'num-43', pos: 43, label: "Puntuación", type: "folder", action: "navigate", folderTarget: "puntuacion", pictogramId: 10174 },
         { id: 'num-44', pos: 44, label: "Más...", type: "navigation", action: "navigate", folderTarget: "numeros_2", pictogramId: 37162 }
     ] as GridCell[],
+
+    'puntuacion': [{ id: 'pun-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "numeros", pictogramId: 37086 }] as GridCell[],
+
+    'ropa_de_cama': [{ id: 'rdc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
+
+    'harry_potter': [{ id: 'hp-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+
+    'a_comer': [{ id: 'ac-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+
+    'hoy_escuela': [{ id: 'he-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
 
     'numeros_2': [
         ...Array.from({ length: 90 }, (_, i) => ({
@@ -3678,7 +3689,10 @@ export const AAC_PAGES = {
         { id: 'ada2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "adaptivo", pictogramId: 37086 }
     ] as GridCell[],
     'electrodomesticos': [{ id: 'elec2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
-    'limpieza': [{ id: 'lim-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
+    'limpieza': [
+        { id: 'lim-43', pos: 43, label: "Más", type: "navigation", action: "navigate", folderTarget: "limpieza_2", pictogramId: 3220 },
+        { id: 'lim-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
 
     'limpieza_2': [
         // Fila 1
@@ -4095,7 +4109,7 @@ export const AAC_PAGES = {
         { id: 'medc-26', pos: 26, label: "vitaminas",     type: "noun", action: "speak", pictogramId: 36504 },
 
         // Row 4 — vocabulario médico temático (menos frecuente)
-        { id: 'medc-27', pos: 27, label: "alcohol", type: "noun", action: "speak", pictogramId: 2984 },
+        { id: 'medc-27', pos: 27, label: "alcohol", type: "folder", action: "navigate", folderTarget: "alcohol", pictogramId: 2984 },
 
         // Row 5 — navegación
         { id: 'medc-44', pos: 44, label: "Más...", type: "navigation", action: "navigate", folderTarget: "medico_cosas_2", pictogramId: 37162 },
@@ -4256,7 +4270,7 @@ export const AAC_PAGES = {
         { id: 'musc-40', pos: 40, label: "batería",            type: "noun", action: "speak", pictogramId: 5923 },
         { id: 'musc-41', pos: 41, label: "violín",             type: "noun", action: "speak", pictogramId: 2615 },
         { id: 'musc-42', pos: 42, label: "clarinete",          type: "noun", action: "speak", pictogramId: 5964 },
-        { id: 'musc-43', pos: 43, label: "saxofón",            type: "noun", action: "speak", pictogramId: 2559 },
+        { id: 'musc-43', pos: 43, label: "Más", type: "navigation", action: "navigate", folderTarget: "musica_cosas_2", pictogramId: 3220 },
         // pos 44 — subcategoría "Canciones para niños" en última posición (R17)
         { id: 'musc-44', pos: 44, label: "Canciones para niños", type: "folder", action: "navigate", folderTarget: "canciones_ninos", pictogramId: 6281 },
     ] as GridCell[],
@@ -5165,7 +5179,7 @@ export const AAC_PAGES = {
         { id: 'sup-36', pos: 36, label: "llevar", type: "verb", action: "speak", pictogramId: 6553 },
         { id: 'sup-38', pos: 38, label: "carrito", type: "noun", action: "speak", pictogramId: 5948 },
         { id: 'sup-39', pos: 39, label: "bolsa de papel", type: "noun", action: "speak", pictogramId: 23849 },
-        { id: 'sup-40', pos: 40, label: "dinero", type: "noun", action: "speak", pictogramId: 4630 },
+        { id: 'sup-40', pos: 40, label: "dinero", type: "folder", action: "navigate", folderTarget: "dinero", pictogramId: 4630 },
         { id: 'sup-41', pos: 41, label: "compra", type: "noun", action: "speak", pictogramId: 9058 },
         { id: 'sup-42', pos: 42, label: "Comida", type: "folder", action: "navigate", folderTarget: "comida", pictogramId: 4610 },
         { id: 'sup-43', pos: 43, label: "Cosas de limpieza", type: "folder", action: "navigate", folderTarget: "cosas_2", pictogramId: 16059 },
