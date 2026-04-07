@@ -1,0 +1,28 @@
+﻿--- AUDITORΓö£├¼A DE PΓö£├╝GINAS VACΓö£├¼AS ---
+Total de pΓö£├¡ginas escaneadas: 182
+PΓö£├¡ginas vacΓö£ias (solo botΓö£Γöén AtrΓö£├¡s o nada): 23
+
+Listado de carpetas actualmente VACΓö£├¼AS:
+- alcohol
+- sabores_helado
+- palabritas
+- ropa_de_cama
+- harry_potter
+- a_comer
+- hoy_escuela
+- escuela
+- actividades
+- casa_cosas
+- mes_caa
+- adaptivo_2
+- electrodomesticos
+- beisbol_2
+- herramientas_2
+- juguetes
+- primavera
+- verano
+- otono
+- invierno
+- diversion
+- accesorios_ropa_2
+- libros_2

@@ -2983,11 +2983,23 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'colores': [
-        { id: 'colr-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "arte", pictogramId: 37086 }
+        { id: 'col-0', pos: 0, label: "rojo", type: "adjective", action: "speak", pictogramId: 8159 },
+        { id: 'col-1', pos: 1, label: "azul", type: "adjective", action: "speak", pictogramId: 3020 },
+        { id: 'col-2', pos: 2, label: "verde", type: "adjective", action: "speak", pictogramId: 8251 },
+        { id: 'col-3', pos: 3, label: "amarillo", type: "adjective", action: "speak", pictogramId: 2358 },
+        { id: 'col-4', pos: 4, label: "naranja", type: "adjective", action: "speak", pictogramId: 38786 },
+        { id: 'col-5', pos: 5, label: "morado", type: "adjective", action: "speak", pictogramId: 7080 },
+        { id: 'col-6', pos: 6, label: "blanco", type: "adjective", action: "speak", pictogramId: 32441 },
+        { id: 'col-7', pos: 7, label: "negro", type: "adjective", action: "speak", pictogramId: 32442 },
+        { id: 'col-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "describir", pictogramId: 37086 }
     ] as GridCell[],
 
     'formas': [
-        { id: 'frm-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "arte", pictogramId: 37086 }
+        { id: 'for-0', pos: 0, label: "círculo", type: "noun", action: "speak", pictogramId: 2470 },
+        { id: 'for-1', pos: 1, label: "cuadrado", type: "noun", action: "speak", pictogramId: 2471 },
+        { id: 'for-2', pos: 2, label: "triángulo", type: "noun", action: "speak", pictogramId: 2472 },
+        { id: 'for-3', pos: 3, label: "estrella", type: "noun", action: "speak", pictogramId: 2752 },
+        { id: 'for-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "describir", pictogramId: 37086 }
     ] as GridCell[],
 
     'vehiculos': [
@@ -3546,7 +3558,25 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'tiempo': [
-        { id: 'tie-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
+        { id: 'ti-0', pos: 0, label: "ahora", type: "adverb", action: "speak", pictogramId: 32301 },
+        { id: 'ti-1', pos: 1, label: "hoy", type: "adverb", action: "speak", pictogramId: 10468 },
+        { id: 'ti-2', pos: 2, label: "mañana", type: "adverb", action: "speak", pictogramId: 11520 },
+        { id: 'ti-3', pos: 3, label: "ayer", type: "adverb", action: "speak", pictogramId: 11521 },
+        { id: 'ti-4', pos: 4, label: "cuándo", type: "adverb", action: "speak", pictogramId: 22621 },
+        { id: 'ti-5', pos: 5, label: "día", type: "noun", action: "speak", pictogramId: 31057 },
+        { id: 'ti-6', pos: 6, label: "noche", type: "noun", action: "speak", pictogramId: 31060 },
+        { id: 'ti-7', pos: 7, label: "tarde", type: "noun", action: "speak", pictogramId: 31059 },
+        { id: 'ti-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+
+        { id: 'ti-9', pos: 9, label: "lunes", type: "noun", action: "speak", pictogramId: 38245 },
+        { id: 'ti-10', pos: 10, label: "martes", type: "noun", action: "speak", pictogramId: 38246 },
+        { id: 'ti-11', pos: 11, label: "miércoles", type: "noun", action: "speak", pictogramId: 38247 },
+        { id: 'ti-12', pos: 12, label: "jueves", type: "noun", action: "speak", pictogramId: 38248 },
+        { id: 'ti-13', pos: 13, label: "viernes", type: "noun", action: "speak", pictogramId: 38249 },
+        { id: 'ti-14', pos: 14, label: "sábado", type: "noun", action: "speak", pictogramId: 38250 },
+        { id: 'ti-15', pos: 15, label: "domingo", type: "noun", action: "speak", pictogramId: 38251 },
+
+        { id: 'ti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'lugares': [
