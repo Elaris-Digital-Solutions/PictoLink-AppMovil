@@ -76,14 +76,13 @@ export async function searchPictogramsAPI(query: string): Promise<Pictogram[]> {
             },
         });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.statusText}`);
-        }
+        if (!response.ok) return [];
 
         const data = await response.json();
-        return data.pictograms;
+        return data.pictograms || [];
     } catch (error) {
-        console.error('Error searching pictograms:', error);
+        // Fallback or silent fail if backend is down
+        console.warn('[API] Search backend unreachable:', error);
         return [];
     }
 }

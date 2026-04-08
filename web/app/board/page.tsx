@@ -2,6 +2,7 @@
 
 import { AACBoard } from '@/components/board/AACBoard';
 import { SentenceBar } from '@/components/board/SentenceBar';
+import { BoardHeader } from '@/components/board/BoardHeader';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 
 export default function BoardPage() {
@@ -9,17 +10,15 @@ export default function BoardPage() {
 
     return (
         <div className="flex flex-col w-full h-full overflow-hidden bg-[#FFF7F2]">
-            {/* Sentence builder bar — shows chips, speak button, delete */}
+            {/* Sentence builder bar */}
             <SentenceBar actionMode="board" />
 
-            {/* AAC grid — pushes words into the SentenceBar when tapped */}
+            {/* Navigation Header like Proloquo2Go */}
+            <BoardHeader />
+
+            {/* AAC grid */}
             <main className="flex-1 overflow-hidden">
-                <AACBoard
-                    onWordAdd={addWord}
-                    onNavigate={(target) => {
-                        console.log('Navigation requested to:', target);
-                    }}
-                />
+                <AACBoard onWordAdd={addWord} />
             </main>
         </div>
     );
