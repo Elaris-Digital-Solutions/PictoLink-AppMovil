@@ -138,7 +138,7 @@ export const AAC_PAGES = {
         { id: 'p-37', pos: 37, label: "Personajes", type: "folder", folderTarget: "personajes_folder", pictogramId: 5405 },
         { id: 'p-38', pos: 38, label: "Pronombres", type: "folder", folderTarget: "pronombres", pictogramId: 6480 },
         { id: 'p-39', pos: 39, label: "Atención médica", type: "folder", folderTarget: "medicos", pictogramId: 34609 },
-        { id: 'p-40', pos: 40, label: "Noticias", type: "folder", folderTarget: "noticias", pictogramId: 7784 },
+        { id: 'p-40', pos: 40, label: "Noticias", type: "folder", folderTarget: "noticias_cat", pictogramId: 7784 },
         { id: 'p-41', pos: 41, label: "quién", type: "adverb", action: "speak", pictogramId: 9853 },
         { id: 'p-42', pos: 42, label: "mío", type: "pronoun", action: "speak", pictogramId: 12264 },
         { id: 'p-43', pos: 43, label: "mi", type: "pronoun", action: "speak", pictogramId: 12264 },
@@ -3867,7 +3867,7 @@ export const AAC_PAGES = {
             action: "speak"
         }))
     ] as GridCell[],
-    'escuela': [{ id: 'escu-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
+    'escuela': [{ id: 'escu-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "escolares", pictogramId: 37086 }] as GridCell[],
     'religion': [
         { id: 'rel-0', pos: 0, label: "iglesia", type: "noun", action: "speak", pictogramId: 9116 },
         { id: 'rel-1', pos: 1, label: "orar", type: "verb", action: "speak", pictogramId: 30850 },
@@ -3878,8 +3878,8 @@ export const AAC_PAGES = {
         { id: 'rel-6', pos: 6, label: "Navidad", type: "folder", action: "navigate", folderTarget: "festivas", pictogramId: 3134 },
         { id: 'rel-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
     ] as GridCell[],
-    'actividades': [{ id: 'acti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
-    'casa_cosas': [{ id: 'casa-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
+    'actividades': [{ id: 'acti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+    'casa_cosas': [{ id: 'casa-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
     'mes_caa': [{ id: 'mes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
 
     // Sub-folders of Personas
@@ -3909,6 +3909,7 @@ export const AAC_PAGES = {
         { id: 'qer-1', pos: 1, label: "yo soy", type: "phrase", action: "speak", pictogramId: 6632 },
         { id: 'qer-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }
     ] as GridCell[],
+    // 'noticias' era un middleman — ahora p-40 apunta directamente a noticias_cat
     'noticias': [
         { id: 'noti-0', pos: 0, label: "Noticias del día", type: "folder", action: "navigate", folderTarget: "noticias_cat", pictogramId: 7784 },
         { id: 'noti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "personas", pictogramId: 37086 }

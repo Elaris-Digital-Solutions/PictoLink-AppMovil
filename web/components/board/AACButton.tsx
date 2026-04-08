@@ -43,55 +43,49 @@ export function AACButton({ cell, onClick, className }: AACButtonProps) {
 
     // Color logic
     const colorClass = CATEGORY_COLORS[cell.type] || "bg-gray-100 border-gray-300";
+    const isFolder = cell.type === 'folder';
 
     return (
-        <button
-            onClick={() => onClick(cell)}
-            className={cn(
-                "relative flex flex-col items-center justify-between p-1 rounded-xl border-t-4 border-b-2 border-r-2 border-l-2 shadow-sm transition-all active:scale-95 active:shadow-inner hover:brightness-95 h-full w-full overflow-hidden",
-                colorClass,
-                className
-            )}
-            style={{ aspectRatio: '4/3' }} // Maintain aspect ratio if possible, or fill grid
-        >
-            {/* Folder Tab Effect if folder */}
-            {cell.type === 'folder' && (
-                <div className="absolute top-0 left-0 w-8 h-4 bg-inherit border-b border-black/10 rounded-br-lg" />
+        <div className={cn("relative h-full w-full", isFolder ? "pt-2.5 pb-0.5 px-0.5" : "", className)}>
+            {/* Folder Tab Detail */}
+            {isFolder && (
+                <div className="absolute top-0.5 left-0.5 w-[45%] h-5 bg-white border-t-2 border-x-2 border-gray-800 rounded-t-lg z-0" />
             )}
 
-            {/* Label */}
-            <span className={cn(
-                "text-sm font-bold uppercase tracking-tight text-center leading-tight w-full px-1 pt-1 z-10",
-                cell.type === 'pronoun' || cell.type === 'verb' ? "text-black" : "text-black"
-            )}>
-                {cell.label}
-            </span>
+            <button
+                onClick={() => onClick(cell)}
+                className={cn(
+                    "relative flex flex-col items-center justify-between p-1 transition-all active:scale-[0.97] active:shadow-none hover:brightness-[0.98] h-full w-full overflow-hidden",
+                    isFolder 
+                        ? "bg-white border-2 border-gray-800 rounded-lg rounded-tl-none shadow-[0_4px_0_0_rgba(0,0,0,0.1)] z-10" 
+                        : cn("rounded-xl border-t-4 border-b-2 border-r-2 border-l-2 shadow-sm", colorClass)
+                )}
+            >
+                {/* Label */}
+                <span className={cn(
+                    "text-[10px] md:text-xs font-black uppercase tracking-tight text-center leading-tight w-full px-1 min-h-[1.2rem] flex items-center justify-center",
+                    isFolder ? "text-gray-800 pt-0.5" : "text-black pt-1"
+                )}>
+                    {cell.label}
+                </span>
 
-            {/* Image/Icon */}
-            <div className="flex-1 w-full flex items-center justify-center p-1 min-h-0 relative">
-                {imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt={cell.label}
-                        className="max-h-full max-w-full object-contain pointer-events-none select-none"
-                    />
-                ) : (
-                    // Fallback icons for specific types if image not found
-                    cell.type === 'folder' ? <Folder className="w-1/2 h-1/2 text-gray-400 opacity-50" /> :
+                {/* Image/Icon */}
+                <div className="flex-1 w-full flex items-center justify-center p-1 min-h-0 relative">
+                    {imageUrl ? (
+                        <img
+                            src={imageUrl}
+                            alt={cell.label}
+                            className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                        />
+                    ) : (
+                        cell.type === 'folder' ? <Folder className="w-1/2 h-1/2 text-gray-300" /> :
                         cell.type === 'navigation' ? <MoreHorizontal className="w-1/2 h-1/2 text-gray-400" /> :
-                            null
-                )}
+                        null
+                    )}
+                </div>
 
-                {/* Folder indicator if folder type */}
-                {cell.type === 'folder' && imageUrl && (
-                    <div className="absolute top-1 right-1">
-                        <Folder className="w-4 h-4 text-black/20" />
-                    </div>
-                )}
-            </div>
-
-            {/* Empty footer space for visual balance if needed */}
-            {/* <div className="h-1" /> */}
-        </button>
+                {/* Folder indicator hidden for now to maintain Proloquo look */}
+            </button>
+        </div>
     );
 }

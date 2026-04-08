@@ -615,7 +615,7 @@ function ConversationBoard({
                 <div className="flex-1 overflow-hidden">
                     <AACBoard
                         onWordAdd={addWord}
-                        onNavigate={(target) => console.log('[AACBoard] external folder:', target)}
+                        onNavigate={(target: string) => console.log('[AACBoard] external folder:', target)}
                     />
                 </div>
             </main>

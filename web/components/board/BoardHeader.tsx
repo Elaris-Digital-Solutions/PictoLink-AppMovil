@@ -75,9 +75,6 @@ export const BoardHeader = memo(function BoardHeader() {
 
             {/* Current Folder Info — Center aligned */}
             <div className="flex-[3] flex items-center justify-center gap-3">
-                {currentInfo.icon && (
-                    <span className="text-2xl drop-shadow-md">{currentInfo.icon}</span>
-                )}
                 <span className="text-2xl font-black tracking-tight text-white uppercase sm:text-3xl">
                     {currentInfo.label}
                 </span>

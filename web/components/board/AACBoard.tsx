@@ -22,9 +22,10 @@ const TYPE_HEX_COLORS: Record<string, string> = {
 
 interface AACBoardProps {
     onWordAdd?: (node: PictoNode) => void;
+    onNavigate?: (target: string) => void;
 }
 
-export const AACBoard = memo(function AACBoard({ onWordAdd }: AACBoardProps) {
+export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoardProps) {
     const { speak } = useSpeechSynthesis();
     
     // Global Navigation State
@@ -77,6 +78,7 @@ export const AACBoard = memo(function AACBoard({ onWordAdd }: AACBoardProps) {
 
         if (cell.folderTarget) {
             enterFolder(cell.folderTarget);
+            if (onNavigate) onNavigate(cell.folderTarget);
         }
     };
 
