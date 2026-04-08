@@ -48,20 +48,20 @@ export const AAC_PAGES = {
 
         // Row 4
         { id: 'r1-27', pos: 27, label: "Cosas", type: "folder", folderTarget: "cosas", pictogramId: 35993 },
-        { id: 'r1-28', pos: 28, label: "Diversión", type: "folder", folderTarget: "ocio" },
+        { id: 'r1-28', pos: 28, label: "Diversión", type: "folder", folderTarget: "ocio", pictogramId: 6641 },
         { id: 'r1-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 },
         { id: 'r1-30', pos: 30, label: "ayudar", type: "verb", action: "speak", pictogramId: 32648 },
         { id: 'r1-31', pos: 31, label: "mirar", type: "verb", action: "speak", pictogramId: 6564 },
         { id: 'r1-32', pos: 32, label: "con", type: "preposition", action: "speak", pictogramId: 7064 },
         { id: 'r1-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'r1-34', pos: 34, label: "Palabritas", type: "folder", folderTarget: "palabras_inicio" },
+        { id: 'r1-34', pos: 34, label: "Palabritas", type: "folder", folderTarget: "palabras_inicio", pictogramId: 9837 },
         { id: 'r1-35', pos: 35, label: "Tiempo", type: "folder", folderTarget: "tiempo", pictogramId: 7223 },
 
         // Row 5
         { id: 'r1-36', pos: 36, label: "Comida", type: "folder", folderTarget: "comida", pictogramId: 4610 },
         { id: 'r1-37', pos: 37, label: "Lugares", type: "folder", folderTarget: "lugares", pictogramId: 9819 },
         { id: 'r1-38', pos: 38, label: "Acciones", type: "folder", folderTarget: "acciones", pictogramId: 7297 },
-        { id: 'r1-39', pos: 39, label: "Describir", type: "folder", folderTarget: "describir" },
+        { id: 'r1-39', pos: 39, label: "Describir", type: "folder", folderTarget: "describir", pictogramId: 11713 },
         { id: 'r1-40', pos: 40, label: "Estados", type: "folder", folderTarget: "estados", pictogramId: 39091 },
         { id: 'r1-41', pos: 41, label: "Conversación", type: "folder", folderTarget: "conversacion", pictogramId: 23402 },
         { id: 'r1-42', pos: 42, label: "Ayuda", type: "folder", folderTarget: "ayuda", pictogramId: 12252 }, // Necesidades/Ayuda
@@ -127,8 +127,8 @@ export const AAC_PAGES = {
         { id: 'p-28', pos: 28, label: "Familia", type: "folder", folderTarget: "familia", pictogramId: 38351 },
         { id: 'p-29', pos: 29, label: "Amigos", type: "folder", folderTarget: "amigos", pictogramId: 25790 },
         { id: 'p-30', pos: 30, label: "Maestros", type: "folder", folderTarget: "maestros", pictogramId: 6556 },
-        { id: 'p-31', pos: 31, label: "Terapeutas", type: "folder", folderTarget: "terapeutas" },
-        { id: 'p-32', pos: 32, label: "Contactos", type: "folder", folderTarget: "contactos" }, // Agenda/Contactos
+        { id: 'p-31', pos: 31, label: "Terapeutas", type: "folder", folderTarget: "terapeutas", pictogramId: 38778 },
+        { id: 'p-32', pos: 32, label: "Contactos", type: "folder", folderTarget: "contactos", pictogramId: 33974 }, // Agenda/Contactos
         { id: 'p-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
         { id: 'p-34', pos: 34, label: "Empleos", type: "folder", folderTarget: "empleos", pictogramId: 11457 }, // Professions
         { id: 'p-35', pos: 35, label: "¿Quién eres?", type: "folder", folderTarget: "quien_eres", pictogramId: 7803 },
@@ -175,7 +175,7 @@ export const AAC_PAGES = {
 
         // Row 2
         { id: 'f-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
-        { id: 'f-10', pos: 10, label: "ustedes", type: "pronoun", action: "speak" }, // Visual 'tú' plural
+        { id: 'f-10', pos: 10, label: "ustedes", type: "pronoun", action: "speak", pictogramId: 7306 }, // Visual 'tú' plural
         { id: 'f-11', pos: 11, label: "amar", type: "verb", action: "speak", pictogramId: 6898 },
         { id: 'f-12', pos: 12, label: "odiar", type: "verb", action: "speak", pictogramId: 38936 },
         { id: 'f-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 }, // Fixed
@@ -213,12 +213,12 @@ export const AAC_PAGES = {
         { id: 'f2-4', pos: 4, label: "hijo", type: "noun", action: "speak", pictogramId: 9887 }, // Boy/Son
         { id: 'f2-5', pos: 5, label: "nieta", type: "noun", action: "speak", pictogramId: 10342 },
         { id: 'f2-6', pos: 6, label: "nieto", type: "noun", action: "speak", pictogramId: 10343 },
-        { id: 'f2-7', pos: 7, label: "hermanastro", type: "noun", action: "speak" },
-        { id: 'f2-8', pos: 8, label: "hermanastra", type: "noun", action: "speak" },
+        { id: 'f2-7', pos: 7, label: "hermanastro", type: "noun", action: "speak", pictogramId: 2423 },
+        { id: 'f2-8', pos: 8, label: "hermanastra", type: "noun", action: "speak", pictogramId: 2422 },
 
         // Row 2
         { id: 'f2-9', pos: 9, label: "padrastro", type: "noun", action: "speak", pictogramId: 39008 }, // Stepdad (often same as dad or specific)
-        { id: 'f2-10', pos: 10, label: "madrastra", type: "noun", action: "speak" }, // Stepmom
+        { id: 'f2-10', pos: 10, label: "madrastra", type: "noun", action: "speak", pictogramId: 31148 }, // Stepmom
         { id: 'f2-11', pos: 11, label: "esposo", type: "noun", action: "speak", pictogramId: 8111 },
         { id: 'f2-12', pos: 12, label: "esposa", type: "noun", action: "speak", pictogramId: 8110 },
 
@@ -357,12 +357,12 @@ export const AAC_PAGES = {
         // Row 4
         { id: 'em-27', pos: 27, label: "ella", type: "pronoun", action: "speak", pictogramId: 7029 },
         { id: 'em-28', pos: 28, label: "chofer", type: "noun", action: "speak", pictogramId: 3019 }, // Driver
-        { id: 'em-29', pos: 29, label: "custodio", type: "noun", action: "speak" }, // Janitor/Guard
+        { id: 'em-29', pos: 29, label: "custodio", type: "noun", action: "speak", pictogramId: 7163 }, // Janitor/Guard
         { id: 'em-30', pos: 30, label: "entrenador", type: "noun", action: "speak", pictogramId: 5991 }, // Coach
         { id: 'em-31', pos: 31, label: "guardia", type: "noun", action: "speak", pictogramId: 5547 }, // Police/Guard
         { id: 'em-32', pos: 32, label: "mesero", type: "noun", action: "speak", pictogramId: 2681 }, // Waiter
         { id: 'em-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'em-34', pos: 34, label: "niñera", type: "noun", action: "speak" }, // Babysitter
+        { id: 'em-34', pos: 34, label: "niñera", type: "noun", action: "speak", pictogramId: 6281 }, // Babysitter
         { id: 'em-35', pos: 35, label: "policía", type: "noun", action: "speak", pictogramId: 37367 },
 
         // Row 5 (Filling the bottom static row with content as per image)
@@ -387,18 +387,18 @@ export const AAC_PAGES = {
         { id: 'em2-5', pos: 5, label: "caballero", type: "noun", action: "speak", pictogramId: 5406 },
         { id: 'em2-6', pos: 6, label: "carpintero", type: "noun", action: "speak", pictogramId: 2687 },
         { id: 'em2-7', pos: 7, label: "científico", type: "noun", action: "speak", pictogramId: 8076 },
-        { id: 'em2-8', pos: 8, label: "comediante", type: "noun", action: "speak" },
+        { id: 'em2-8', pos: 8, label: "comediante", type: "noun", action: "speak", pictogramId: 2854 },
 
         // Row 2
         { id: 'em2-9', pos: 9, label: "electricista", type: "noun", action: "speak", pictogramId: 2740 },
-        { id: 'em2-10', pos: 10, label: "farmaceuta", type: "noun", action: "speak" },
+        { id: 'em2-10', pos: 10, label: "farmaceuta", type: "noun", action: "speak", pictogramId: 6496 },
         { id: 'em2-11', pos: 11, label: "fotógrafo", type: "noun", action: "speak", pictogramId: 11267 },
         { id: 'em2-12', pos: 12, label: "juez", type: "noun", action: "speak", pictogramId: 11291 },
-        { id: 'em2-13', pos: 13, label: "luchador", type: "noun", action: "speak" },
+        { id: 'em2-13', pos: 13, label: "luchador", type: "noun", action: "speak", pictogramId: 6641 },
         { id: 'em2-14', pos: 14, label: "mago", type: "noun", action: "speak", pictogramId: 2932 },
         { id: 'em2-15', pos: 15, label: "marino", type: "noun", action: "speak", pictogramId: 5507 },
         { id: 'em2-16', pos: 16, label: "mecánico", type: "noun", action: "speak", pictogramId: 2921 },
-        { id: 'em2-17', pos: 17, label: "modelo", type: "noun", action: "speak" },
+        { id: 'em2-17', pos: 17, label: "modelo", type: "noun", action: "speak", pictogramId: 37997 },
 
         // Row 3 (Sample)
         { id: 'em2-18', pos: 18, label: "peluquero", type: "noun", action: "speak", pictogramId: 6588 },
@@ -476,7 +476,7 @@ export const AAC_PAGES = {
         { id: 'art-11', pos: 11, label: "odiar", type: "verb", action: "speak", pictogramId: 38936 }, // Hate/Angry face
         { id: 'art-12', pos: 12, label: "actuar", type: "verb", action: "speak", pictogramId: 35709 }, // Actor/Act
         { id: 'art-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 }, // Standard
-        { id: 'art-14', pos: 14, label: "George Clooney", type: "noun", action: "speak" }, // Placeholder actor pic
+        { id: 'art-14', pos: 14, label: "George Clooney", type: "noun", action: "speak", pictogramId: 36075 }, // Placeholder actor pic
         { id: 'art-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
         { id: 'art-16', pos: 16, label: "bien", type: "adjective", action: "speak", pictogramId: 5397 },
         { id: 'art-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
@@ -486,7 +486,7 @@ export const AAC_PAGES = {
         // Empty 19-23
         { id: 'art-24', pos: 24, label: "para", type: "preposition", action: "speak", pictogramId: 7194 },
         { id: 'art-25', pos: 25, label: "mal", type: "adjective", action: "speak", pictogramId: 5504 },
-        { id: 'art-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
+        { id: 'art-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 2413 },
 
         // Row 4
         { id: 'art-27', pos: 27, label: "ella", type: "pronoun", action: "speak", pictogramId: 7029 },
@@ -563,30 +563,30 @@ export const AAC_PAGES = {
 
         // Row 3 (Artists A-C)
         { id: 'mus-18', pos: 18, label: "él", type: "pronoun", action: "speak", pictogramId: 6480 },
-        { id: 'mus-19', pos: 19, label: "Adele", type: "noun", action: "speak" },
-        { id: 'mus-20', pos: 20, label: "Beyonce Knowles", type: "noun", action: "speak" },
+        { id: 'mus-19', pos: 19, label: "Adele", type: "noun", action: "speak", pictogramId: 4585 },
+        { id: 'mus-20', pos: 20, label: "Beyonce Knowles", type: "noun", action: "speak", pictogramId: 4585 },
         { id: 'mus-21', pos: 21, label: "Bono", type: "noun", action: "speak", pictogramId: 6872 },
-        { id: 'mus-22', pos: 22, label: "Bruno Mars", type: "noun", action: "speak" },
-        { id: 'mus-23', pos: 23, label: "Chris Martin", type: "noun", action: "speak" },
+        { id: 'mus-22', pos: 22, label: "Bruno Mars", type: "noun", action: "speak", pictogramId: 4585 },
+        { id: 'mus-23', pos: 23, label: "Chris Martin", type: "noun", action: "speak", pictogramId: 8709 },
         { id: 'mus-24', pos: 24, label: "para", type: "preposition", action: "speak", pictogramId: 7194 },
         { id: 'mus-25', pos: 25, label: "mal", type: "adjective", action: "speak", pictogramId: 5504 },
         { id: 'mus-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
 
         // Row 4 (Artists C-J)
         { id: 'mus-27', pos: 27, label: "ella", type: "pronoun", action: "speak", pictogramId: 7029 },
-        { id: 'mus-28', pos: 28, label: "Coldplay", type: "noun", action: "speak" },
-        { id: 'mus-29', pos: 29, label: "George Harrison", type: "noun", action: "speak" },
-        { id: 'mus-30', pos: 30, label: "Geri Halliwell", type: "noun", action: "speak" },
-        { id: 'mus-31', pos: 31, label: "Harry Styles", type: "noun", action: "speak" },
-        { id: 'mus-32', pos: 32, label: "John Lennon", type: "noun", action: "speak" },
+        { id: 'mus-28', pos: 28, label: "Coldplay", type: "noun", action: "speak", pictogramId: 37225 },
+        { id: 'mus-29', pos: 29, label: "George Harrison", type: "noun", action: "speak", pictogramId: 2417 },
+        { id: 'mus-30', pos: 30, label: "Geri Halliwell", type: "noun", action: "speak", pictogramId: 4585 },
+        { id: 'mus-31', pos: 31, label: "Harry Styles", type: "noun", action: "speak", pictogramId: 36939 },
+        { id: 'mus-32', pos: 32, label: "John Lennon", type: "noun", action: "speak", pictogramId: 4585 },
         { id: 'mus-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'mus-34', pos: 34, label: "Justin Bieber", type: "noun", action: "speak" }, // Warning: Occupies "Prep space" but per visual
-        { id: 'mus-35', pos: 35, label: "Kelly Clarkson", type: "noun", action: "speak" },
+        { id: 'mus-34', pos: 34, label: "Justin Bieber", type: "noun", action: "speak", pictogramId: 36939 }, // Warning: Occupies "Prep space" but per visual
+        { id: 'mus-35', pos: 35, label: "Kelly Clarkson", type: "noun", action: "speak", pictogramId: 4585 },
 
         // Row 5 (Artists O-T & Navigation)
-        { id: 'mus-36', pos: 36, label: "One Direction", type: "noun", action: "speak" },
-        { id: 'mus-37', pos: 37, label: "Paul McCartney", type: "noun", action: "speak" },
-        { id: 'mus-38', pos: 38, label: "The Beatles", type: "noun", action: "speak" },
+        { id: 'mus-36', pos: 36, label: "One Direction", type: "noun", action: "speak", pictogramId: 23811 },
+        { id: 'mus-37', pos: 37, label: "Paul McCartney", type: "noun", action: "speak", pictogramId: 4585 },
+        { id: 'mus-38', pos: 38, label: "The Beatles", type: "noun", action: "speak", pictogramId: 38704 },
         { id: 'mus-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "famosos", pictogramId: 37086 }
     ] as GridCell[],
 
@@ -629,17 +629,17 @@ export const AAC_PAGES = {
         { id: 'per-28', pos: 28, label: "héroe", type: "noun", action: "speak", pictogramId: 36728 },
         { id: 'per-29', pos: 29, label: "unicornio", type: "noun", action: "speak", pictogramId: 6237 },
         { id: 'per-30', pos: 30, label: "sirena", type: "noun", action: "speak", pictogramId: 5589 },
-        { id: 'per-31', pos: 31, label: "Grug", type: "noun", action: "speak" },
+        { id: 'per-31', pos: 31, label: "Grug", type: "noun", action: "speak", pictogramId: 38591 },
         { id: 'per-32', pos: 32, label: "Rayo McQueen", type: "noun", action: "speak", pictogramId: 34545 },
         { id: 'per-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'per-34', pos: 34, label: "Aayla", type: "noun", action: "speak" },
-        { id: 'per-35', pos: 35, label: "troll", type: "noun", action: "speak" },
+        { id: 'per-34', pos: 34, label: "Aayla", type: "noun", action: "speak", pictogramId: 5405 },
+        { id: 'per-35', pos: 35, label: "troll", type: "noun", action: "speak", pictogramId: 11306 },
 
         // Row 5 (Characters & Overflow Navigation)
-        { id: 'per-36', pos: 36, label: "superhéroe", type: "noun", action: "speak" },
+        { id: 'per-36', pos: 36, label: "superhéroe", type: "noun", action: "speak", pictogramId: 36728 },
         { id: 'per-37', pos: 37, label: "monstruo", type: "noun", action: "speak", pictogramId: 11306 },
-        { id: 'per-38', pos: 38, label: "Mickey Mouse", type: "noun", action: "speak" },
-        { id: 'per-39', pos: 39, label: "Bart Simpson", type: "noun", action: "speak" },
+        { id: 'per-38', pos: 38, label: "Mickey Mouse", type: "noun", action: "speak", pictogramId: 9860 },
+        { id: 'per-39', pos: 39, label: "Bart Simpson", type: "noun", action: "speak", pictogramId: 30158 },
         { id: 'per-40', pos: 40, label: "Batman", type: "noun", action: "speak", pictogramId: 8039 },
         { id: 'per-41', pos: 41, label: "Spiderman", type: "noun", action: "speak", pictogramId: 8224 },
         { id: 'per-42', pos: 42, label: "momia", type: "noun", action: "speak", pictogramId: 26427 },
@@ -684,7 +684,7 @@ export const AAC_PAGES = {
         { id: 'not-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'not-10', pos: 10, label: "amar", type: "verb", action: "speak", pictogramId: 6898 },
         { id: 'not-11', pos: 11, label: "odiar", type: "verb", action: "speak", pictogramId: 38936 },
-        { id: 'not-12', pos: 12, label: "Barack Obama", type: "noun", action: "speak" }, // Contextual noun in verb slot
+        { id: 'not-12', pos: 12, label: "Barack Obama", type: "noun", action: "speak", pictogramId: 15326 }, // Contextual noun in verb slot
         { id: 'not-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'not-14', pos: 14, label: "noticias", type: "noun", action: "speak", pictogramId: 7784 }, // TV/News
         { id: 'not-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
@@ -729,7 +729,7 @@ export const AAC_PAGES = {
         // Row 3 (Standard + 'de' override seen in image)
         { id: 'esc-18', pos: 18, label: "él", type: "pronoun", action: "speak", pictogramId: 6480 },
         { id: 'esc-19', pos: 19, label: "de", type: "preposition", action: "speak", pictogramId: 7074 }, // Specific override in image at F3-C2
-        { id: 'esc-24', pos: 24, label: "para", type: "preposition", action: "speak", pictogramId: 7194 },
+        { id: 'esc-24', pos: 24, label: "para", type: "preposition", action: "speak", pictogramId: 2413 },
         { id: 'esc-25', pos: 25, label: "mal", type: "adjective", action: "speak", pictogramId: 5504 },
         { id: 'esc-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
 
@@ -758,20 +758,20 @@ export const AAC_PAGES = {
         { id: 'his-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'his-10', pos: 10, label: "amar", type: "verb", action: "speak", pictogramId: 6898 },
         { id: 'his-11', pos: 11, label: "odiar", type: "verb", action: "speak", pictogramId: 38936 },
-        { id: 'his-12', pos: 12, label: "Abraham Lincoln", type: "noun", action: "speak" }, // Takes verb slot
+        { id: 'his-12', pos: 12, label: "Abraham Lincoln", type: "noun", action: "speak", pictogramId: 16377 }, // Takes verb slot
         { id: 'his-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
-        { id: 'his-14', pos: 14, label: "Benjamin Franklin", type: "noun", action: "speak" }, // Takes verb slot
+        { id: 'his-14', pos: 14, label: "Benjamin Franklin", type: "noun", action: "speak", pictogramId: 5548 }, // Takes verb slot
         { id: 'his-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
         { id: 'his-16', pos: 16, label: "bien", type: "adjective", action: "speak", pictogramId: 5397 },
         { id: 'his-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
         // Row 3
         { id: 'his-18', pos: 18, label: "él", type: "pronoun", action: "speak", pictogramId: 6480 },
-        { id: 'his-19', pos: 19, label: "Betsy Ross", type: "noun", action: "speak" },
-        { id: 'his-20', pos: 20, label: "Booker Washington", type: "noun", action: "speak" },
+        { id: 'his-19', pos: 19, label: "Betsy Ross", type: "noun", action: "speak", pictogramId: 10353 },
+        { id: 'his-20', pos: 20, label: "Booker Washington", type: "noun", action: "speak", pictogramId: 5548 },
         { id: 'his-21', pos: 21, label: "Cesar Chávez", type: "noun", action: "speak", pictogramId: 24978 },
         { id: 'his-22', pos: 22, label: "Cristóbal Colón", type: "noun", action: "speak", pictogramId: 37932 },
-        { id: 'his-23', pos: 23, label: "Eleanor Roosevelt", type: "noun", action: "speak" },
+        { id: 'his-23', pos: 23, label: "Eleanor Roosevelt", type: "noun", action: "speak", pictogramId: 11346 },
         { id: 'his-24', pos: 24, label: "para", type: "preposition", action: "speak", pictogramId: 7194 },
         { id: 'his-25', pos: 25, label: "mal", type: "adjective", action: "speak", pictogramId: 5504 },
         { id: 'his-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
@@ -779,16 +779,16 @@ export const AAC_PAGES = {
         // Row 4
         { id: 'his-27', pos: 27, label: "ella", type: "pronoun", action: "speak", pictogramId: 7029 },
         { id: 'his-28', pos: 28, label: "Franklin D. Roosevelt", type: "noun", action: "speak", pictogramId: 3025 },
-        { id: 'his-29', pos: 29, label: "Gandhi", type: "noun", action: "speak" },
-        { id: 'his-30', pos: 30, label: "George Washington", type: "noun", action: "speak" },
-        { id: 'his-31', pos: 31, label: "Harriet Tubman", type: "noun", action: "speak" },
+        { id: 'his-29', pos: 29, label: "Gandhi", type: "noun", action: "speak", pictogramId: 7076 },
+        { id: 'his-30', pos: 30, label: "George Washington", type: "noun", action: "speak", pictogramId: 15326 },
+        { id: 'his-31', pos: 31, label: "Harriet Tubman", type: "noun", action: "speak", pictogramId: 29849 },
         { id: 'his-32', pos: 32, label: "John F. Kennedy", type: "noun", action: "speak", pictogramId: 3027 },
         { id: 'his-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'his-34', pos: 34, label: "Martin Luther King", type: "noun", action: "speak" },
-        { id: 'his-35', pos: 35, label: "Thomas Jefferson", type: "noun", action: "speak" },
+        { id: 'his-34', pos: 34, label: "Martin Luther King", type: "noun", action: "speak", pictogramId: 38019 },
+        { id: 'his-35', pos: 35, label: "Thomas Jefferson", type: "noun", action: "speak", pictogramId: 5548 },
 
         // Row 5
-        { id: 'his-36', pos: 36, label: "egipcio", type: "noun", action: "speak" },
+        { id: 'his-36', pos: 36, label: "egipcio", type: "noun", action: "speak", pictogramId: 26086 },
         { id: 'his-37', pos: 37, label: "José de San Martín", type: "noun", action: "speak", pictogramId: 5565 },
         // Navigation
         { id: 'his-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "famosos", pictogramId: 37086 }
@@ -839,11 +839,11 @@ export const AAC_PAGES = {
 
     'medicos_2': [
         // Row 1 (Page 2 Content)
-        { id: 'md2-0', pos: 0, label: "audiólogo", type: "noun", action: "speak" },
+        { id: 'md2-0', pos: 0, label: "audiólogo", type: "noun", action: "speak", pictogramId: 27142 },
         { id: 'md2-1', pos: 1, label: "higienista dental", type: "noun", action: "speak", pictogramId: 9144 },
         { id: 'md2-2', pos: 2, label: "oftalmólogo", type: "noun", action: "speak", pictogramId: 16367 },
         { id: 'md2-3', pos: 3, label: "optometrista", type: "noun", action: "speak", pictogramId: 2877 },
-        { id: 'md2-4', pos: 4, label: "ortodoncista", type: "noun", action: "speak" },
+        { id: 'md2-4', pos: 4, label: "ortodoncista", type: "noun", action: "speak", pictogramId: 11963 },
         { id: 'md2-5', pos: 5, label: "T.U.M", type: "noun", action: "speak", pictogramId: 36769 }, // Emergency Med Tech
 
         // Navigation
@@ -867,7 +867,7 @@ export const AAC_PAGES = {
         { id: 'cos-10', pos: 10, label: "Comida", type: "folder", folderTarget: "comida", pictogramId: 4610 },
         { id: 'cos-11', pos: 11, label: "Artículos de arte", type: "folder", folderTarget: "arte", pictogramId: 38130 },
         { id: 'cos-12', pos: 12, label: "Vehículos", type: "folder", folderTarget: "vehiculos", pictogramId: 34461 },
-        { id: 'cos-13', pos: 13, label: "Eventos especiales", type: "folder", folderTarget: "eventos" },
+        { id: 'cos-13', pos: 13, label: "Eventos especiales", type: "folder", folderTarget: "eventos", pictogramId: 12326 },
         { id: 'cos-14', pos: 14, label: "Computadora", type: "folder", folderTarget: "computadora", pictogramId: 7190 },
         { id: 'cos-15', pos: 15, label: "Electrónica", type: "folder", folderTarget: "electronica", pictogramId: 36667 },
         { id: 'cos-16', pos: 16, label: "Naturaleza", type: "folder", folderTarget: "naturaleza", pictogramId: 20389 },
@@ -888,12 +888,12 @@ export const AAC_PAGES = {
 
     'cosas_2': [
         // Row 1 (Folders A-M)
-        { id: 'cos2-0', pos: 0, label: "Adaptivo", type: "folder", folderTarget: "adaptivo" },
-        { id: 'cos2-1', pos: 1, label: "Electrodomés- ticos", type: "folder", folderTarget: "electrodomesticos" },
+        { id: 'cos2-0', pos: 0, label: "Adaptivo", type: "folder", folderTarget: "adaptivo", pictogramId: 12242 },
+        { id: 'cos2-1', pos: 1, label: "Electrodomés- ticos", type: "folder", folderTarget: "electrodomesticos", pictogramId: 39549 },
         { id: 'cos2-2', pos: 2, label: "Limpieza", type: "folder", folderTarget: "limpieza", pictogramId: 22791 },
         { id: 'cos2-3', pos: 3, label: "DVDs", type: "folder", folderTarget: "dvds", pictogramId: 9152 },
         { id: 'cos2-4', pos: 4, label: "Juegos de mesa", type: "folder", folderTarget: "juegos_mesa", pictogramId: 9810 },
-        { id: 'cos2-5', pos: 5, label: "Cosas festivas", type: "folder", folderTarget: "festivas" },
+        { id: 'cos2-5', pos: 5, label: "Cosas festivas", type: "folder", folderTarget: "festivas", pictogramId: 7008 },
         { id: 'cos2-6', pos: 6, label: "Hogar", type: "folder", folderTarget: "hogar", pictogramId: 16031 },
         { id: 'cos2-7', pos: 7, label: "Ocio", type: "folder", folderTarget: "ocio", pictogramId: 11653 },
         { id: 'cos2-8', pos: 8, label: "Médico", type: "folder", folderTarget: "medico_cosas", pictogramId: 6561 },
@@ -983,7 +983,7 @@ export const AAC_PAGES = {
         { id: 'bod2-2', pos: 2, label: "ceja", type: "noun", action: "speak", pictogramId: 3011 },
         { id: 'bod2-3', pos: 3, label: "cintura", type: "noun", action: "speak", pictogramId: 10372 },
         { id: 'bod2-4', pos: 4, label: "codo", type: "noun", action: "speak", pictogramId: 2707 },
-        { id: 'bod2-5', pos: 5, label: "costado", type: "noun", action: "speak" },
+        { id: 'bod2-5', pos: 5, label: "costado", type: "noun", action: "speak", pictogramId: 38632 },
         { id: 'bod2-6', pos: 6, label: "dedo del pie", type: "noun", action: "speak", pictogramId: 37008 },
         { id: 'bod2-7', pos: 7, label: "frente", type: "noun", action: "speak", pictogramId: 3326 },
         { id: 'bod2-8', pos: 8, label: "hombro", type: "noun", action: "speak", pictogramId: 2977 },
@@ -1047,21 +1047,21 @@ export const AAC_PAGES = {
         { id: 'rop-20', pos: 20, label: "medias", type: "noun", action: "speak", pictogramId: 2466 },
         { id: 'rop-21', pos: 21, label: "camisa", type: "noun", action: "speak", pictogramId: 13640 },
         { id: 'rop-22', pos: 22, label: "camisón", type: "noun", action: "speak", pictogramId: 2311 },
-        { id: 'rop-23', pos: 23, label: "casaca", type: "noun", action: "speak" },
+        { id: 'rop-23', pos: 23, label: "casaca", type: "noun", action: "speak", pictogramId: 4872 },
         { id: 'rop-24', pos: 24, label: "falda", type: "noun", action: "speak", pictogramId: 2391 },
-        { id: 'rop-25', pos: 25, label: "jeans", type: "noun", action: "speak" },
+        { id: 'rop-25', pos: 25, label: "jeans", type: "noun", action: "speak", pictogramId: 10143 },
         { id: 'rop-26', pos: 26, label: "pantalones", type: "noun", action: "speak", pictogramId: 2565 },
 
         // Row 4
-        { id: 'rop-27', pos: 27, label: "piyama", type: "noun", action: "speak" },
+        { id: 'rop-27', pos: 27, label: "piyama", type: "noun", action: "speak", pictogramId: 2522 },
         { id: 'rop-28', pos: 28, label: "ropa", type: "noun", action: "speak", pictogramId: 7233 },
         { id: 'rop-29', pos: 29, label: "ropa interior", type: "noun", action: "speak", pictogramId: 25680 },
-        { id: 'rop-30', pos: 30, label: "polera", type: "noun", action: "speak" },
-        { id: 'rop-31', pos: 31, label: "chompa", type: "noun", action: "speak" },
+        { id: 'rop-30', pos: 30, label: "polera", type: "noun", action: "speak", pictogramId: 2309 },
+        { id: 'rop-31', pos: 31, label: "chompa", type: "noun", action: "speak", pictogramId: 2436 },
         { id: 'rop-32', pos: 32, label: "vestido", type: "noun", action: "speak", pictogramId: 2613 },
-        { id: 'rop-33', pos: 33, label: "Accesorios", type: "folder", folderTarget: "accesorios_ropa" },
+        { id: 'rop-33', pos: 33, label: "Accesorios", type: "folder", folderTarget: "accesorios_ropa", pictogramId: 39646 },
         { id: 'rop-34', pos: 34, label: "Calzado", type: "folder", folderTarget: "calzado_ropa", pictogramId: 6953 },
-        { id: 'rop-35', pos: 35, label: "abrigar", type: "verb", action: "speak" },
+        { id: 'rop-35', pos: 35, label: "abrigar", type: "verb", action: "speak", pictogramId: 29977 },
 
         // Row 5
         { id: 'rop-36', pos: 36, label: "vestir", type: "verb", action: "speak", pictogramId: 6627 },
@@ -1085,7 +1085,7 @@ export const AAC_PAGES = {
         { id: 'rop2-8', pos: 8, label: "botón", type: "noun", action: "speak", pictogramId: 2668 },
 
         // Row 2 (Nouns)
-        { id: 'rop2-9', pos: 9, label: "brasier", type: "noun", action: "speak" },
+        { id: 'rop2-9', pos: 9, label: "brasier", type: "noun", action: "speak", pictogramId: 2576 },
         { id: 'rop2-10', pos: 10, label: "polo manga larga", type: "noun", action: "speak", pictogramId: 6188 },
         { id: 'rop2-11', pos: 11, label: "polo", type: "noun", action: "speak", pictogramId: 3348 },
         { id: 'rop2-12', pos: 12, label: "cierre", type: "noun", action: "speak", pictogramId: 2723 },
@@ -1098,11 +1098,11 @@ export const AAC_PAGES = {
         // Row 3 (Nouns)
         { id: 'rop2-18', pos: 18, label: "impermeable", type: "noun", action: "speak", pictogramId: 4927 },
         { id: 'rop2-19', pos: 19, label: "manoplas", type: "noun", action: "speak", pictogramId: 2927 },
-        { id: 'rop2-20', pos: 20, label: "pañoleta", type: "noun", action: "speak" },
-        { id: 'rop2-21', pos: 21, label: "pants", type: "noun", action: "speak" },
+        { id: 'rop2-20', pos: 20, label: "pañoleta", type: "noun", action: "speak", pictogramId: 37051 },
+        { id: 'rop2-21', pos: 21, label: "pants", type: "noun", action: "speak", pictogramId: 10143 },
         { id: 'rop2-22', pos: 22, label: "paraguas", type: "noun", action: "speak", pictogramId: 2500 },
         { id: 'rop2-23', pos: 23, label: "sandalias", type: "noun", action: "speak", pictogramId: 2556 },
-        { id: 'rop2-24', pos: 24, label: "shorts", type: "noun", action: "speak" },
+        { id: 'rop2-24', pos: 24, label: "shorts", type: "noun", action: "speak", pictogramId: 13638 },
         { id: 'rop2-25', pos: 25, label: "traje de baño", type: "noun", action: "speak", pictogramId: 2270 },
         { id: 'rop2-26', pos: 26, label: "gorro", type: "noun", action: "speak", pictogramId: 39395 }, // Beanie
 
@@ -1122,7 +1122,7 @@ export const AAC_PAGES = {
 
         // Row 2
         { id: 'col-9', pos: 9, label: "verde", type: "adjective", action: "speak", pictogramId: 4887 },
-        { id: 'col-10', pos: 10, label: "anaranjado", type: "adjective", action: "speak" },
+        { id: 'col-10', pos: 10, label: "anaranjado", type: "adjective", action: "speak", pictogramId: 8730 },
         { id: 'col-11', pos: 11, label: "rosado", type: "adjective", action: "speak", pictogramId: 27131 },
         { id: 'col-12', pos: 12, label: "morado", type: "adjective", action: "speak", pictogramId: 2907 },
         { id: 'col-13', pos: 13, label: "marrón", type: "adjective", action: "speak", pictogramId: 2923 },
@@ -1139,7 +1139,7 @@ export const AAC_PAGES = {
         // IF the partial grid component maps 0-4 as Row 1, 9-13 as Row 2... then we must use consistent ID/Pos logic.
         // Assuming Standard Grid Mapping (Row 4 starts at 27).
         { id: 'col-27', pos: 27, label: "Cerrar", type: "navigation", action: "back", folderTarget: "ropa", pictogramId: 24976 }, // Using "No" or X icon
-        { id: 'col-28', pos: 28, label: "celeste", type: "adjective", action: "speak" }
+        { id: 'col-28', pos: 28, label: "celeste", type: "adjective", action: "speak", pictogramId: 38388 }
     ] as GridCell[],
 
     'accesorios_ropa': [
@@ -1161,7 +1161,7 @@ export const AAC_PAGES = {
         { id: 'acc-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'acc-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'acc-14', pos: 14, label: "poner", type: "verb", action: "speak", pictogramId: 32757 },
-        { id: 'acc-15', pos: 15, label: "accesorio", type: "noun", action: "speak" }, // Category Generic
+        { id: 'acc-15', pos: 15, label: "accesorio", type: "noun", action: "speak", pictogramId: 29977 }, // Category Generic
         { id: 'acc-16', pos: 16, label: "mochila", type: "noun", action: "speak", pictogramId: 2475 }, // VIP Item
         { id: 'acc-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
@@ -1208,7 +1208,7 @@ export const AAC_PAGES = {
         { id: 'cal-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'cal-14', pos: 14, label: "poner", type: "verb", action: "speak", pictogramId: 32757 },
         { id: 'cal-15', pos: 15, label: "amarrar", type: "verb", action: "speak", pictogramId: 5391 }, // Contextual
-        { id: 'cal-16', pos: 16, label: "desamarrar", type: "verb", action: "speak" }, // Contextual
+        { id: 'cal-16', pos: 16, label: "desamarrar", type: "verb", action: "speak", pictogramId: 39213 }, // Contextual
         { id: 'cal-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
         // Row 3 (Common Footwear)
@@ -1228,7 +1228,7 @@ export const AAC_PAGES = {
 
     'calzado_ropa_2': [
         // Row 1 (Specific/Brands)
-        { id: 'cal2-0', pos: 0, label: "Nike", type: "noun", action: "speak" }, // Brand
+        { id: 'cal2-0', pos: 0, label: "Nike", type: "noun", action: "speak", pictogramId: 31054 }, // Brand
         { id: 'cal2-1', pos: 1, label: "botas de vaquero", type: "noun", action: "speak", pictogramId: 21888 },
         { id: 'cal2-2', pos: 2, label: "zapatos de tacón alto", type: "noun", action: "speak", pictogramId: 37935 },
         { id: 'cal2-3', pos: 3, label: "zapatos de piel", type: "noun", action: "speak", pictogramId: 37935 },
@@ -1279,7 +1279,7 @@ export const AAC_PAGES = {
         { id: 'cui-28', pos: 28, label: "gotas para los ojos", type: "noun", action: "speak", pictogramId: 36333 },
         { id: 'cui-29', pos: 29, label: "hilo dental", type: "noun", action: "speak", pictogramId: 9144 },
         { id: 'cui-30', pos: 30, label: "humectante para labios", type: "noun", action: "speak", pictogramId: 2953 },
-        { id: 'cui-31', pos: 31, label: "loción", type: "noun", action: "speak" },
+        { id: 'cui-31', pos: 31, label: "loción", type: "noun", action: "speak", pictogramId: 35829 },
         { id: 'cui-32', pos: 32, label: "pañuelos desechables", type: "noun", action: "speak", pictogramId: 37943 },
         { id: 'cui-33', pos: 33, label: "papel higiénico", type: "noun", action: "speak", pictogramId: 2862 },
         { id: 'cui-34', pos: 34, label: "Cuidado del cabello", type: "folder", folderTarget: "cuidado_cabello", pictogramId: 25618 },
@@ -1303,10 +1303,10 @@ export const AAC_PAGES = {
         { id: 'cui2-1', pos: 1, label: "desabrochar", type: "verb", action: "speak", pictogramId: 5440 },
         { id: 'cui2-2', pos: 2, label: "afeitar", type: "verb", action: "speak", pictogramId: 5361 },
         { id: 'cui2-3', pos: 3, label: "bolita de algodón", type: "noun", action: "speak", pictogramId: 36507 },
-        { id: 'cui2-4', pos: 4, label: "bragapañal", type: "noun", action: "speak" },
+        { id: 'cui2-4', pos: 4, label: "bragapañal", type: "noun", action: "speak", pictogramId: 22017 },
         { id: 'cui2-5', pos: 5, label: "cortauñas", type: "noun", action: "speak", pictogramId: 2721 },
         { id: 'cui2-6', pos: 6, label: "peine", type: "noun", action: "speak", pictogramId: 2852 },
-        { id: 'cui2-7', pos: 7, label: "hisopo", type: "noun", action: "speak" },
+        { id: 'cui2-7', pos: 7, label: "hisopo", type: "noun", action: "speak", pictogramId: 8294 },
         { id: 'cui2-8', pos: 8, label: "crema de afeitar", type: "noun", action: "speak", pictogramId: 38748 },
 
         // Row 2
@@ -1385,7 +1385,7 @@ export const AAC_PAGES = {
         // Row 1 (Styles & Issues)
         { id: 'cab2-0', pos: 0, label: "cola de caballo", type: "noun", action: "speak", pictogramId: 2709 },
         { id: 'cab2-1', pos: 1, label: "coletas", type: "noun", action: "speak", pictogramId: 5429 },
-        { id: 'cab2-2', pos: 2, label: "enredado", type: "adjective", action: "speak" },
+        { id: 'cab2-2', pos: 2, label: "enredado", type: "adjective", action: "speak", pictogramId: 2695 },
         { id: 'cab2-3', pos: 3, label: "fijador de cabello", type: "noun", action: "speak", pictogramId: 2851 },
         { id: 'cab2-4', pos: 4, label: "peineta", type: "noun", action: "speak", pictogramId: 28581 },
         { id: 'cab2-5', pos: 5, label: "trenza", type: "noun", action: "speak", pictogramId: 5599 },
@@ -1421,18 +1421,18 @@ export const AAC_PAGES = {
         { id: 'maq-18', pos: 18, label: "bolita de algodón", type: "noun", action: "speak", pictogramId: 36507 },
         { id: 'maq-19', pos: 19, label: "brillo de labios", type: "noun", action: "speak", pictogramId: 2953 },
         { id: 'maq-20', pos: 20, label: "brocha de maquillaje", type: "noun", action: "speak", pictogramId: 34145 },
-        { id: 'maq-21', pos: 21, label: "hisopo", type: "noun", action: "speak" },
+        { id: 'maq-21', pos: 21, label: "hisopo", type: "noun", action: "speak", pictogramId: 8294 },
         { id: 'maq-22', pos: 22, label: "delineador de ojos", type: "noun", action: "speak", pictogramId: 3388 },
         { id: 'maq-23', pos: 23, label: "espejo", type: "noun", action: "speak", pictogramId: 8573 },
         { id: 'maq-24', pos: 24, label: "lápiz labial", type: "noun", action: "speak", pictogramId: 2992 },
-        { id: 'maq-25', pos: 25, label: "loción", type: "noun", action: "speak" },
+        { id: 'maq-25', pos: 25, label: "loción", type: "noun", action: "speak", pictogramId: 35829 },
         { id: 'maq-26', pos: 26, label: "maquillaje", type: "noun", action: "speak", pictogramId: 8626 },
 
         // Row 4
         { id: 'maq-27', pos: 27, label: "perfume", type: "noun", action: "speak", pictogramId: 35673 },
         { id: 'maq-28', pos: 28, label: "polvo suelto", type: "noun", action: "speak", pictogramId: 4878 },
         { id: 'maq-29', pos: 29, label: "rímel", type: "noun", action: "speak", pictogramId: 14262 },
-        { id: 'maq-30', pos: 30, label: "rubor", type: "noun", action: "speak" },
+        { id: 'maq-30', pos: 30, label: "rubor", type: "noun", action: "speak", pictogramId: 8626 },
         { id: 'maq-31', pos: 31, label: "sombra de ojos", type: "noun", action: "speak", pictogramId: 3388 },
         { id: 'maq-32', pos: 32, label: "Colores", type: "folder", folderTarget: "colores_maquillaje", pictogramId: 7075 },
         // Empty 33-44
@@ -1449,7 +1449,7 @@ export const AAC_PAGES = {
 
         // Row 2
         { id: 'pcm-9', pos: 9, label: "verde", type: "adjective", action: "speak", pictogramId: 4887 },
-        { id: 'pcm-10', pos: 10, label: "anaranjado", type: "adjective", action: "speak" },
+        { id: 'pcm-10', pos: 10, label: "anaranjado", type: "adjective", action: "speak", pictogramId: 8730 },
         { id: 'pcm-11', pos: 11, label: "rosado", type: "adjective", action: "speak", pictogramId: 27131 },
         { id: 'pcm-12', pos: 12, label: "morado", type: "adjective", action: "speak", pictogramId: 2907 },
         { id: 'pcm-13', pos: 13, label: "marrón", type: "adjective", action: "speak", pictogramId: 2923 },
@@ -1463,7 +1463,7 @@ export const AAC_PAGES = {
 
         // Row 4
         { id: 'pcm-27', pos: 27, label: "Cerrar", type: "navigation", action: "back", folderTarget: "maquillaje", pictogramId: 24976 },
-        { id: 'pcm-28', pos: 28, label: "celeste", type: "adjective", action: "speak" }
+        { id: 'pcm-28', pos: 28, label: "celeste", type: "adjective", action: "speak", pictogramId: 38388 }
     ] as GridCell[],
 
     'salud_bucal': [
@@ -1551,7 +1551,7 @@ export const AAC_PAGES = {
         { id: 'mue-37', pos: 37, label: "alfombra", type: "noun", action: "speak", pictogramId: 2249 },
         { id: 'mue-38', pos: 38, label: "ropero", type: "noun", action: "speak", pictogramId: 2258 },
         { id: 'mue-39', pos: 39, label: "horno", type: "noun", action: "speak", pictogramId: 2426 },
-        { id: 'mue-40', pos: 40, label: "refrigerador", type: "noun", action: "speak" },
+        { id: 'mue-40', pos: 40, label: "refrigerador", type: "noun", action: "speak", pictogramId: 3272 },
         { id: 'mue-41', pos: 41, label: "lavadora", type: "noun", action: "speak", pictogramId: 2442 },
         // 42-43 Empty
         { id: 'mue-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "muebles_2", pictogramId: 3220 }
@@ -1619,7 +1619,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'com-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'com-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'com-11', pos: 11, label: "probar", type: "verb", action: "speak" }, // Contextual
+        { id: 'com-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 }, // Contextual
         { id: 'com-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'com-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'com-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -1645,13 +1645,13 @@ export const AAC_PAGES = {
         { id: 'com-30', pos: 30, label: "Desayuno", type: "folder", folderTarget: "desayuno", pictogramId: 4626 },
         { id: 'com-31', pos: 31, label: "Almuerzo", type: "folder", folderTarget: "almuerzo", pictogramId: 28207 },
         { id: 'com-32', pos: 32, label: "Cena", type: "folder", folderTarget: "cena", pictogramId: 4592 },
-        { id: 'com-33', pos: 33, label: "Botanas", type: "folder", folderTarget: "botanas" },
+        { id: 'com-33', pos: 33, label: "Botanas", type: "folder", folderTarget: "botanas", pictogramId: 24854 },
         { id: 'com-34', pos: 34, label: "Frutas", type: "folder", folderTarget: "frutas", pictogramId: 28339 },
         { id: 'com-35', pos: 35, label: "Verduras", type: "folder", folderTarget: "verduras", pictogramId: 29131 },
 
         // Row 5 (Folders & More)
         { id: 'com-36', pos: 36, label: "Carnes", type: "folder", folderTarget: "carnes", pictogramId: 2316 },
-        { id: 'com-37', pos: 37, label: "Guarniciones", type: "folder", folderTarget: "guarniciones" },
+        { id: 'com-37', pos: 37, label: "Guarniciones", type: "folder", folderTarget: "guarniciones", pictogramId: 36251 },
         { id: 'com-38', pos: 38, label: "Condimentos", type: "folder", folderTarget: "condimentos", pictogramId: 39605 },
         { id: 'com-39', pos: 39, label: "Utensilios de mesa", type: "folder", folderTarget: "utensilios_mesa", pictogramId: 37356 },
         { id: 'com-40', pos: 40, label: "Utensilios de cocina", type: "folder", folderTarget: "utensilios_cocina", pictogramId: 34631 },
@@ -1677,7 +1677,7 @@ export const AAC_PAGES = {
         { id: 'com2-9', pos: 9, label: "mantequilla", type: "noun", action: "speak", pictogramId: 2461 },
         { id: 'com2-10', pos: 10, label: "arroz", type: "noun", action: "speak", pictogramId: 6911 },
         { id: 'com2-11', pos: 11, label: "helado", type: "noun", action: "speak", pictogramId: 35209 },
-        { id: 'com2-12', pos: 12, label: "chifle", type: "noun", action: "speak" },
+        { id: 'com2-12', pos: 12, label: "chifle", type: "noun", action: "speak", pictogramId: 35159 },
         { id: 'com2-13', pos: 13, label: "agua", type: "noun", action: "speak", pictogramId: 32464 },
         { id: 'com2-14', pos: 14, label: "papas fritas", type: "noun", action: "speak", pictogramId: 2505 },
         { id: 'com2-15', pos: 15, label: "pollo", type: "noun", action: "speak", pictogramId: 4952 },
@@ -1706,7 +1706,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'beb-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'beb-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'beb-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'beb-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'beb-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'beb-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'beb-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -1732,8 +1732,8 @@ export const AAC_PAGES = {
         { id: 'beb-30', pos: 30, label: "jugo de naranja", type: "noun", action: "speak", pictogramId: 2624 },
         { id: 'beb-31', pos: 31, label: "leche", type: "noun", action: "speak", pictogramId: 2445 },
         { id: 'beb-32', pos: 32, label: "leche con chocolate", type: "noun", action: "speak", pictogramId: 4940 },
-        { id: 'beb-33', pos: 33, label: "malteada", type: "noun", action: "speak" },
-        { id: 'beb-34', pos: 34, label: "chicha", type: "noun", action: "speak" },
+        { id: 'beb-33', pos: 33, label: "malteada", type: "noun", action: "speak", pictogramId: 8503 },
+        { id: 'beb-34', pos: 34, label: "chicha", type: "noun", action: "speak", pictogramId: 38488 },
         { id: 'beb-35', pos: 35, label: "inka cola", type: "noun", action: "speak", pictogramId: 38324 },
 
         // Row 5 (Folders & More)
@@ -1744,19 +1744,19 @@ export const AAC_PAGES = {
 
     'bebidas_2': [
         // Row 1
-        { id: 'beb2-0', pos: 0, label: "7up", type: "noun", action: "speak" },
+        { id: 'beb2-0', pos: 0, label: "7up", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-1', pos: 1, label: "agua mineral", type: "noun", action: "speak", pictogramId: 6183 },
         { id: 'beb2-2', pos: 2, label: "capuchino", type: "noun", action: "speak", pictogramId: 24483 },
         { id: 'beb2-3', pos: 3, label: "cerveza de raíz", type: "noun", action: "speak", pictogramId: 39624 },
         { id: 'beb2-4', pos: 4, label: "crema para café", type: "noun", action: "speak", pictogramId: 38748 },
-        { id: 'beb2-5', pos: 5, label: "Diet Coke Plus", type: "noun", action: "speak" },
-        { id: 'beb2-6', pos: 6, label: "Dr Pepper", type: "noun", action: "speak" },
+        { id: 'beb2-5', pos: 5, label: "Diet Coke Plus", type: "noun", action: "speak", pictogramId: 4732 },
+        { id: 'beb2-6', pos: 6, label: "Dr Pepper", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-7', pos: 7, label: "Fanta", type: "noun", action: "speak", pictogramId: 2372 },
-        { id: 'beb2-8', pos: 8, label: "flotante", type: "noun", action: "speak" },
+        { id: 'beb2-8', pos: 8, label: "flotante", type: "noun", action: "speak", pictogramId: 4732 },
 
         // Row 2
-        { id: 'beb2-9', pos: 9, label: "Gatorade", type: "noun", action: "speak" },
-        { id: 'beb2-10', pos: 10, label: "ginger ale", type: "noun", action: "speak" },
+        { id: 'beb2-9', pos: 9, label: "Gatorade", type: "noun", action: "speak", pictogramId: 38488 },
+        { id: 'beb2-10', pos: 10, label: "ginger ale", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-11', pos: 11, label: "jugo de arándanos", type: "noun", action: "speak", pictogramId: 11463 },
         { id: 'beb2-12', pos: 12, label: "jugo de jitomate", type: "noun", action: "speak", pictogramId: 11463 },
         { id: 'beb2-13', pos: 13, label: "jugo de piña", type: "noun", action: "speak", pictogramId: 2625 },
@@ -1771,8 +1771,8 @@ export const AAC_PAGES = {
         { id: 'beb2-20', pos: 20, label: "refresco", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-21', pos: 21, label: "refresco con helado", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-22', pos: 22, label: "sidra", type: "noun", action: "speak", pictogramId: 5585 },
-        { id: 'beb2-23', pos: 23, label: "smoothie", type: "noun", action: "speak" },
-        { id: 'beb2-24', pos: 24, label: "Sprite", type: "noun", action: "speak" },
+        { id: 'beb2-23', pos: 23, label: "smoothie", type: "noun", action: "speak", pictogramId: 5931 },
+        { id: 'beb2-24', pos: 24, label: "Sprite", type: "noun", action: "speak", pictogramId: 4732 },
         { id: 'beb2-25', pos: 25, label: "té", type: "noun", action: "speak", pictogramId: 6625 },
         { id: 'beb2-26', pos: 26, label: "té helado", type: "noun", action: "speak", pictogramId: 37734 },
 
@@ -1789,9 +1789,9 @@ export const AAC_PAGES = {
         { id: 'alc-2',  pos: 2,  label: "champaña",        type: "noun", action: "speak", pictogramId: 3009 },
         { id: 'alc-3',  pos: 3,  label: "whisky",          type: "noun", action: "speak", pictogramId: 17249 },
         { id: 'alc-4',  pos: 4,  label: "ron",             type: "noun", action: "speak", pictogramId: 2336 },
-        { id: 'alc-5',  pos: 5,  label: "vodka",           type: "noun", action: "speak", pictogramId: 4648 },
-        { id: 'alc-6',  pos: 6,  label: "tequila",         type: "noun", action: "speak", pictogramId: 4643 },
-        { id: 'alc-7',  pos: 7,  label: "gin",             type: "noun", action: "speak", pictogramId: 4619 },
+        { id: 'alc-5',  pos: 5,  label: "vodka",           type: "noun", action: "speak", pictogramId: 36436 },
+        { id: 'alc-6',  pos: 6,  label: "tequila",         type: "noun", action: "speak", pictogramId: 38488 },
+        { id: 'alc-7',  pos: 7,  label: "gin",             type: "noun", action: "speak", pictogramId: 38488 },
         { id: 'alc-8',  pos: 8,  label: "cóctel",          type: "noun", action: "speak", pictogramId: 23941 },
         { id: 'alc-9',  pos: 9,  label: "copa de vino",    type: "noun", action: "speak", pictogramId: 5401 },
         { id: 'alc-10', pos: 10, label: "botella",         type: "noun", action: "speak", pictogramId: 2288 },
@@ -1812,7 +1812,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'pos-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'pos-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'pos-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'pos-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'pos-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'pos-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'pos-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -1837,7 +1837,7 @@ export const AAC_PAGES = {
         { id: 'pos-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 }, // Cross-context
         { id: 'pos-30', pos: 30, label: "pay", type: "noun", action: "speak", pictogramId: 2854 },
         { id: 'pos-31', pos: 31, label: "pudín de chocolate", type: "noun", action: "speak", pictogramId: 38738 },
-        { id: 'pos-32', pos: 32, label: "sundae", type: "noun", action: "speak" },
+        { id: 'pos-32', pos: 32, label: "sundae", type: "noun", action: "speak", pictogramId: 36430 },
         { id: 'pos-33', pos: 33, label: "yogur congelado", type: "noun", action: "speak", pictogramId: 2618 },
         { id: 'pos-34', pos: 34, label: "Sabores", type: "folder", folderTarget: "sabores_helado", pictogramId: 37834 },
         { id: 'pos-35', pos: 35, label: "pastel", type: "noun", action: "speak", pictogramId: 2502 },
@@ -1847,9 +1847,9 @@ export const AAC_PAGES = {
         { id: 'pos-37', pos: 37, label: "yogur", type: "noun", action: "speak", pictogramId: 2618 },
         { id: 'pos-38', pos: 38, label: "mazamorra morada", type: "noun", action: "speak", pictogramId: 38530 },
         { id: 'pos-39', pos: 39, label: "flan", type: "noun", action: "speak", pictogramId: 25111 },
-        { id: 'pos-40', pos: 40, label: "picarones", type: "noun", action: "speak" },
+        { id: 'pos-40', pos: 40, label: "picarones", type: "noun", action: "speak", pictogramId: 8212 },
         { id: 'pos-41', pos: 41, label: "turrón", type: "noun", action: "speak", pictogramId: 2784 },
-        { id: 'pos-42', pos: 42, label: "alfajores", type: "noun", action: "speak" },
+        { id: 'pos-42', pos: 42, label: "alfajores", type: "noun", action: "speak", pictogramId: 38649 },
         // Empty 43
         { id: 'pos-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "postres_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -1863,7 +1863,7 @@ export const AAC_PAGES = {
         { id: 'pos2-4', pos: 4, label: "helado de durazno", type: "noun", action: "speak", pictogramId: 11382 },
         { id: 'pos2-5', pos: 5, label: "arroz con leche", type: "noun", action: "speak", pictogramId: 36344 },
         { id: 'pos2-6', pos: 6, label: "barra de Rice Krispies", type: "noun", action: "speak", pictogramId: 37963 },
-        { id: 'pos2-7', pos: 7, label: "cobbler", type: "noun", action: "speak" },
+        { id: 'pos2-7', pos: 7, label: "cobbler", type: "noun", action: "speak", pictogramId: 29226 },
         { id: 'pos2-8', pos: 8, label: "cobbler de cerezas", type: "noun", action: "speak", pictogramId: 37592 },
 
         // Row 2
@@ -1885,7 +1885,7 @@ export const AAC_PAGES = {
         { id: 'pos2-22', pos: 22, label: "manzana cubierta de car...", type: "noun", action: "speak", pictogramId: 9057 },
         { id: 'pos2-23', pos: 23, label: "oblea de vainilla", type: "noun", action: "speak", pictogramId: 28679 },
         { id: 'pos2-24', pos: 24, label: "paleta de crema", type: "noun", action: "speak", pictogramId: 2866 },
-        { id: 'pos2-25', pos: 25, label: "panquecito", type: "noun", action: "speak" },
+        { id: 'pos2-25', pos: 25, label: "panquecito", type: "noun", action: "speak", pictogramId: 25211 },
         { id: 'pos2-26', pos: 26, label: "pastel de cumpleaños", type: "noun", action: "speak", pictogramId: 29226 },
 
         // Row 4
@@ -1937,7 +1937,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'des-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'des-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'des-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'des-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'des-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'des-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'des-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -1958,13 +1958,13 @@ export const AAC_PAGES = {
 
         // Row 4 (Variety)
         { id: 'des-27', pos: 27, label: "pan tostado", type: "noun", action: "speak", pictogramId: 38723 },
-        { id: 'des-28', pos: 28, label: "panqué", type: "noun", action: "speak" },
+        { id: 'des-28', pos: 28, label: "panqué", type: "noun", action: "speak", pictogramId: 2502 },
         { id: 'des-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 }, // Eat
         { id: 'des-30', pos: 30, label: "panqueques", type: "noun", action: "speak", pictogramId: 34233 },
         { id: 'des-31', pos: 31, label: "papas doradas", type: "noun", action: "speak", pictogramId: 10227 },
         { id: 'des-32', pos: 32, label: "salchicha", type: "noun", action: "speak", pictogramId: 6647 },
         { id: 'des-33', pos: 33, label: "tocino", type: "noun", action: "speak", pictogramId: 24972 },
-        { id: 'des-34', pos: 34, label: "waffle", type: "noun", action: "speak" },
+        { id: 'des-34', pos: 34, label: "waffle", type: "noun", action: "speak", pictogramId: 34227 },
         { id: 'des-35', pos: 35, label: "queso", type: "noun", action: "speak", pictogramId: 2541 },
 
         // Row 5 (Basics)
@@ -1979,11 +1979,11 @@ export const AAC_PAGES = {
         { id: 'des2-0', pos: 0, label: "avena instantánea", type: "noun", action: "speak", pictogramId: 38524 },
         { id: 'des2-1', pos: 1, label: "bagel", type: "noun", action: "speak", pictogramId: 38531 },
         { id: 'des2-2', pos: 2, label: "bollo", type: "noun", action: "speak", pictogramId: 21330 },
-        { id: 'des2-3', pos: 3, label: "Cheerios", type: "noun", action: "speak" },
-        { id: 'des2-4', pos: 4, label: "Cocoa Pebbles", type: "noun", action: "speak" },
+        { id: 'des2-3', pos: 3, label: "Cheerios", type: "noun", action: "speak", pictogramId: 2328 },
+        { id: 'des2-4', pos: 4, label: "Cocoa Pebbles", type: "noun", action: "speak", pictogramId: 21326 },
         { id: 'des2-5', pos: 5, label: "cuerno", type: "noun", action: "speak", pictogramId: 5978 },
         { id: 'des2-6', pos: 6, label: "empanada de salchicha", type: "noun", action: "speak", pictogramId: 6647 },
-        { id: 'des2-7', pos: 7, label: "granola", type: "noun", action: "speak" },
+        { id: 'des2-7', pos: 7, label: "granola", type: "noun", action: "speak", pictogramId: 2328 },
         { id: 'des2-8', pos: 8, label: "jarabe", type: "noun", action: "speak", pictogramId: 2962 },
 
         // Row 2
@@ -2010,7 +2010,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'alm-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'alm-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'alm-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'alm-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'alm-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'alm-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'alm-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2046,7 +2046,7 @@ export const AAC_PAGES = {
         { id: 'alm-38', pos: 38, label: "arroz chaufa", type: "noun", action: "speak", pictogramId: 28923 },
         { id: 'alm-39', pos: 39, label: "salpicón de pollo", type: "noun", action: "speak", pictogramId: 2534 },
         { id: 'alm-40', pos: 40, label: "tallarín rojo", type: "noun", action: "speak", pictogramId: 36223 },
-        { id: 'alm-41', pos: 41, label: "salchipapa", type: "noun", action: "speak" },
+        { id: 'alm-41', pos: 41, label: "salchipapa", type: "noun", action: "speak", pictogramId: 27156 },
         // Empty 42-43
         { id: 'alm-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "almuerzo_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -2055,16 +2055,16 @@ export const AAC_PAGES = {
         // Row 1
         { id: 'alm2-0', pos: 0, label: "alitas de pollo", type: "noun", action: "speak", pictogramId: 37583 },
         { id: 'alm2-1', pos: 1, label: "banderilla", type: "noun", action: "speak", pictogramId: 16463 },
-        { id: 'alm2-2', pos: 2, label: "bratwurst", type: "noun", action: "speak" },
+        { id: 'alm2-2', pos: 2, label: "bratwurst", type: "noun", action: "speak", pictogramId: 6647 },
         { id: 'alm2-3', pos: 3, label: "carnes frías", type: "noun", action: "speak", pictogramId: 6961 },
         { id: 'alm2-4', pos: 4, label: "chile con carne", type: "noun", action: "speak", pictogramId: 8071 },
         { id: 'alm2-5', pos: 5, label: "comida rápida", type: "noun", action: "speak", pictogramId: 5306 },
         { id: 'alm2-6', pos: 6, label: "consomé de pollo", type: "noun", action: "speak", pictogramId: 2534 },
         { id: 'alm2-7', pos: 7, label: "ensalada César", type: "noun", action: "speak", pictogramId: 8620 },
-        { id: 'alm2-8', pos: 8, label: "frijoles cocinados", type: "noun", action: "speak" },
+        { id: 'alm2-8', pos: 8, label: "frijoles cocinados", type: "noun", action: "speak", pictogramId: 24805 },
 
         // Row 2
-        { id: 'alm2-9', pos: 9, label: "gyro", type: "noun", action: "speak" },
+        { id: 'alm2-9', pos: 9, label: "gyro", type: "noun", action: "speak", pictogramId: 36171 },
         { id: 'alm2-10', pos: 10, label: "hot dog con chile con carne", type: "noun", action: "speak", pictogramId: 38618 }, // Long
         { id: 'alm2-11', pos: 11, label: "pan", type: "noun", action: "speak", pictogramId: 2494 },
         { id: 'alm2-12', pos: 12, label: "pan de hot dog", type: "noun", action: "speak", pictogramId: 10150 },
@@ -2080,7 +2080,7 @@ export const AAC_PAGES = {
         { id: 'alm2-20', pos: 20, label: "sopa de chícharos", type: "noun", action: "speak", pictogramId: 16047 },
         { id: 'alm2-21', pos: 21, label: "submarino", type: "noun", action: "speak", pictogramId: 3157 },
         { id: 'alm2-22', pos: 22, label: "yogur", type: "noun", action: "speak", pictogramId: 2618 },
-        { id: 'alm2-23', pos: 23, label: "ceviche", type: "noun", action: "speak" },
+        { id: 'alm2-23', pos: 23, label: "ceviche", type: "noun", action: "speak", pictogramId: 38495 },
         { id: 'alm2-24', pos: 24, label: "ceviche mixto", type: "noun", action: "speak", pictogramId: 38504 },
         { id: 'alm2-25', pos: 25, label: "ceviche de conchas", type: "noun", action: "speak", pictogramId: 34625 },
 
@@ -2102,7 +2102,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'cen-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'cen-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'cen-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'cen-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'cen-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'cen-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'cen-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2118,7 +2118,7 @@ export const AAC_PAGES = {
         { id: 'cen-22', pos: 22, label: "cacerola", type: "noun", action: "speak", pictogramId: 3231 },
         { id: 'cen-23', pos: 23, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Take
         { id: 'cen-24', pos: 24, label: "comida congelada", type: "noun", action: "speak", pictogramId: 36251 },
-        { id: 'cen-25', pos: 25, label: "costillitas", type: "noun", action: "speak" },
+        { id: 'cen-25', pos: 25, label: "costillitas", type: "noun", action: "speak", pictogramId: 5433 },
         { id: 'cen-26', pos: 26, label: "algo", type: "noun", action: "speak", pictogramId: 38768 },
 
         // Row 4 (Variety)
@@ -2128,14 +2128,14 @@ export const AAC_PAGES = {
         { id: 'cen-30', pos: 30, label: "pasta", type: "noun", action: "speak", pictogramId: 8652 },
         { id: 'cen-31', pos: 31, label: "pastel de carne", type: "noun", action: "speak", pictogramId: 39743 },
         { id: 'cen-32', pos: 32, label: "pizza", type: "noun", action: "speak", pictogramId: 2527 },
-        { id: 'cen-33', pos: 33, label: "quesadilla", type: "noun", action: "speak" },
+        { id: 'cen-33', pos: 33, label: "quesadilla", type: "noun", action: "speak", pictogramId: 30401 },
         { id: 'cen-34', pos: 34, label: "taco", type: "noun", action: "speak", pictogramId: 3390 },
         { id: 'cen-35', pos: 35, label: "pollo con tallarines", type: "noun", action: "speak", pictogramId: 25486 },
 
         // Row 5 (Local/Mix)
         { id: 'cen-36', pos: 36, label: "tortilla", type: "noun", action: "speak", pictogramId: 4967 },
         { id: 'cen-37', pos: 37, label: "pierna de pollo", type: "noun", action: "speak", pictogramId: 2534 },
-        { id: 'cen-38', pos: 38, label: "tamal", type: "noun", action: "speak" },
+        { id: 'cen-38', pos: 38, label: "tamal", type: "noun", action: "speak", pictogramId: 15347 },
         // Empty 39-43
         { id: 'cen-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "cena_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -2146,27 +2146,27 @@ export const AAC_PAGES = {
         { id: 'cen2-1', pos: 1, label: "asado", type: "noun", action: "speak", pictogramId: 5389 },
         { id: 'cen2-2', pos: 2, label: "bolitas de masa", type: "noun", action: "speak", pictogramId: 15347 },
         { id: 'cen2-3', pos: 3, label: "burrito", type: "noun", action: "speak", pictogramId: 10219 },
-        { id: 'cen2-4', pos: 4, label: "calzone", type: "noun", action: "speak" },
-        { id: 'cen2-5', pos: 5, label: "chuletas de puerco", type: "noun", action: "speak" },
+        { id: 'cen2-4', pos: 4, label: "calzone", type: "noun", action: "speak", pictogramId: 2527 },
+        { id: 'cen2-5', pos: 5, label: "chuletas de puerco", type: "noun", action: "speak", pictogramId: 24972 },
         { id: 'cen2-6', pos: 6, label: "cubeta de pollo frito", type: "noun", action: "speak", pictogramId: 2720 },
-        { id: 'cen2-7', pos: 7, label: "enchiladas", type: "noun", action: "speak" },
+        { id: 'cen2-7', pos: 7, label: "enchiladas", type: "noun", action: "speak", pictogramId: 29200 },
         { id: 'cen2-8', pos: 8, label: "fajitas de pollo", type: "noun", action: "speak", pictogramId: 2534 },
 
         // Row 2
-        { id: 'cen2-9', pos: 9, label: "fajitas de res", type: "noun", action: "speak" },
+        { id: 'cen2-9', pos: 9, label: "fajitas de res", type: "noun", action: "speak", pictogramId: 36467 },
         { id: 'cen2-10', pos: 10, label: "fondue", type: "noun", action: "speak", pictogramId: 10226 },
-        { id: 'cen2-11', pos: 11, label: "guisado de res", type: "noun", action: "speak" },
+        { id: 'cen2-11', pos: 11, label: "guisado de res", type: "noun", action: "speak", pictogramId: 2316 },
         { id: 'cen2-12', pos: 12, label: "lasaña", type: "noun", action: "speak", pictogramId: 9051 },
         { id: 'cen2-13', pos: 13, label: "pescado y papas fritas", type: "noun", action: "speak", pictogramId: 36428 },
         { id: 'cen2-14', pos: 14, label: "plato de pollo", type: "noun", action: "speak", pictogramId: 36692 },
-        { id: 'cen2-15', pos: 15, label: "ravioles", type: "noun", action: "speak" },
+        { id: 'cen2-15', pos: 15, label: "ravioles", type: "noun", action: "speak", pictogramId: 8652 },
         { id: 'cen2-16', pos: 16, label: "rebanada de pizza", type: "noun", action: "speak", pictogramId: 9059 },
         { id: 'cen2-17', pos: 17, label: "satay de pollo", type: "noun", action: "speak", pictogramId: 2534 },
 
         // Row 3
         { id: 'cen2-18', pos: 18, label: "sushi", type: "noun", action: "speak", pictogramId: 38993 },
-        { id: 'cen2-19', pos: 19, label: "taquito", type: "noun", action: "speak" },
-        { id: 'cen2-20', pos: 20, label: "tortellini", type: "noun", action: "speak" },
+        { id: 'cen2-19', pos: 19, label: "taquito", type: "noun", action: "speak", pictogramId: 4716 },
+        { id: 'cen2-20', pos: 20, label: "tortellini", type: "noun", action: "speak", pictogramId: 30614 },
 
         // Back
         { id: 'cen2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cena", pictogramId: 37086 }
@@ -2186,7 +2186,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'bot-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'bot-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'bot-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'bot-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'bot-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'bot-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'bot-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2195,11 +2195,11 @@ export const AAC_PAGES = {
         { id: 'bot-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
         // Row 3 (High Frequency)
-        { id: 'bot-18', pos: 18, label: "refrigerio", type: "noun", action: "speak" },
+        { id: 'bot-18', pos: 18, label: "refrigerio", type: "noun", action: "speak", pictogramId: 4695 },
         { id: 'bot-19', pos: 19, label: "puré de manzana", type: "noun", action: "speak", pictogramId: 38007 },
         { id: 'bot-20', pos: 20, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Drink
         { id: 'bot-21', pos: 21, label: "queso", type: "noun", action: "speak", pictogramId: 2541 },
-        { id: 'bot-22', pos: 22, label: "Cheetos", type: "noun", action: "speak" },
+        { id: 'bot-22', pos: 22, label: "Cheetos", type: "noun", action: "speak", pictogramId: 28145 },
         { id: 'bot-23', pos: 23, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Take
         { id: 'bot-24', pos: 24, label: "papas fritas", type: "noun", action: "speak", pictogramId: 2505 },
         { id: 'bot-25', pos: 25, label: "tableta de chocolate", type: "noun", action: "speak", pictogramId: 25940 },
@@ -2212,15 +2212,15 @@ export const AAC_PAGES = {
         { id: 'bot-30', pos: 30, label: "galletas de queso", type: "noun", action: "speak", pictogramId: 35763 },
         { id: 'bot-31', pos: 31, label: "galleta crujiente", type: "noun", action: "speak", pictogramId: 39633 },
         { id: 'bot-32', pos: 32, label: "barra de granola", type: "noun", action: "speak", pictogramId: 37963 },
-        { id: 'bot-33', pos: 33, label: "canchita", type: "noun", action: "speak" }, // Popcorn
+        { id: 'bot-33', pos: 33, label: "canchita", type: "noun", action: "speak", pictogramId: 5534 }, // Popcorn
         { id: 'bot-34', pos: 34, label: "pretzel", type: "noun", action: "speak", pictogramId: 39058 },
-        { id: 'bot-35', pos: 35, label: "pasitas", type: "noun", action: "speak" },
+        { id: 'bot-35', pos: 35, label: "pasitas", type: "noun", action: "speak", pictogramId: 3247 },
 
         // Row 5 (Mix)
         { id: 'bot-36', pos: 36, label: "yogur", type: "noun", action: "speak", pictogramId: 2618 },
         { id: 'bot-37', pos: 37, label: "barra de cereal", type: "noun", action: "speak", pictogramId: 6911 },
         { id: 'bot-38', pos: 38, label: "papas", type: "noun", action: "speak", pictogramId: 31146 },
-        { id: 'bot-39', pos: 39, label: "chifle", type: "noun", action: "speak" },
+        { id: 'bot-39', pos: 39, label: "chifle", type: "noun", action: "speak", pictogramId: 35159 },
         // Empty 40-43
         { id: 'bot-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "botanas_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -2233,7 +2233,7 @@ export const AAC_PAGES = {
         { id: 'bot2-3', pos: 3, label: "nueces de la India", type: "noun", action: "speak", pictogramId: 10339 },
         { id: 'bot2-4', pos: 4, label: "queso y galletas saladas", type: "noun", action: "speak", pictogramId: 35763 },
         { id: 'bot2-5', pos: 5, label: "galletas de queso", type: "noun", action: "speak", pictogramId: 35763 },
-        { id: 'bot2-6', pos: 6, label: "Doritos", type: "noun", action: "speak" },
+        { id: 'bot2-6', pos: 6, label: "Doritos", type: "noun", action: "speak", pictogramId: 9158 },
         { id: 'bot2-7', pos: 7, label: "fruta seca", type: "noun", action: "speak", pictogramId: 34890 },
         { id: 'bot2-8', pos: 8, label: "barrita energética", type: "noun", action: "speak", pictogramId: 35899 },
 
@@ -2244,7 +2244,7 @@ export const AAC_PAGES = {
         { id: 'bot2-12', pos: 12, label: "frutos secos", type: "noun", action: "speak", pictogramId: 20105 },
         { id: 'bot2-13', pos: 13, label: "cacahuetes", type: "noun", action: "speak", pictogramId: 2674 },
         { id: 'bot2-14', pos: 14, label: "nueces", type: "noun", action: "speak", pictogramId: 2880 },
-        { id: 'bot2-15', pos: 15, label: "pistaches", type: "noun", action: "speak" },
+        { id: 'bot2-15', pos: 15, label: "pistaches", type: "noun", action: "speak", pictogramId: 2880 },
         { id: 'bot2-16', pos: 16, label: "palito de pretzel", type: "noun", action: "speak", pictogramId: 39058 },
         { id: 'bot2-17', pos: 17, label: "galleta de arroz", type: "noun", action: "speak", pictogramId: 3331 },
 
@@ -2252,7 +2252,7 @@ export const AAC_PAGES = {
         { id: 'bot2-18', pos: 18, label: "rociador de queso", type: "noun", action: "speak", pictogramId: 35763 },
         { id: 'bot2-19', pos: 19, label: "tira de queso", type: "noun", action: "speak", pictogramId: 36454 },
         { id: 'bot2-20', pos: 20, label: "semillas de girasol", type: "noun", action: "speak", pictogramId: 39192 },
-        { id: 'bot2-21', pos: 21, label: "Teddy Grahams", type: "noun", action: "speak" },
+        { id: 'bot2-21', pos: 21, label: "Teddy Grahams", type: "noun", action: "speak", pictogramId: 2402 },
         { id: 'bot2-22', pos: 22, label: "nueces y frutos secos", type: "noun", action: "speak", pictogramId: 20105 },
 
         // Back
@@ -2274,7 +2274,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'fru-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'fru-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'fru-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'fru-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'fru-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'fru-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'fru-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2308,7 +2308,7 @@ export const AAC_PAGES = {
         // Row 1
         { id: 'fru2-0', pos: 0, label: "arándanos", type: "noun", action: "speak", pictogramId: 13034 },
         { id: 'fru2-1', pos: 1, label: "bayas", type: "noun", action: "speak", pictogramId: 35145 },
-        { id: 'fru2-2', pos: 2, label: "chabacano", type: "noun", action: "speak" }, // Apricot
+        { id: 'fru2-2', pos: 2, label: "chabacano", type: "noun", action: "speak", pictogramId: 2983 }, // Apricot
         { id: 'fru2-3', pos: 3, label: "ciruela", type: "noun", action: "speak", pictogramId: 8305 },
         { id: 'fru2-4', pos: 4, label: "frambuesa", type: "noun", action: "speak", pictogramId: 36540 },
         { id: 'fru2-5', pos: 5, label: "fruta seca", type: "noun", action: "speak", pictogramId: 34890 },
@@ -2352,7 +2352,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'ver-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'ver-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 5604 },
-        { id: 'ver-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'ver-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'ver-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'ver-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'ver-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2365,9 +2365,9 @@ export const AAC_PAGES = {
         { id: 'ver-19', pos: 19, label: "brócoli", type: "noun", action: "speak", pictogramId: 23853 },
         { id: 'ver-20', pos: 20, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Drink
         { id: 'ver-21', pos: 21, label: "calabacín", type: "noun", action: "speak", pictogramId: 2678 },
-        { id: 'ver-22', pos: 22, label: "alverjas", type: "noun", action: "speak" },
+        { id: 'ver-22', pos: 22, label: "alverjas", type: "noun", action: "speak", pictogramId: 7182 },
         { id: 'ver-23', pos: 23, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Take
-        { id: 'ver-24', pos: 24, label: "vainitas", type: "noun", action: "speak" },
+        { id: 'ver-24', pos: 24, label: "vainitas", type: "noun", action: "speak", pictogramId: 2438 },
         { id: 'ver-25', pos: 25, label: "choclo", type: "noun", action: "speak", pictogramId: 4879 }, // Local Corn
         { id: 'ver-26', pos: 26, label: "algo", type: "noun", action: "speak", pictogramId: 38768 },
 
@@ -2375,7 +2375,7 @@ export const AAC_PAGES = {
         { id: 'ver-27', pos: 27, label: "ensalada", type: "noun", action: "speak", pictogramId: 2377 },
         { id: 'ver-28', pos: 28, label: "espinacas", type: "noun", action: "speak", pictogramId: 5460 },
         { id: 'ver-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 }, // Eat
-        { id: 'ver-30', pos: 30, label: "frijoles", type: "noun", action: "speak" },
+        { id: 'ver-30', pos: 30, label: "frijoles", type: "noun", action: "speak", pictogramId: 24805 },
         { id: 'ver-31', pos: 31, label: "lechuga", type: "noun", action: "speak", pictogramId: 2446 },
         { id: 'ver-32', pos: 32, label: "papa", type: "noun", action: "speak", pictogramId: 31146 },
         { id: 'ver-33', pos: 33, label: "zanahoria", type: "noun", action: "speak", pictogramId: 2619 },
@@ -2393,9 +2393,9 @@ export const AAC_PAGES = {
         { id: 'ver2-0', pos: 0, label: "aceitunas negras", type: "noun", action: "speak", pictogramId: 2875 },
         { id: 'ver2-1', pos: 1, label: "palta", type: "noun", action: "speak", pictogramId: 8009 }, // Avocado
         { id: 'ver2-2', pos: 2, label: "apio", type: "noun", action: "speak", pictogramId: 8492 },
-        { id: 'ver2-3', pos: 3, label: "camote", type: "noun", action: "speak" }, // Sweet Potato
+        { id: 'ver2-3', pos: 3, label: "camote", type: "noun", action: "speak", pictogramId: 36354 }, // Sweet Potato
         { id: 'ver2-4', pos: 4, label: "berenjena", type: "noun", action: "speak", pictogramId: 2660 },
-        { id: 'ver2-5', pos: 5, label: "betarraga", type: "noun", action: "speak" }, // Beet
+        { id: 'ver2-5', pos: 5, label: "betarraga", type: "noun", action: "speak", pictogramId: 26370 }, // Beet
         { id: 'ver2-6', pos: 6, label: "calabaza", type: "noun", action: "speak", pictogramId: 2679 },
         { id: 'ver2-7', pos: 7, label: "calabaza dulce", type: "noun", action: "speak", pictogramId: 38525 },
         { id: 'ver2-8', pos: 8, label: "calabaza amarilla", type: "noun", action: "speak", pictogramId: 8669 },
@@ -2406,9 +2406,9 @@ export const AAC_PAGES = {
         { id: 'ver2-11', pos: 11, label: "champiñones", type: "noun", action: "speak", pictogramId: 2331 },
         { id: 'ver2-12', pos: 12, label: "col de Bruselas", type: "noun", action: "speak", pictogramId: 23949 },
         { id: 'ver2-13', pos: 13, label: "coliflor", type: "noun", action: "speak", pictogramId: 23953 },
-        { id: 'ver2-14', pos: 14, label: "elote", type: "noun", action: "speak" }, // Corn cob
+        { id: 'ver2-14', pos: 14, label: "elote", type: "noun", action: "speak", pictogramId: 4879 }, // Corn cob
         { id: 'ver2-15', pos: 15, label: "espárragos", type: "noun", action: "speak", pictogramId: 2384 },
-        { id: 'ver2-16', pos: 16, label: "frijoles carita", type: "noun", action: "speak" },
+        { id: 'ver2-16', pos: 16, label: "frijoles carita", type: "noun", action: "speak", pictogramId: 8337 },
         { id: 'ver2-17', pos: 17, label: "garbanzos", type: "noun", action: "speak", pictogramId: 2405 },
 
         // Row 3
@@ -2439,7 +2439,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'car-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'car-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'car-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'car-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'car-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'car-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'car-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2465,7 +2465,7 @@ export const AAC_PAGES = {
         { id: 'car-30', pos: 30, label: "hamburguesa", type: "noun", action: "speak", pictogramId: 2419 },
         { id: 'car-31', pos: 31, label: "hot dog", type: "noun", action: "speak", pictogramId: 9016 },
         { id: 'car-32', pos: 32, label: "jamón", type: "noun", action: "speak", pictogramId: 2433 },
-        { id: 'car-33', pos: 33, label: "pepperoni", type: "noun", action: "speak" },
+        { id: 'car-33', pos: 33, label: "pepperoni", type: "noun", action: "speak", pictogramId: 38808 },
         { id: 'car-34', pos: 34, label: "pescado", type: "noun", action: "speak", pictogramId: 2519 },
         { id: 'car-35', pos: 35, label: "pollo rostizado entero", type: "noun", action: "speak", pictogramId: 2534 },
 
@@ -2480,7 +2480,7 @@ export const AAC_PAGES = {
     'carnes_2': [
         // Row 1
         { id: 'car2-0', pos: 0, label: "pavo", type: "noun", action: "speak", pictogramId: 2509 },
-        { id: 'car2-1', pos: 1, label: "salami", type: "noun", action: "speak" },
+        { id: 'car2-1', pos: 1, label: "salami", type: "noun", action: "speak", pictogramId: 8554 },
         { id: 'car2-2', pos: 2, label: "pechuga de pollo frita", type: "noun", action: "speak", pictogramId: 2720 },
 
         // Back
@@ -2501,7 +2501,7 @@ export const AAC_PAGES = {
         // Fila 2
         { id: 'gua-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'gua-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'gua-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'gua-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'gua-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'gua-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'gua-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2510,7 +2510,7 @@ export const AAC_PAGES = {
         { id: 'gua-17', pos: 17, label: "ya terminé", type: "adverb", action: "speak" },
 
         // Fila 3
-        { id: 'gua-18', pos: 18, label: "guarnición", type: "noun", action: "speak" },
+        { id: 'gua-18', pos: 18, label: "guarnición", type: "noun", action: "speak", pictogramId: 36251 },
         { id: 'gua-19', pos: 19, label: "aros de cebolla", type: "noun", action: "speak", pictogramId: 37600 },
         { id: 'gua-20', pos: 20, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 },
         { id: 'gua-21', pos: 21, label: "arroz", type: "noun", action: "speak", pictogramId: 6911 },
@@ -2538,7 +2538,7 @@ export const AAC_PAGES = {
     'guarniciones_2': [
         // Fila 1
         { id: 'gua2-0', pos: 0, label: "dip de queso", type: "noun", action: "speak", pictogramId: 35763 },
-        { id: 'gua2-1', pos: 1, label: "frijoles refritos", type: "noun", action: "speak" },
+        { id: 'gua2-1', pos: 1, label: "frijoles refritos", type: "noun", action: "speak", pictogramId: 10227 },
         { id: 'gua2-2', pos: 2, label: "palitos de pan", type: "noun", action: "speak", pictogramId: 38723 },
         { id: 'gua2-3', pos: 3, label: "pan blanco", type: "noun", action: "speak", pictogramId: 10150 },
         { id: 'gua2-4', pos: 4, label: "pan de maíz", type: "noun", action: "speak", pictogramId: 10150 },
@@ -2566,7 +2566,7 @@ export const AAC_PAGES = {
         // Fila 2
         { id: 'con-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'con-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'con-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'con-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'con-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'con-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'con-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2617,7 +2617,7 @@ export const AAC_PAGES = {
         { id: 'con2-12', pos: 12, label: "salsa marinara", type: "noun", action: "speak", pictogramId: 6646 },
         { id: 'con2-13', pos: 13, label: "salsa para pasta", type: "noun", action: "speak", pictogramId: 36430 },
         { id: 'con2-14', pos: 14, label: "salsa picante", type: "noun", action: "speak", pictogramId: 36430 },
-        { id: 'con2-15', pos: 15, label: "tabasco", type: "noun", action: "speak" },
+        { id: 'con2-15', pos: 15, label: "tabasco", type: "noun", action: "speak", pictogramId: 36430 },
         { id: 'con2-16', pos: 16, label: "ketchup", type: "noun", action: "speak", pictogramId: 6540 },
 
         // Navegación
@@ -2639,7 +2639,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Fixed)
         { id: 'utm-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'utm-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'utm-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'utm-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'utm-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'utm-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'utm-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2712,10 +2712,10 @@ export const AAC_PAGES = {
         { id: 'utc-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
         // Row 3 (Nouns - Alphabetical A-L)
-        { id: 'utc-18', pos: 18, label: "agarrador", type: "noun", action: "speak" },
+        { id: 'utc-18', pos: 18, label: "agarrador", type: "noun", action: "speak", pictogramId: 29989 },
         { id: 'utc-19', pos: 19, label: "batidora eléctrica", type: "noun", action: "speak", pictogramId: 38334 },
         { id: 'utc-20', pos: 20, label: "cuchara de madera", type: "noun", action: "speak", pictogramId: 32468 },
-        { id: 'utc-21', pos: 21, label: "cucharas medidoras", type: "noun", action: "speak" },
+        { id: 'utc-21', pos: 21, label: "cucharas medidoras", type: "noun", action: "speak", pictogramId: 32586 },
         { id: 'utc-22', pos: 22, label: "cuchara para helado", type: "noun", action: "speak", pictogramId: 2420 },
         { id: 'utc-23', pos: 23, label: "cuchillo", type: "noun", action: "speak", pictogramId: 4931 },
         { id: 'utc-24', pos: 24, label: "espátula", type: "noun", action: "speak", pictogramId: 7094 },
@@ -2731,7 +2731,7 @@ export const AAC_PAGES = {
         { id: 'utc-32', pos: 32, label: "taza para medir líquidos", type: "noun", action: "speak", pictogramId: 2581 },
         { id: 'utc-33', pos: 33, label: "tazón", type: "noun", action: "speak", pictogramId: 9091 },
         { id: 'utc-34', pos: 34, label: "temporizador", type: "noun", action: "speak", pictogramId: 35127 },
-        { id: 'utc-35', pos: 35, label: "tostador", type: "noun", action: "speak" },
+        { id: 'utc-35', pos: 35, label: "tostador", type: "noun", action: "speak", pictogramId: 2598 },
 
         // Row 5 (Nouns & Nav)
         { id: 'utc-36', pos: 36, label: "lata", type: "noun", action: "speak", pictogramId: 6544 },
@@ -2761,7 +2761,7 @@ export const AAC_PAGES = {
         { id: 'utc2-14', pos: 14, label: "colador", type: "noun", action: "speak", pictogramId: 2345 },
         { id: 'utc2-15', pos: 15, label: "cortador de pizza", type: "noun", action: "speak", pictogramId: 38808 },
         { id: 'utc2-16', pos: 16, label: "cucharada", type: "noun", action: "speak", pictogramId: 8546 },
-        { id: 'utc2-17', pos: 17, label: "cucharadita", type: "noun", action: "speak" },
+        { id: 'utc2-17', pos: 17, label: "cucharadita", type: "noun", action: "speak", pictogramId: 32468 },
 
         // Row 3
         { id: 'utc2-18', pos: 18, label: "cucharón", type: "noun", action: "speak", pictogramId: 2320 },
@@ -2800,7 +2800,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Adapted)
         { id: 'ing-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'ing-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'ing-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'ing-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'ing-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'ing-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'ing-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2816,7 +2816,7 @@ export const AAC_PAGES = {
         { id: 'ing-22', pos: 22, label: "azúcar glas", type: "noun", action: "speak", pictogramId: 11174 },
         { id: 'ing-23', pos: 23, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 }, // Agarrar
         { id: 'ing-24', pos: 24, label: "azúcar morena", type: "noun", action: "speak", pictogramId: 8171 },
-        { id: 'ing-25', pos: 25, label: "bicarbonato", type: "noun", action: "speak" },
+        { id: 'ing-25', pos: 25, label: "bicarbonato", type: "noun", action: "speak", pictogramId: 4878 },
         { id: 'ing-26', pos: 26, label: "algo", type: "noun", action: "speak", pictogramId: 38768 },
 
         // Row 4
@@ -2849,7 +2849,7 @@ export const AAC_PAGES = {
         { id: 'ing2-3', pos: 3, label: "canela", type: "noun", action: "speak", pictogramId: 21486 },
         { id: 'ing2-4', pos: 4, label: "caramelo", type: "noun", action: "speak", pictogramId: 2686 },
         { id: 'ing2-5', pos: 5, label: "chile en polvo", type: "noun", action: "speak", pictogramId: 4878 },
-        { id: 'ing2-6', pos: 6, label: "chiles", type: "noun", action: "speak" },
+        { id: 'ing2-6', pos: 6, label: "chiles", type: "noun", action: "speak", pictogramId: 2838 },
         { id: 'ing2-7', pos: 7, label: "chispas de chocolate", type: "noun", action: "speak", pictogramId: 21326 },
         { id: 'ing2-8', pos: 8, label: "chocolate de repostería", type: "noun", action: "speak", pictogramId: 21326 },
 
@@ -2860,13 +2860,13 @@ export const AAC_PAGES = {
         { id: 'ing2-12', pos: 12, label: "colorante azul", type: "noun", action: "speak", pictogramId: 38388 },
         { id: 'ing2-13', pos: 13, label: "colorante rojo", type: "noun", action: "speak", pictogramId: 36223 },
         { id: 'ing2-14', pos: 14, label: "colorante verde", type: "noun", action: "speak", pictogramId: 37111 },
-        { id: 'ing2-15', pos: 15, label: "comino", type: "noun", action: "speak" },
+        { id: 'ing2-15', pos: 15, label: "comino", type: "noun", action: "speak", pictogramId: 39640 },
         { id: 'ing2-16', pos: 16, label: "crema espesa batida", type: "noun", action: "speak", pictogramId: 38748 },
         { id: 'ing2-17', pos: 17, label: "fideos", type: "noun", action: "speak", pictogramId: 8584 },
 
         // Row 3
-        { id: 'ing2-18', pos: 18, label: "frijoles", type: "noun", action: "speak" },
-        { id: 'ing2-19', pos: 19, label: "frijoles negros", type: "noun", action: "speak" },
+        { id: 'ing2-18', pos: 18, label: "frijoles", type: "noun", action: "speak", pictogramId: 24805 },
+        { id: 'ing2-19', pos: 19, label: "frijoles negros", type: "noun", action: "speak", pictogramId: 34120 },
         { id: 'ing2-20', pos: 20, label: "jarabe de maíz", type: "noun", action: "speak", pictogramId: 25606 },
         { id: 'ing2-21', pos: 21, label: "margarina", type: "noun", action: "speak", pictogramId: 26196 },
         { id: 'ing2-22', pos: 22, label: "masa congelada para pay", type: "noun", action: "speak", pictogramId: 15347 },
@@ -2909,7 +2909,7 @@ export const AAC_PAGES = {
         // Row 2 (Core - Adapted)
         { id: 'crl-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'crl-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'crl-11', pos: 11, label: "probar", type: "verb", action: "speak" },
+        { id: 'crl-11', pos: 11, label: "probar", type: "verb", action: "speak", pictogramId: 28414 },
         { id: 'crl-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'crl-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'crl-14', pos: 14, label: "dar", type: "verb", action: "speak", pictogramId: 28431 },
@@ -2929,7 +2929,7 @@ export const AAC_PAGES = {
         { id: 'crl-26', pos: 26, label: "algo", type: "noun", action: "speak", pictogramId: 38768 },
 
         // Row 4
-        { id: 'crl-27', pos: 27, label: "lunetas", type: "noun", action: "speak" },
+        { id: 'crl-27', pos: 27, label: "lunetas", type: "noun", action: "speak", pictogramId: 8352 },
         { id: 'crl-28', pos: 28, label: "paleta", type: "noun", action: "speak", pictogramId: 2866 },
         { id: 'crl-29', pos: 29, label: "comer", type: "verb", action: "speak", pictogramId: 6456 }, // Ingerir
 
@@ -2939,10 +2939,10 @@ export const AAC_PAGES = {
     'caramelos_2': [
         // Row 1
         { id: 'crl2-0', pos: 0, label: "chocolate Reese's", type: "noun", action: "speak", pictogramId: 21326 },
-        { id: 'crl2-1', pos: 1, label: "kiss de Hershey", type: "noun", action: "speak" },
+        { id: 'crl2-1', pos: 1, label: "kiss de Hershey", type: "noun", action: "speak", pictogramId: 25940 },
         { id: 'crl2-2', pos: 2, label: "regaliz negro", type: "noun", action: "speak", pictogramId: 24351 },
         { id: 'crl2-3', pos: 3, label: "regaliz rojo", type: "noun", action: "speak", pictogramId: 36223 },
-        { id: 'crl2-4', pos: 4, label: "Snickers", type: "noun", action: "speak" },
+        { id: 'crl2-4', pos: 4, label: "Snickers", type: "noun", action: "speak", pictogramId: 25940 },
         { id: 'crl2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "caramelos", pictogramId: 37086 }
     ] as GridCell[],
 
@@ -2972,40 +2972,40 @@ export const AAC_PAGES = {
         // Fila 3
         { id: 'art-18', pos: 18, label: "lapicero", type: "noun", action: "speak", pictogramId: 2440 },
         { id: 'art-19', pos: 19, label: "borrador", type: "noun", action: "speak", pictogramId: 2409 },
-        { id: 'art-20', pos: 20, label: "stickers", type: "noun", action: "speak" },
+        { id: 'art-20', pos: 20, label: "stickers", type: "noun", action: "speak", pictogramId: 37499 },
         { id: 'art-21', pos: 21, label: "cartulina", type: "noun", action: "speak", pictogramId: 17208 },
         { id: 'art-22', pos: 22, label: "cinta adhesiva", type: "noun", action: "speak", pictogramId: 27681 },
-        { id: 'art-23', pos: 23, label: "crayola", type: "noun", action: "speak" },
+        { id: 'art-23', pos: 23, label: "crayola", type: "noun", action: "speak", pictogramId: 2992 },
         { id: 'art-24', pos: 24, label: "mandil", type: "noun", action: "speak", pictogramId: 2366 },
-        { id: 'art-25', pos: 25, label: "escarcha", type: "noun", action: "speak" },
-        { id: 'art-26', pos: 26, label: "engrapadora", type: "noun", action: "speak" },
+        { id: 'art-25', pos: 25, label: "escarcha", type: "noun", action: "speak", pictogramId: 36437 },
+        { id: 'art-26', pos: 26, label: "engrapadora", type: "noun", action: "speak", pictogramId: 2413 },
 
         // Fila 4
         { id: 'art-27', pos: 27, label: "lápiz", type: "noun", action: "speak", pictogramId: 2440 },
-        { id: 'art-28', pos: 28, label: "plumón", type: "noun", action: "speak" },
+        { id: 'art-28', pos: 28, label: "plumón", type: "noun", action: "speak", pictogramId: 6147 },
         { id: 'art-29', pos: 29, label: "papel", type: "noun", action: "speak", pictogramId: 8349 },
         { id: 'art-30', pos: 30, label: "goma", type: "noun", action: "speak", pictogramId: 2409 },
         { id: 'art-31', pos: 31, label: "goma en barra", type: "noun", action: "speak", pictogramId: 38853 },
         { id: 'art-32', pos: 32, label: "perforadora", type: "noun", action: "speak", pictogramId: 24420 },
         { id: 'art-33', pos: 33, label: "pincel", type: "noun", action: "speak", pictogramId: 2523 },
-        { id: 'art-34', pos: 34, label: "témpera", type: "noun", action: "speak" },
+        { id: 'art-34', pos: 34, label: "témpera", type: "noun", action: "speak", pictogramId: 4870 },
         { id: 'art-35', pos: 35, label: "plastilina", type: "noun", action: "speak", pictogramId: 2529 },
 
         // Fila 5
         { id: 'art-36', pos: 36, label: "regla", type: "noun", action: "speak", pictogramId: 32490 },
         { id: 'art-37', pos: 37, label: "tijera", type: "noun", action: "speak", pictogramId: 4964 },
-        { id: 'art-38', pos: 38, label: "tajador", type: "noun", action: "speak" },
-        { id: 'art-39', pos: 39, label: "cartuchera", type: "noun", action: "speak" },
+        { id: 'art-38', pos: 38, label: "tajador", type: "noun", action: "speak", pictogramId: 2553 },
+        { id: 'art-39', pos: 39, label: "cartuchera", type: "noun", action: "speak", pictogramId: 17016 },
         { id: 'art-40', pos: 40, label: "cuaderno", type: "noun", action: "speak", pictogramId: 2359 },
         { id: 'art-41', pos: 41, label: "lápices", type: "noun", action: "speak", pictogramId: 2440 },
         { id: 'art-42', pos: 42, label: "pintura", type: "noun", action: "speak", pictogramId: 4870 },
-        { id: 'art-43', pos: 43, label: "limpiatipo", type: "noun", action: "speak" },
+        { id: 'art-43', pos: 43, label: "limpiatipo", type: "noun", action: "speak", pictogramId: 27681 },
         { id: 'art-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "arte_2", pictogramId: 3220 }
     ] as GridCell[],
 
     'arte_2': [
         // Fila 1
-        { id: 'art2-0', pos: 0, label: "folder", type: "noun", action: "speak" },
+        { id: 'art2-0', pos: 0, label: "folder", type: "noun", action: "speak", pictogramId: 3233 },
         { id: 'art2-1', pos: 1, label: "lana", type: "noun", action: "speak", pictogramId: 2948 },
         { id: 'art2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "arte", pictogramId: 37086 }
     ] as GridCell[],
@@ -3067,7 +3067,7 @@ export const AAC_PAGES = {
         // Fila 4
         { id: 'veh-27', pos: 27, label: "motocicleta", type: "noun", action: "speak", pictogramId: 7166 },
         { id: 'veh-28', pos: 28, label: "nave espacial", type: "noun", action: "speak", pictogramId: 7191 },
-        { id: 'veh-29', pos: 29, label: "patrulla", type: "noun", action: "speak" },
+        { id: 'veh-29', pos: 29, label: "patrulla", type: "noun", action: "speak", pictogramId: 36764 },
         { id: 'veh-30', pos: 30, label: "submarino", type: "noun", action: "speak", pictogramId: 3157 },
         { id: 'veh-31', pos: 31, label: "camioneta", type: "noun", action: "speak", pictogramId: 39405 },
         { id: 'veh-32', pos: 32, label: "taxi", type: "noun", action: "speak", pictogramId: 2580 },
@@ -3078,17 +3078,17 @@ export const AAC_PAGES = {
         // Fila 5
         { id: 'veh-36', pos: 36, label: "transporte", type: "noun", action: "speak", pictogramId: 10351 },
         { id: 'veh-37', pos: 37, label: "mapa", type: "noun", action: "speak", pictogramId: 5505 },
-        { id: 'veh-38', pos: 38, label: "carreta", type: "noun", action: "speak" },
+        { id: 'veh-38', pos: 38, label: "carreta", type: "noun", action: "speak", pictogramId: 2339 },
         { id: 'veh-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "vehiculos_2", pictogramId: 3220 }
     ] as GridCell[],
 
     'vehiculos_2': [
         // Row 1
         { id: 'veh2-0', pos: 0, label: "asiento de bebe", type: "noun", action: "speak", pictogramId: 14256 },
-        { id: 'veh2-1', pos: 1, label: "ATV", type: "noun", action: "speak" },
+        { id: 'veh2-1', pos: 1, label: "ATV", type: "noun", action: "speak", pictogramId: 13360 },
         { id: 'veh2-2', pos: 2, label: "carro deportivo", type: "noun", action: "speak", pictogramId: 38029 },
         { id: 'veh2-3', pos: 3, label: "autobús escolar", type: "noun", action: "speak", pictogramId: 32370 },
-        { id: 'veh2-4', pos: 4, label: "cajuela", type: "noun", action: "speak" },
+        { id: 'veh2-4', pos: 4, label: "cajuela", type: "noun", action: "speak", pictogramId: 3081 },
         { id: 'veh2-5', pos: 5, label: "camión de basura", type: "noun", action: "speak", pictogramId: 2307 },
         { id: 'veh2-6', pos: 6, label: "camión de mudanzas", type: "noun", action: "speak", pictogramId: 38302 },
         { id: 'veh2-7', pos: 7, label: "camión de volteo", type: "noun", action: "speak", pictogramId: 38302 },
@@ -3096,20 +3096,20 @@ export const AAC_PAGES = {
 
         // Row 2
         { id: 'veh2-9', pos: 9, label: "camioneta para discapacitados", type: "noun", action: "speak", pictogramId: 25733 },
-        { id: 'veh2-10', pos: 10, label: "carreola", type: "noun", action: "speak" },
+        { id: 'veh2-10', pos: 10, label: "carreola", type: "noun", action: "speak", pictogramId: 6281 },
         { id: 'veh2-11', pos: 11, label: "casa rodante", type: "noun", action: "speak", pictogramId: 3180 },
         { id: 'veh2-12', pos: 12, label: "cinturón de seguridad", type: "noun", action: "speak", pictogramId: 5962 },
         { id: 'veh2-13', pos: 13, label: "claxon de auto", type: "noun", action: "speak", pictogramId: 22139 },
         { id: 'veh2-14', pos: 14, label: "crucero", type: "noun", action: "speak", pictogramId: 21573 },
         { id: 'veh2-15', pos: 15, label: "excavadora", type: "noun", action: "speak", pictogramId: 2390 },
         { id: 'veh2-16', pos: 16, label: "grúa", type: "noun", action: "speak", pictogramId: 3341 },
-        { id: 'veh2-17', pos: 17, label: "jeep", type: "noun", action: "speak" },
+        { id: 'veh2-17', pos: 17, label: "jeep", type: "noun", action: "speak", pictogramId: 3223 },
 
         // Row 3
         { id: 'veh2-18', pos: 18, label: "limpiaparabrisas", type: "noun", action: "speak", pictogramId: 10331 },
         { id: 'veh2-19', pos: 19, label: "llanta", type: "noun", action: "speak", pictogramId: 19535 },
-        { id: 'veh2-20', pos: 20, label: "minibús", type: "noun", action: "speak" },
-        { id: 'veh2-21', pos: 21, label: "motonieve", type: "noun", action: "speak" },
+        { id: 'veh2-20', pos: 20, label: "minibús", type: "noun", action: "speak", pictogramId: 2262 },
+        { id: 'veh2-21', pos: 21, label: "motonieve", type: "noun", action: "speak", pictogramId: 7166 },
         { id: 'veh2-22', pos: 22, label: "motor de auto", type: "noun", action: "speak", pictogramId: 25471 },
         { id: 'veh2-23', pos: 23, label: "puerta del auto", type: "noun", action: "speak", pictogramId: 4687 },
         { id: 'veh2-24', pos: 24, label: "quitanieves", type: "noun", action: "speak", pictogramId: 13362 },
@@ -3141,8 +3141,8 @@ export const AAC_PAGES = {
         // Row 2 (Core - Temporal Adaptado)
         { id: 'eve-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'eve-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'eve-11', pos: 11, label: "Días festivos", type: "folder", folderTarget: "dias_festivos" },
-        { id: 'eve-12', pos: 12, label: "día festivo", type: "noun", action: "speak" },
+        { id: 'eve-11', pos: 11, label: "Días festivos", type: "folder", folderTarget: "dias_festivos", pictogramId: 6969 },
+        { id: 'eve-12', pos: 12, label: "día festivo", type: "noun", action: "speak", pictogramId: 6969 },
         { id: 'eve-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'eve-14', pos: 14, label: "desde", type: "preposition", action: "speak", pictogramId: 7077 },
         { id: 'eve-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
@@ -3155,7 +3155,7 @@ export const AAC_PAGES = {
         { id: 'eve-20', pos: 20, label: "fiesta", type: "noun", action: "speak", pictogramId: 16649 },
         { id: 'eve-21', pos: 21, label: "obra", type: "noun", action: "speak", pictogramId: 19537 },
         { id: 'eve-22', pos: 22, label: "película", type: "noun", action: "speak", pictogramId: 34320 },
-        { id: 'eve-23', pos: 23, label: "piyamada", type: "noun", action: "speak" },
+        { id: 'eve-23', pos: 23, label: "piyamada", type: "noun", action: "speak", pictogramId: 35333 },
         { id: 'eve-24', pos: 24, label: "hasta", type: "preposition", action: "speak", pictogramId: 7771 },
         { id: 'eve-25', pos: 25, label: "después", type: "adverb", action: "speak", pictogramId: 32749 },
         { id: 'eve-26', pos: 26, label: "pronto", type: "adverb", action: "speak", pictogramId: 5306 },
@@ -3197,7 +3197,7 @@ export const AAC_PAGES = {
         // Row 2
         { id: 'eve2-9', pos: 9, label: "concierto", type: "noun", action: "speak", pictogramId: 11586 },
         { id: 'eve2-10', pos: 10, label: "concurso de belleza", type: "noun", action: "speak", pictogramId: 37313 },
-        { id: 'eve2-11', pos: 11, label: "confirmación", type: "noun", action: "speak" },
+        { id: 'eve2-11', pos: 11, label: "confirmación", type: "noun", action: "speak", pictogramId: 3118 },
         { id: 'eve2-12', pos: 12, label: "desfile", type: "noun", action: "speak", pictogramId: 36663 },
         { id: 'eve2-13', pos: 13, label: "día de elecciones", type: "noun", action: "speak", pictogramId: 39233 },
         { id: 'eve2-14', pos: 14, label: "elección", type: "noun", action: "speak", pictogramId: 14670 },
@@ -3227,8 +3227,8 @@ export const AAC_PAGES = {
         // Row 2 (Core - Temporal Adaptado)
         { id: 'dfes-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
         { id: 'dfes-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'dfes-11', pos: 11, label: "Cosas festivas", type: "folder", folderTarget: "festivas" },
-        { id: 'dfes-12', pos: 12, label: "día festivo", type: "noun", action: "speak" },
+        { id: 'dfes-11', pos: 11, label: "Cosas festivas", type: "folder", folderTarget: "festivas", pictogramId: 7008 },
+        { id: 'dfes-12', pos: 12, label: "día festivo", type: "noun", action: "speak", pictogramId: 6969 },
         { id: 'dfes-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'dfes-14', pos: 14, label: "desde", type: "preposition", action: "speak", pictogramId: 7077 },
         { id: 'dfes-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
@@ -3270,7 +3270,7 @@ export const AAC_PAGES = {
         { id: 'dfes2-0', pos: 0, label: "domingo de Pascua", type: "noun", action: "speak", pictogramId: 37453 },
         { id: 'dfes2-1', pos: 1, label: "martes de carnaval", type: "noun", action: "speak", pictogramId: 6557 },
         { id: 'dfes2-2', pos: 2, label: "Adviento", type: "noun", action: "speak", pictogramId: 37174 },
-        { id: 'dfes2-3', pos: 3, label: "día de Anzac", type: "noun", action: "speak" },
+        { id: 'dfes2-3', pos: 3, label: "día de Anzac", type: "noun", action: "speak", pictogramId: 11246 },
         { id: 'dfes2-4', pos: 4, label: "día de los inocentes", type: "noun", action: "speak", pictogramId: 27152 },
         { id: 'dfes2-5', pos: 5, label: "miércoles de ceniza", type: "noun", action: "speak", pictogramId: 6563 },
         { id: 'dfes2-6', pos: 6, label: "día de San Esteban", type: "noun", action: "speak", pictogramId: 5565 },
@@ -3279,7 +3279,7 @@ export const AAC_PAGES = {
 
         // Row 2
         { id: 'dfes2-9', pos: 9, label: "Cinco de Mayo", type: "noun", action: "speak", pictogramId: 6559 },
-        { id: 'dfes2-10', pos: 10, label: "día de la Raza", type: "noun", action: "speak" },
+        { id: 'dfes2-10', pos: 10, label: "día de la Raza", type: "noun", action: "speak", pictogramId: 16649 },
         { id: 'dfes2-11', pos: 11, label: "día del planeta Tierra", type: "noun", action: "speak", pictogramId: 3160 },
         { id: 'dfes2-12', pos: 12, label: "Viernes Santo", type: "noun", action: "speak", pictogramId: 32950 },
         { id: 'dfes2-13', pos: 13, label: "día de la marmota", type: "noun", action: "speak", pictogramId: 39794 },
@@ -3290,14 +3290,14 @@ export const AAC_PAGES = {
 
         // Row 3
         { id: 'dfes2-18', pos: 18, label: "Santa Lucía", type: "noun", action: "speak", pictogramId: 3153 },
-        { id: 'dfes2-19', pos: 19, label: "Mardi Gras", type: "noun", action: "speak" },
-        { id: 'dfes2-20', pos: 20, label: "día de los caídos", type: "noun", action: "speak" },
-        { id: 'dfes2-21', pos: 21, label: "día del patriota", type: "noun", action: "speak" },
+        { id: 'dfes2-19', pos: 19, label: "Mardi Gras", type: "noun", action: "speak", pictogramId: 25924 },
+        { id: 'dfes2-20', pos: 20, label: "día de los caídos", type: "noun", action: "speak", pictogramId: 11246 },
+        { id: 'dfes2-21', pos: 21, label: "día del patriota", type: "noun", action: "speak", pictogramId: 4621 },
         { id: 'dfes2-22', pos: 22, label: "día del presidente", type: "noun", action: "speak", pictogramId: 16377 },
         { id: 'dfes2-23', pos: 23, label: "Simjat Torá", type: "noun", action: "speak", pictogramId: 24463 },
         { id: 'dfes2-24', pos: 24, label: "día de San Patricio", type: "noun", action: "speak", pictogramId: 5565 },
         { id: 'dfes2-25', pos: 25, label: "Sucot", type: "noun", action: "speak", pictogramId: 37848 },
-        { id: 'dfes2-26', pos: 26, label: "día de los veteranos", type: "noun", action: "speak" },
+        { id: 'dfes2-26', pos: 26, label: "día de los veteranos", type: "noun", action: "speak", pictogramId: 2797 },
 
         // Row 4
         { id: 'dfes2-27', pos: 27, label: "día de la Reina Victoria", type: "noun", action: "speak", pictogramId: 19531 },
@@ -3345,23 +3345,23 @@ export const AAC_PAGES = {
         { id: 'comp-26', pos: 26, label: "contraseña", type: "noun", action: "speak", pictogramId: 27691 },
 
         // Row 4 (Entornos y Software)
-        { id: 'comp-27', pos: 27, label: "Facebook", type: "noun", action: "speak" },
-        { id: 'comp-28', pos: 28, label: "Google", type: "noun", action: "speak" },
+        { id: 'comp-27', pos: 27, label: "Facebook", type: "noun", action: "speak", pictogramId: 3087 },
+        { id: 'comp-28', pos: 28, label: "Google", type: "noun", action: "speak", pictogramId: 27402 },
         { id: 'comp-29', pos: 29, label: "impresora", type: "noun", action: "speak", pictogramId: 26138 },
         { id: 'comp-30', pos: 30, label: "inalámbrico", type: "noun", action: "speak", pictogramId: 15923 },
         { id: 'comp-31', pos: 31, label: "Internet", type: "noun", action: "speak", pictogramId: 37366 },
         { id: 'comp-32', pos: 32, label: "juego de computadora", type: "noun", action: "speak", pictogramId: 36431 },
-        { id: 'comp-33', pos: 33, label: "mouse", type: "noun", action: "speak" },
+        { id: 'comp-33', pos: 33, label: "mouse", type: "noun", action: "speak", pictogramId: 6201 },
         { id: 'comp-34', pos: 34, label: "nombre de usuario", type: "noun", action: "speak", pictogramId: 27353 },
         { id: 'comp-35', pos: 35, label: "sitio web", type: "noun", action: "speak", pictogramId: 38380 },
 
         // Row 5 (Periféricos y Plataformas Adicionales)
-        { id: 'comp-36', pos: 36, label: "Skype", type: "noun", action: "speak" },
+        { id: 'comp-36', pos: 36, label: "Skype", type: "noun", action: "speak", pictogramId: 8537 },
         { id: 'comp-37', pos: 37, label: "teclado", type: "noun", action: "speak", pictogramId: 2793 },
-        { id: 'comp-38', pos: 38, label: "Twitter", type: "noun", action: "speak" },
-        { id: 'comp-39', pos: 39, label: "voceros", type: "noun", action: "speak" }, // Altavoces
-        { id: 'comp-40', pos: 40, label: "YouTube", type: "noun", action: "speak" },
-        { id: 'comp-41', pos: 41, label: "ABC", type: "noun", action: "speak" },
+        { id: 'comp-38', pos: 38, label: "Twitter", type: "noun", action: "speak", pictogramId: 3087 },
+        { id: 'comp-39', pos: 39, label: "voceros", type: "noun", action: "speak", pictogramId: 8336 }, // Altavoces
+        { id: 'comp-40', pos: 40, label: "YouTube", type: "noun", action: "speak", pictogramId: 11360 },
+        { id: 'comp-41', pos: 41, label: "ABC", type: "noun", action: "speak", pictogramId: 35355 },
         { id: 'comp-42', pos: 42, label: "cámara web", type: "noun", action: "speak", pictogramId: 2680 },
         { id: 'comp-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "computadora_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -3369,10 +3369,10 @@ export const AAC_PAGES = {
     'computadora_2': [
         // Row 1
         { id: 'comp2-0', pos: 0, label: "descargar", type: "verb", action: "speak", pictogramId: 27397 },
-        { id: 'comp2-1', pos: 1, label: "tweetear", type: "verb", action: "speak" },
-        { id: 'comp2-2', pos: 2, label: "aplicación", type: "noun", action: "speak" },
+        { id: 'comp2-1', pos: 1, label: "tweetear", type: "verb", action: "speak", pictogramId: 27399 },
+        { id: 'comp2-2', pos: 2, label: "aplicación", type: "noun", action: "speak", pictogramId: 31484 },
         { id: 'comp2-3', pos: 3, label: "unidad de disco", type: "noun", action: "speak", pictogramId: 38295 },
-        { id: 'comp2-4', pos: 4, label: "iTunes", type: "noun", action: "speak" },
+        { id: 'comp2-4', pos: 4, label: "iTunes", type: "noun", action: "speak", pictogramId: 24791 },
         { id: 'comp2-5', pos: 5, label: "computadora portátil", type: "noun", action: "speak", pictogramId: 7190 },
         { id: 'comp2-6', pos: 6, label: "almohadilla", type: "noun", action: "speak", pictogramId: 5095 },
         { id: 'comp2-7', pos: 7, label: "programa", type: "noun", action: "speak", pictogramId: 8229 },
@@ -3381,7 +3381,7 @@ export const AAC_PAGES = {
         // Row 2
         { id: 'comp2-9', pos: 9, label: "supresor de tensión", type: "noun", action: "speak", pictogramId: 37172 },
         { id: 'comp2-10', pos: 10, label: "pizarrón blanco", type: "noun", action: "speak", pictogramId: 37872 },
-        { id: 'comp2-11', pos: 11, label: "Windows", type: "noun", action: "speak" },
+        { id: 'comp2-11', pos: 11, label: "Windows", type: "noun", action: "speak", pictogramId: 7190 },
         { id: 'comp2-12', pos: 12, label: "carpeta", type: "noun", action: "speak", pictogramId: 3233 },
 
         // Row 5
@@ -3418,9 +3418,9 @@ export const AAC_PAGES = {
         { id: 'elec-21', pos: 21, label: "computadora", type: "noun", action: "speak", pictogramId: 7190 },
         { id: 'elec-22', pos: 22, label: "control de videojuego", type: "noun", action: "speak", pictogramId: 21945 },
         { id: 'elec-23', pos: 23, label: "Game Boy", type: "noun", action: "speak", pictogramId: 2283 },
-        { id: 'elec-24', pos: 24, label: "Nintendo DS", type: "noun", action: "speak" },
-        { id: 'elec-25', pos: 25, label: "Nintendo Wii", type: "noun", action: "speak" },
-        { id: 'elec-26', pos: 26, label: "PlayStation", type: "noun", action: "speak" },
+        { id: 'elec-24', pos: 24, label: "Nintendo DS", type: "noun", action: "speak", pictogramId: 21945 },
+        { id: 'elec-25', pos: 25, label: "Nintendo Wii", type: "noun", action: "speak", pictogramId: 21945 },
+        { id: 'elec-26', pos: 26, label: "PlayStation", type: "noun", action: "speak", pictogramId: 21945 },
 
         // Row 4
         { id: 'elec-27', pos: 27, label: "radio", type: "noun", action: "speak", pictogramId: 26358 },
@@ -3428,7 +3428,7 @@ export const AAC_PAGES = {
         { id: 'elec-29', pos: 29, label: "reproductor de CD", type: "noun", action: "speak", pictogramId: 24509 },
         { id: 'elec-30', pos: 30, label: "reproductor de DVD", type: "noun", action: "speak", pictogramId: 24509 },
         { id: 'elec-31', pos: 31, label: "reproductor de MP3", type: "noun", action: "speak", pictogramId: 24509 },
-        { id: 'elec-32', pos: 32, label: "SMS", type: "noun", action: "speak" },
+        { id: 'elec-32', pos: 32, label: "SMS", type: "noun", action: "speak", pictogramId: 37867 },
         { id: 'elec-33', pos: 33, label: "tableta", type: "noun", action: "speak", pictogramId: 28099 },
         { id: 'elec-34', pos: 34, label: "teléfono celular", type: "noun", action: "speak", pictogramId: 3258 },
         { id: 'elec-35', pos: 35, label: "teléfono", type: "noun", action: "speak", pictogramId: 26479 },
@@ -3446,11 +3446,11 @@ export const AAC_PAGES = {
 
     'electronica_2': [
         // Row 1
-        { id: 'elec2-0', pos: 0, label: "aplicación", type: "noun", action: "speak" },
+        { id: 'elec2-0', pos: 0, label: "aplicación", type: "noun", action: "speak", pictogramId: 31484 },
         { id: 'elec2-1', pos: 1, label: "cable", type: "noun", action: "speak", pictogramId: 6948 },
         { id: 'elec2-2', pos: 2, label: "computadora portátil", type: "noun", action: "speak", pictogramId: 7190 },
         { id: 'elec2-3', pos: 3, label: "control de Nintendo Wii", type: "noun", action: "speak", pictogramId: 22141 },
-        { id: 'elec2-4', pos: 4, label: "eLibro", type: "noun", action: "speak" },
+        { id: 'elec2-4', pos: 4, label: "eLibro", type: "noun", action: "speak", pictogramId: 9820 },
         { id: 'elec2-5', pos: 5, label: "estuche de tableta", type: "noun", action: "speak", pictogramId: 38419 },
         { id: 'elec2-6', pos: 6, label: "inalámbrico", type: "noun", action: "speak", pictogramId: 15923 },
         { id: 'elec2-7', pos: 7, label: "lápiz óptico", type: "noun", action: "speak", pictogramId: 15491 },
@@ -3471,8 +3471,8 @@ export const AAC_PAGES = {
         { id: 'elec2-18', pos: 18, label: "reproductor de mp3", type: "noun", action: "speak", pictogramId: 24509 },
         { id: 'elec2-19', pos: 19, label: "toma de corriente", type: "noun", action: "speak", pictogramId: 36973 },
         { id: 'elec2-20', pos: 20, label: "videocámara", type: "noun", action: "speak", pictogramId: 25524 },
-        { id: 'elec2-21', pos: 21, label: "voceros", type: "noun", action: "speak" },
-        { id: 'elec2-22', pos: 22, label: "YouTube", type: "noun", action: "speak" },
+        { id: 'elec2-21', pos: 21, label: "voceros", type: "noun", action: "speak", pictogramId: 8336 },
+        { id: 'elec2-22', pos: 22, label: "YouTube", type: "noun", action: "speak", pictogramId: 11360 },
 
         // Row 5
         { id: 'elec2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "electronica", pictogramId: 37086 }
@@ -3530,7 +3530,7 @@ export const AAC_PAGES = {
         { id: 'nat-39', pos: 39, label: "flor", type: "noun", action: "speak", pictogramId: 7104 }, // Variante de arte
         { id: 'nat-40', pos: 40, label: "copo de nieve", type: "noun", action: "speak", pictogramId: 38027 },
         { id: 'nat-41', pos: 41, label: "girasol", type: "noun", action: "speak", pictogramId: 11274 },
-        { id: 'nat-42', pos: 42, label: "nubarrón", type: "noun", action: "speak" },
+        { id: 'nat-42', pos: 42, label: "nubarrón", type: "noun", action: "speak", pictogramId: 26993 },
         { id: 'nat-43', pos: 43, label: "diamante", type: "noun", action: "speak", pictogramId: 6475 },
         { id: 'nat-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "naturaleza_2", pictogramId: 3220 }
     ] as GridCell[],
@@ -3551,10 +3551,10 @@ export const AAC_PAGES = {
         { id: 'nat2-9', pos: 9, label: "cueva", type: "noun", action: "speak", pictogramId: 2729 },
         { id: 'nat2-10', pos: 10, label: "estanque", type: "noun", action: "speak", pictogramId: 39264 },
         { id: 'nat2-11', pos: 11, label: "hielo", type: "noun", action: "speak", pictogramId: 7128 },
-        { id: 'nat2-12', pos: 12, label: "hoyo", type: "noun", action: "speak" },
+        { id: 'nat2-12', pos: 12, label: "hoyo", type: "noun", action: "speak", pictogramId: 6036 },
         { id: 'nat2-13', pos: 13, label: "huerta", type: "noun", action: "speak", pictogramId: 2974 },
         { id: 'nat2-14', pos: 14, label: "lodo", type: "noun", action: "speak", pictogramId: 34310 },
-        { id: 'nat2-15', pos: 15, label: "maleza", type: "noun", action: "speak" },
+        { id: 'nat2-15', pos: 15, label: "maleza", type: "noun", action: "speak", pictogramId: 13378 },
         { id: 'nat2-16', pos: 16, label: "margarita", type: "noun", action: "speak", pictogramId: 3127 },
         { id: 'nat2-17', pos: 17, label: "narciso", type: "noun", action: "speak", pictogramId: 28567 },
 
@@ -3567,7 +3567,7 @@ export const AAC_PAGES = {
         { id: 'nat2-23', pos: 23, label: "polen", type: "noun", action: "speak", pictogramId: 37153 },
         { id: 'nat2-24', pos: 24, label: "rosa", type: "noun", action: "speak", pictogramId: 3151 },
         { id: 'nat2-25', pos: 25, label: "terremoto", type: "noun", action: "speak", pictogramId: 4755 },
-        { id: 'nat2-26', pos: 26, label: "terreno", type: "noun", action: "speak" },
+        { id: 'nat2-26', pos: 26, label: "terreno", type: "noun", action: "speak", pictogramId: 5066 },
 
         // Row 4
         { id: 'nat2-27', pos: 27, label: "tienda de campaña", type: "noun", action: "speak", pictogramId: 4756 },
@@ -3863,7 +3863,7 @@ export const AAC_PAGES = {
         // Fila 2
         { id: 'num-9', pos: 9, label: "9", type: "verb", action: "speak", pictogramId: 2635 }, // rosa
         { id: 'num-10', pos: 10, label: "espacio", type: "phrase", action: "speak", pictogramId: 25074 },
-        { id: 'num-11', pos: 11, label: "Puntuación", type: "folder", action: "navigate", folderTarget: "puntuacion" }, // blanco
+        { id: 'num-11', pos: 11, label: "Puntuación", type: "folder", action: "navigate", folderTarget: "puntuacion", pictogramId: 34629 }, // blanco
 
         // Navegación
         { id: 'num-43', pos: 43, label: "Puntuación", type: "folder", action: "navigate", folderTarget: "puntuacion", pictogramId: 10174 },
@@ -3871,17 +3871,17 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'puntuacion': [
-        { id: 'pun-0', pos: 0, label: ".", type: "adverb", action: "speak" },
-        { id: 'pun-1', pos: 1, label: ",", type: "adverb", action: "speak" },
-        { id: 'pun-2', pos: 2, label: "?", type: "adverb", action: "speak" },
-        { id: 'pun-3', pos: 3, label: "!", type: "adverb", action: "speak" },
+        { id: 'pun-0', pos: 0, label: ".", type: "adverb", action: "speak", pictogramId: 3218 },
+        { id: 'pun-1', pos: 1, label: ",", type: "adverb", action: "speak", pictogramId: 3189 },
+        { id: 'pun-2', pos: 2, label: "?", type: "adverb", action: "speak", pictogramId: 3415 },
+        { id: 'pun-3', pos: 3, label: "!", type: "adverb", action: "speak", pictogramId: 3414 },
         { id: 'pun-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "numeros", pictogramId: 37086 }
     ] as GridCell[],
 
     'ropa_de_cama': [
         { id: 'rdc-0',  pos: 0,  label: "sábanas",        type: "noun", action: "speak", pictogramId: 8367 },
         { id: 'rdc-1',  pos: 1,  label: "almohada",       type: "noun", action: "speak", pictogramId: 2250 },
-        { id: 'rdc-2',  pos: 2,  label: "cobija",         type: "noun", action: "speak", pictogramId: 2556 },
+        { id: 'rdc-2',  pos: 2,  label: "cobija",         type: "noun", action: "speak", pictogramId: 2459 },
         { id: 'rdc-3',  pos: 3,  label: "colchón",        type: "noun", action: "speak", pictogramId: 8078 },
         { id: 'rdc-4',  pos: 4,  label: "edredón",        type: "noun", action: "speak", pictogramId: 16297 },
         { id: 'rdc-5',  pos: 5,  label: "funda",          type: "noun", action: "speak", pictogramId: 17237 },
@@ -3893,11 +3893,11 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'harry_potter': [
-        { id: 'hp-0',  pos: 0,  label: "Harry Potter",   type: "noun", action: "speak" },
-        { id: 'hp-1',  pos: 1,  label: "Hermione",       type: "noun", action: "speak" },
-        { id: 'hp-2',  pos: 2,  label: "Ron Weasley",    type: "noun", action: "speak" },
-        { id: 'hp-3',  pos: 3,  label: "Dumbledore",     type: "noun", action: "speak" },
-        { id: 'hp-4',  pos: 4,  label: "Voldemort",      type: "noun", action: "speak" },
+        { id: 'hp-0',  pos: 0,  label: "Harry Potter",   type: "noun", action: "speak", pictogramId: 2932 },
+        { id: 'hp-1',  pos: 1,  label: "Hermione",       type: "noun", action: "speak", pictogramId: 27509 },
+        { id: 'hp-2',  pos: 2,  label: "Ron Weasley",    type: "noun", action: "speak", pictogramId: 7176 },
+        { id: 'hp-3',  pos: 3,  label: "Dumbledore",     type: "noun", action: "speak", pictogramId: 2932 },
+        { id: 'hp-4',  pos: 4,  label: "Voldemort",      type: "noun", action: "speak", pictogramId: 38390 },
         { id: 'hp-5',  pos: 5,  label: "varita mágica",  type: "noun", action: "speak", pictogramId: 6240 },
         { id: 'hp-6',  pos: 6,  label: "escoba voladora",type: "noun", action: "speak", pictogramId: 2693 },
         { id: 'hp-7',  pos: 7,  label: "Hogwarts",       type: "noun", action: "speak", pictogramId: 5421 },
@@ -4047,7 +4047,7 @@ export const AAC_PAGES = {
         { id: 'ada-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'ada-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'ada-14', pos: 14, label: "poner", type: "verb", action: "speak", pictogramId: 32757 },
-        { id: 'ada-15', pos: 15, label: "andadera", type: "noun", action: "speak" },
+        { id: 'ada-15', pos: 15, label: "andadera", type: "noun", action: "speak", pictogramId: 24850 },
         { id: 'ada-16', pos: 16, label: "audífono", type: "noun", action: "speak", pictogramId: 5912 },
         { id: 'ada-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak" },
 
@@ -4066,7 +4066,7 @@ export const AAC_PAGES = {
         { id: 'ada-27', pos: 27, label: "Proloquo2Go", type: "noun", action: "speak" },
         { id: 'ada-28', pos: 28, label: "silla de ruedas", type: "noun", action: "speak", pictogramId: 25471 },
         { id: 'ada-29', pos: 29, label: "silla de ruedas motorizada", type: "noun", action: "speak", pictogramId: 25471 },
-        { id: 'ada-30', pos: 30, label: "tablilla", type: "noun", action: "speak" },
+        { id: 'ada-30', pos: 30, label: "tablilla", type: "noun", action: "speak", pictogramId: 6222 },
         { id: 'ada-31', pos: 31, label: "trackball", type: "noun", action: "speak", pictogramId: 36470 },
         { id: 'ada-32', pos: 32, label: "moto", type: "noun", action: "speak", pictogramId: 7166 },
         { id: 'ada-33', pos: 33, label: "Tubo Chewy", type: "noun", action: "speak", pictogramId: 9186 },
@@ -4115,10 +4115,10 @@ export const AAC_PAGES = {
 
     'limpieza_2': [
         // Fila 1
-        { id: 'lim2-0', pos: 0, label: "blanqueador", type: "noun", action: "speak" },
+        { id: 'lim2-0', pos: 0, label: "blanqueador", type: "noun", action: "speak", pictogramId: 2997 },
         { id: 'lim2-1', pos: 1, label: "canasta de ropa sucia", type: "noun", action: "speak", pictogramId: 39768 },
-        { id: 'lim2-2', pos: 2, label: "cubeta", type: "noun", action: "speak" },
-        { id: 'lim2-3', pos: 3, label: "destapacaños", type: "noun", action: "speak" },
+        { id: 'lim2-2', pos: 2, label: "cubeta", type: "noun", action: "speak", pictogramId: 2725 },
+        { id: 'lim2-3', pos: 3, label: "destapacaños", type: "noun", action: "speak", pictogramId: 11231 },
         { id: 'lim2-4', pos: 4, label: "detergente", type: "noun", action: "speak", pictogramId: 7021 },
         { id: 'lim2-5', pos: 5, label: "espray", type: "noun", action: "speak", pictogramId: 26571 },
         { id: 'lim2-6', pos: 6, label: "estropajo", type: "noun", action: "speak", pictogramId: 7098 },
@@ -4162,8 +4162,8 @@ export const AAC_PAGES = {
         { id: 'dvd-20', pos: 20, label: "detener", type: "verb", action: "speak", pictogramId: 7196 },
         { id: 'dvd-21', pos: 21, label: "expulsar", type: "verb", action: "speak", pictogramId: 8997 },
         { id: 'dvd-22', pos: 22, label: "DVD", type: "noun", action: "speak", pictogramId: 9152 },
-        { id: 'dvd-23', pos: 23, label: "remoto", type: "noun", action: "speak" },
-        { id: 'dvd-24', pos: 24, label: "videocinta", type: "noun", action: "speak" },
+        { id: 'dvd-23', pos: 23, label: "remoto", type: "noun", action: "speak", pictogramId: 26182 },
+        { id: 'dvd-24', pos: 24, label: "videocinta", type: "noun", action: "speak", pictogramId: 9132 },
         { id: 'dvd-25', pos: 25, label: "mal", type: "adjective", action: "speak", pictogramId: 5504 },
         { id: 'dvd-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
 
@@ -4189,7 +4189,7 @@ export const AAC_PAGES = {
         { id: 'jue-11', pos: 11, label: "poder", type: "verb", action: "speak", pictogramId: 35949 },
         { id: 'jue-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'jue-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
-        { id: 'jue-14', pos: 14, label: "acorazado", type: "noun", action: "speak" },
+        { id: 'jue-14', pos: 14, label: "acorazado", type: "noun", action: "speak", pictogramId: 36431 },
         { id: 'jue-15', pos: 15, label: "ajedrez", type: "noun", action: "speak", pictogramId: 3054 },
         { id: 'jue-16', pos: 16, label: "bien", type: "adjective", action: "speak", pictogramId: 5397 },
         { id: 'jue-17', pos: 17, label: "ya terminé", type: "adverb", action: "speak" },
@@ -4206,13 +4206,13 @@ export const AAC_PAGES = {
         { id: 'jue-26', pos: 26, label: "algo", type: "pronoun", action: "speak", pictogramId: 38768 },
 
         // Fila 4
-        { id: 'jue-27', pos: 27, label: "Monopoly", type: "noun", action: "speak" },
+        { id: 'jue-27', pos: 27, label: "Monopoly", type: "noun", action: "speak", pictogramId: 33020 },
         { id: 'jue-28', pos: 28, label: "serpientes y escaleras", type: "noun", action: "speak", pictogramId: 2795 },
-        { id: 'jue-29', pos: 29, label: "Sorry", type: "noun", action: "speak" },
-        { id: 'jue-30', pos: 30, label: "Sudoku", type: "noun", action: "speak" },
+        { id: 'jue-29', pos: 29, label: "Sorry", type: "noun", action: "speak", pictogramId: 16157 },
+        { id: 'jue-30', pos: 30, label: "Sudoku", type: "noun", action: "speak", pictogramId: 26403 },
         { id: 'jue-31', pos: 31, label: "Uno", type: "noun", action: "speak", pictogramId: 2627 },
         { id: 'jue-32', pos: 32, label: "¿Adivina quién?", type: "noun", action: "speak", pictogramId: 32743 },
-        { id: 'jue-33', pos: 33, label: "Jenga", type: "noun", action: "speak" },
+        { id: 'jue-33', pos: 33, label: "Jenga", type: "noun", action: "speak", pictogramId: 36431 },
         { id: 'jue-34', pos: 34, label: "tu turno", type: "phrase", action: "speak", pictogramId: 34713 },
         { id: 'jue-35', pos: 35, label: "mi turno", type: "phrase", action: "speak", pictogramId: 7158 },
 
@@ -4220,7 +4220,7 @@ export const AAC_PAGES = {
         { id: 'jue-36', pos: 36, label: "dominó", type: "noun", action: "speak", pictogramId: 3095 },
         { id: 'jue-37', pos: 37, label: "Bingo", type: "noun", action: "speak", pictogramId: 11191 },
         { id: 'jue-38', pos: 38, label: "ludo", type: "noun", action: "speak", pictogramId: 2501 },
-        { id: 'jue-39', pos: 39, label: "charadas", type: "noun", action: "speak" },
+        { id: 'jue-39', pos: 39, label: "charadas", type: "noun", action: "speak", pictogramId: 36431 },
         { id: 'jue-40', pos: 40, label: "¿Cuándo me toca?", type: "phrase", action: "speak", pictogramId: 7158 },
         { id: 'jue-41', pos: 41, label: "juego de memoria", type: "noun", action: "speak", pictogramId: 24680 },
         { id: 'jue-42', pos: 42, label: "Colores", type: "folder", action: "navigate", folderTarget: "colores", pictogramId: 7075 },
@@ -4281,7 +4281,7 @@ export const AAC_PAGES = {
         { id: 'fes2-3', pos: 3, label: "calendario de Adviento", type: "noun", action: "speak", pictogramId: 37985 },
         { id: 'fes2-4', pos: 4, label: "casa de galleta de jen...", type: "noun", action: "speak", pictogramId: 3331 },
         { id: 'fes2-5', pos: 5, label: "corona", type: "noun", action: "speak", pictogramId: 2718 },
-        { id: 'fes2-6', pos: 6, label: "decoraciones de navid...", type: "noun", action: "speak" },
+        { id: 'fes2-6', pos: 6, label: "decoraciones de navid...", type: "noun", action: "speak", pictogramId: 3067 },
         { id: 'fes2-7', pos: 7, label: "duende", type: "noun", action: "speak", pictogramId: 5445 },
         { id: 'fes2-8', pos: 8, label: "bola de Navidad", type: "noun", action: "speak", pictogramId: 3058 },
 
@@ -4325,14 +4325,14 @@ export const AAC_PAGES = {
         { id: 'hog-20', pos: 20, label: "caja", type: "noun", action: "speak", pictogramId: 7054 },
         { id: 'hog-21', pos: 21, label: "canasta", type: "noun", action: "speak", pictogramId: 3260 },
         { id: 'hog-22', pos: 22, label: "florero", type: "noun", action: "speak", pictogramId: 3271 },
-        { id: 'hog-23', pos: 23, label: "hielera", type: "noun", action: "speak" },
+        { id: 'hog-23', pos: 23, label: "hielera", type: "noun", action: "speak", pictogramId: 3272 },
         { id: 'hog-24', pos: 24, label: "llave", type: "noun", action: "speak", pictogramId: 8153 },
         { id: 'hog-25', pos: 25, label: "pantalla para lámpara", type: "noun", action: "speak", pictogramId: 38691 },
-        { id: 'hog-26', pos: 26, label: "portarretratos", type: "noun", action: "speak" },
+        { id: 'hog-26', pos: 26, label: "portarretratos", type: "noun", action: "speak", pictogramId: 36934 },
 
         // Fila 4
-        { id: 'hog-27', pos: 27, label: "tapete", type: "noun", action: "speak" },
-        { id: 'hog-28', pos: 28, label: "termostato", type: "noun", action: "speak" },
+        { id: 'hog-27', pos: 27, label: "tapete", type: "noun", action: "speak", pictogramId: 2249 },
+        { id: 'hog-28', pos: 28, label: "termostato", type: "noun", action: "speak", pictogramId: 27644 },
         { id: 'hog-29', pos: 29, label: "vela", type: "noun", action: "speak", pictogramId: 6242 },
         { id: 'hog-30', pos: 30, label: "Ropa de cama", type: "folder", action: "navigate", folderTarget: "ropa_de_cama", pictogramId: 36465 },
         { id: 'hog-31', pos: 31, label: "taper", type: "noun", action: "speak", pictogramId: 31091 },
@@ -4396,8 +4396,8 @@ export const AAC_PAGES = {
         // Fila 1
         { id: 'ocio2-0', pos: 0, label: "botar sobre la pelota", type: "verb", action: "speak", pictogramId: 27218 },
         { id: 'ocio2-1', pos: 1, label: "acampar", type: "verb", action: "speak", pictogramId: 6025 },
-        { id: 'ocio2-2', pos: 2, label: "adornarse", type: "verb", action: "speak" },
-        { id: 'ocio2-3', pos: 3, label: "hacer excursionismo", type: "verb", action: "speak" },
+        { id: 'ocio2-2', pos: 2, label: "adornarse", type: "verb", action: "speak", pictogramId: 27715 },
+        { id: 'ocio2-3', pos: 3, label: "hacer excursionismo", type: "verb", action: "speak", pictogramId: 35887 },
         { id: 'ocio2-4', pos: 4, label: "jugar a avión", type: "verb", action: "speak", pictogramId: 10163 },
         { id: 'ocio2-5', pos: 5, label: "brincar cuerda", type: "verb", action: "speak", pictogramId: 37954 },
         { id: 'ocio2-6', pos: 6, label: "tejer", type: "verb", action: "speak", pictogramId: 9039 },
@@ -4407,13 +4407,13 @@ export const AAC_PAGES = {
         // Fila 2
         { id: 'ocio2-9', pos: 9, label: "escalar", type: "verb", action: "speak", pictogramId: 26814 },
         { id: 'ocio2-10', pos: 10, label: "cuentas", type: "noun", action: "speak", pictogramId: 5356 },
-        { id: 'ocio2-11', pos: 11, label: "escondidas", type: "noun", action: "speak" },
-        { id: 'ocio2-12', pos: 12, label: "golfito", type: "noun", action: "speak" },
+        { id: 'ocio2-11', pos: 11, label: "escondidas", type: "noun", action: "speak", pictogramId: 36431 },
+        { id: 'ocio2-12', pos: 12, label: "golfito", type: "noun", action: "speak", pictogramId: 38547 },
         { id: 'ocio2-13', pos: 13, label: "álbum de fotos", type: "noun", action: "speak", pictogramId: 38383 },
         { id: 'ocio2-14', pos: 14, label: "patín del diablo", type: "noun", action: "speak", pictogramId: 4713 },
-        { id: 'ocio2-15', pos: 15, label: "Simón dice", type: "noun", action: "speak" },
+        { id: 'ocio2-15', pos: 15, label: "Simón dice", type: "noun", action: "speak", pictogramId: 6281 },
         { id: 'ocio2-16', pos: 16, label: "trineo", type: "noun", action: "speak", pictogramId: 8710 },
-        { id: 'ocio2-17', pos: 17, label: "brincolín", type: "noun", action: "speak" },
+        { id: 'ocio2-17', pos: 17, label: "brincolín", type: "noun", action: "speak", pictogramId: 3224 },
 
         // Fila 3
         { id: 'ocio2-18', pos: 18, label: "saltar en el trampolín", type: "verb", action: "speak", pictogramId: 3224 },
@@ -4428,7 +4428,7 @@ export const AAC_PAGES = {
         { id: 'ae-1', pos: 1, label: "Jugar boliche", type: "folder", action: "navigate", folderTarget: "boliche", pictogramId: 10163 },
         { id: 'ae-2', pos: 2, label: "Burbujas", type: "folder", action: "navigate", folderTarget: "burbujas", pictogramId: 6945 },
         { id: 'ae-3', pos: 3, label: "Hacer súper", type: "folder", action: "navigate", folderTarget: "supermercado", pictogramId: 3389 },
-        { id: 'ae-4', pos: 4, label: "Harry Potter", type: "folder", action: "navigate", folderTarget: "harry_potter" },
+        { id: 'ae-4', pos: 4, label: "Harry Potter", type: "folder", action: "navigate", folderTarget: "harry_potter", pictogramId: 2932 },
         { id: 'ae-5', pos: 5, label: "A comer", type: "folder", action: "navigate", folderTarget: "a_comer", pictogramId: 28414 },
         { id: 'ae-6', pos: 6, label: "Hoy en la escuela", type: "folder", action: "navigate", folderTarget: "hoy_escuela", pictogramId: 29911 },
 
@@ -4478,13 +4478,13 @@ export const AAC_PAGES = {
         { id: 'arte-31', pos: 31, label: "mirar", type: "verb", action: "speak", pictogramId: 6564 },
         { id: 'arte-32', pos: 32, label: "con", type: "preposition", action: "speak", pictogramId: 7064 },
         { id: 'arte-33', pos: 33, label: "de", type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'arte-34', pos: 34, label: "grandioso", type: "adjective", action: "speak" },
+        { id: 'arte-34', pos: 34, label: "grandioso", type: "adjective", action: "speak", pictogramId: 11599 },
         { id: 'arte-35', pos: 35, label: "arte", type: "noun", action: "speak", pictogramId: 2396 },
 
         // Fila 5
         { id: 'arte-36', pos: 36, label: "papel", type: "noun", action: "speak", pictogramId: 8349 },
-        { id: 'arte-37', pos: 37, label: "crayón", type: "noun", action: "speak" },
-        { id: 'arte-38', pos: 38, label: "calcomanía", type: "noun", action: "speak" },
+        { id: 'arte-37', pos: 37, label: "crayón", type: "noun", action: "speak", pictogramId: 2992 },
+        { id: 'arte-38', pos: 38, label: "calcomanía", type: "noun", action: "speak", pictogramId: 37499 },
         { id: 'arte-39', pos: 39, label: "pegamento en barra", type: "noun", action: "speak", pictogramId: 37499 },
         { id: 'arte-40', pos: 40, label: "rotulador", type: "noun", action: "speak", pictogramId: 3246 },
         { id: 'arte-41', pos: 41, label: "Artículos de arte", type: "folder", action: "navigate", folderTarget: "articulos_arte", pictogramId: 38130 },
@@ -4512,7 +4512,7 @@ export const AAC_PAGES = {
         { id: 'medc-12', pos: 12, label: "tener",    type: "verb",     action: "speak", pictogramId: 32761 },
         { id: 'medc-13', pos: 13, label: "hacer",    type: "verb",     action: "speak", pictogramId: 32751 },
         { id: 'medc-14', pos: 14, label: "poner",    type: "verb",     action: "speak", pictogramId: 32757 },
-        { id: 'medc-15', pos: 15, label: "aspirina", type: "noun",     action: "speak"                    },
+        { id: 'medc-15', pos: 15, label: "aspirina", type: "noun",     action: "speak", pictogramId: 8163 },
         { id: 'medc-16', pos: 16, label: "curita",   type: "noun",     action: "speak", pictogramId: 3404 },
         { id: 'medc-17', pos: 17, label: "ya terminé", type: "adjective", action: "speak"                 },
 
@@ -4551,7 +4551,7 @@ export const AAC_PAGES = {
         { id: 'medc2-10', pos: 10, label: "operación",            type: "noun", action: "speak", pictogramId: 27925 },
         { id: 'medc2-11', pos: 11, label: "pinzas",               type: "noun", action: "speak", pictogramId: 2833 },
         { id: 'medc2-12', pos: 12, label: "presión arterial",     type: "noun", action: "speak", pictogramId: 38855 },
-        { id: 'medc2-13', pos: 13, label: "succión traqueal",     type: "noun", action: "speak" },
+        { id: 'medc2-13', pos: 13, label: "succión traqueal",     type: "noun", action: "speak", pictogramId: 34609 },
         { id: 'medc2-14', pos: 14, label: "tarjeta de seguro",    type: "noun", action: "speak", pictogramId: 7269 },
         { id: 'medc2-15', pos: 15, label: "tubo traqueal",        type: "noun", action: "speak", pictogramId: 9186 },
         { id: 'medc2-16', pos: 16, label: "yeso",                 type: "noun", action: "speak", pictogramId: 5457 },
@@ -4580,16 +4580,16 @@ export const AAC_PAGES = {
         { id: 'din-13', pos: 13, label: "hacer",       type: "verb",     action: "speak", pictogramId: 32751 },
         { id: 'din-14', pos: 14, label: "poner",       type: "verb",     action: "speak", pictogramId: 32757 },
         { id: 'din-15', pos: 15, label: "Números",     type: "folder",   action: "navigate", folderTarget: "numeros", pictogramId: 2879 },
-        { id: 'din-16', pos: 16, label: "costar",      type: "verb",     action: "speak"                           },
+        { id: 'din-16', pos: 16, label: "costar",      type: "verb",     action: "speak", pictogramId: 9874 },
         { id: 'din-17', pos: 17, label: "ya terminé",  type: "adjective", action: "speak"                          },
 
         // Row 3 — monedas y billetes (orden ascendente de valor)
-        { id: 'din-18', pos: 18, label: "centavo",              type: "noun", action: "speak" },
-        { id: 'din-19', pos: 19, label: "cinco centavos",       type: "noun", action: "speak" },
+        { id: 'din-18', pos: 18, label: "centavo",              type: "noun", action: "speak", pictogramId: 8633 },
+        { id: 'din-19', pos: 19, label: "cinco centavos",       type: "noun", action: "speak", pictogramId: 4716 },
         { id: 'din-20', pos: 20, label: "diez centavos",        type: "noun", action: "speak", pictogramId: 35691 },
         { id: 'din-21', pos: 21, label: "veinticinco centavos", type: "noun", action: "speak", pictogramId: 29288 },
         { id: 'din-22', pos: 22, label: "un dólar",             type: "noun", action: "speak", pictogramId: 5091 },
-        { id: 'din-23', pos: 23, label: "cinco dólares",        type: "noun", action: "speak" },
+        { id: 'din-23', pos: 23, label: "cinco dólares",        type: "noun", action: "speak", pictogramId: 29208 },
         { id: 'din-24', pos: 24, label: "diez dólares",         type: "noun", action: "speak", pictogramId: 35691 },
         { id: 'din-25', pos: 25, label: "veinte dólares",       type: "noun", action: "speak", pictogramId: 29550 },
         { id: 'din-26', pos: 26, label: "cincuenta dólares",    type: "noun", action: "speak", pictogramId: 29350 },
@@ -4601,7 +4601,7 @@ export const AAC_PAGES = {
         { id: 'din-30', pos: 30, label: "tarjeta de crédito", type: "noun", action: "speak", pictogramId: 4751 },
         { id: 'din-31', pos: 31, label: "dólar",              type: "noun", action: "speak", pictogramId: 5091 },
         { id: 'din-32', pos: 32, label: "precio",             type: "noun", action: "speak", pictogramId: 9874 },
-        { id: 'din-33', pos: 33, label: "oferta",             type: "noun", action: "speak" },
+        { id: 'din-33', pos: 33, label: "oferta",             type: "noun", action: "speak", pictogramId: 9874 },
         { id: 'din-34', pos: 34, label: "billetera",          type: "noun", action: "speak", pictogramId: 2689 },
 
         // Navegación
@@ -4614,19 +4614,19 @@ export const AAC_PAGES = {
         { id: 'din2-0',  pos: 0,  label: "cobrar cheque",          type: "verb",      action: "speak", pictogramId: 15986 },
         { id: 'din2-1',  pos: 1,  label: "pobre",                  type: "adjective", action: "speak", pictogramId: 4723 },
         { id: 'din2-2',  pos: 2,  label: "cajero automático",       type: "noun",      action: "speak", pictogramId: 17190 },
-        { id: 'din2-3',  pos: 3,  label: "balance financiero",      type: "noun",      action: "speak" },
+        { id: 'din2-3',  pos: 3,  label: "balance financiero",      type: "noun",      action: "speak", pictogramId: 4630 },
         { id: 'din2-4',  pos: 4,  label: "estado de cuenta bancaria", type: "noun",   action: "speak", pictogramId: 16909 },
         { id: 'din2-5',  pos: 5,  label: "factura",                 type: "noun",      action: "speak", pictogramId: 5995 },
-        { id: 'din2-6',  pos: 6,  label: "presupuesto",             type: "noun",      action: "speak" },
-        { id: 'din2-7',  pos: 7,  label: "centavo",                 type: "noun",      action: "speak" },
+        { id: 'din2-6',  pos: 6,  label: "presupuesto",             type: "noun",      action: "speak", pictogramId: 39789 },
+        { id: 'din2-7',  pos: 7,  label: "centavo",                 type: "noun",      action: "speak", pictogramId: 8633 },
         { id: 'din2-8',  pos: 8,  label: "registro de cheques",     type: "noun",      action: "speak", pictogramId: 32996 },
 
         // Row 2 — vocabulario bancario avanzado
-        { id: 'din2-9',  pos: 9,  label: "cuenta de cheques",  type: "noun", action: "speak" },
-        { id: 'din2-10', pos: 10, label: "cupón",              type: "noun", action: "speak" },
+        { id: 'din2-9',  pos: 9,  label: "cuenta de cheques",  type: "noun", action: "speak", pictogramId: 3062 },
+        { id: 'din2-10', pos: 10, label: "cupón", pictogramId: 9874,              type: "noun", action: "speak" },
         { id: 'din2-11', pos: 11, label: "tarjeta de débito",  type: "noun", action: "speak", pictogramId: 7269 },
         { id: 'din2-12', pos: 12, label: "prestar dinero",     type: "verb", action: "speak", pictogramId: 39789 },
-        { id: 'din2-13', pos: 13, label: "nómina",             type: "noun", action: "speak" },
+        { id: 'din2-13', pos: 13, label: "nómina",             type: "noun", action: "speak", pictogramId: 33996 },
         { id: 'din2-14', pos: 14, label: "cuenta del teléfono", type: "noun", action: "speak", pictogramId: 3258 },
         { id: 'din2-15', pos: 15, label: "alcancía",           type: "noun", action: "speak", pictogramId: 4666 },
         { id: 'din2-16', pos: 16, label: "salario",            type: "noun", action: "speak", pictogramId: 33996 },
@@ -4672,7 +4672,7 @@ export const AAC_PAGES = {
 
         // Row 4 — géneros e instrumentos frecuentes
         { id: 'musc-27', pos: 27, label: "CD",            type: "noun", action: "speak", pictogramId: 2322 },
-        { id: 'musc-28', pos: 28, label: "clásico",       type: "noun", action: "speak" },
+        { id: 'musc-28', pos: 28, label: "clásico",       type: "noun", action: "speak", pictogramId: 37225 },
         { id: 'musc-29', pos: 29, label: "coro",          type: "noun", action: "speak", pictogramId: 2717 },
         { id: 'musc-30', pos: 30, label: "country",       type: "noun", action: "speak", pictogramId: 8071 },
         { id: 'musc-31', pos: 31, label: "guitarra",      type: "noun", action: "speak", pictogramId: 2417 },
@@ -4697,17 +4697,17 @@ export const AAC_PAGES = {
     'musica_cosas_2': [
         // Row 1 — géneros/instrumentos/personas (mezcla por frecuencia)
         { id: 'musc2-0',  pos: 0,  label: "armónica",        type: "noun", action: "speak", pictogramId: 5909 },
-        { id: 'musc2-1',  pos: 1,  label: "audiocassette",   type: "noun", action: "speak" },
-        { id: 'musc2-2',  pos: 2,  label: "bluegrass",       type: "noun", action: "speak" },
+        { id: 'musc2-1',  pos: 1,  label: "audiocassette",   type: "noun", action: "speak", pictogramId: 11219 },
+        { id: 'musc2-2',  pos: 2,  label: "bluegrass",       type: "noun", action: "speak", pictogramId: 2417 },
         { id: 'musc2-3',  pos: 3,  label: "claves",          type: "noun", action: "speak", pictogramId: 23937 },
         { id: 'musc2-4',  pos: 4,  label: "compositor",      type: "noun", action: "speak", pictogramId: 24424 },
         { id: 'musc2-5',  pos: 5,  label: "director",        type: "noun", action: "speak", pictogramId: 4631 },
         { id: 'musc2-6',  pos: 6,  label: "guitarra eléctrica", type: "noun", action: "speak", pictogramId: 8599 },
-        { id: 'musc2-7',  pos: 7,  label: "hip hop",         type: "noun", action: "speak" },
+        { id: 'musc2-7',  pos: 7,  label: "hip hop",         type: "noun", action: "speak", pictogramId: 37225 },
         { id: 'musc2-8',  pos: 8,  label: "maracas",         type: "noun", action: "speak", pictogramId: 2463 },
 
         // Row 2 — géneros musicales
-        { id: 'musc2-9',  pos: 9,  label: "Motown",          type: "noun", action: "speak" },
+        { id: 'musc2-9',  pos: 9,  label: "Motown",          type: "noun", action: "speak", pictogramId: 37225 },
         { id: 'musc2-10', pos: 10, label: "música cristiana", type: "noun", action: "speak", pictogramId: 37225 },
         { id: 'musc2-11', pos: 11, label: "música ligera",   type: "noun", action: "speak", pictogramId: 37225 },
         { id: 'musc2-12', pos: 12, label: "ópera",           type: "noun", action: "speak", pictogramId: 27921 },
@@ -4715,7 +4715,7 @@ export const AAC_PAGES = {
         { id: 'musc2-14', pos: 14, label: "pandereta",       type: "noun", action: "speak", pictogramId: 2564 },
         { id: 'musc2-15', pos: 15, label: "r&b",             type: "noun", action: "speak", pictogramId: 3147 },
         { id: 'musc2-16', pos: 16, label: "salsa",           type: "noun", action: "speak", pictogramId: 35735 },
-        { id: 'musc2-17', pos: 17, label: "sinfonía",        type: "noun", action: "speak" },
+        { id: 'musc2-17', pos: 17, label: "sinfonía",        type: "noun", action: "speak", pictogramId: 2870 },
 
         // Row 3 — instrumentos de percusión y cuerda
         { id: 'musc2-18', pos: 18, label: "tambor",      type: "noun", action: "speak", pictogramId: 2578 },
@@ -4785,25 +4785,25 @@ export const AAC_PAGES = {
         { id: 'dep-19', pos: 19, label: "béisbol",         type: "noun",        action: "speak", pictogramId: 10165 },
         { id: 'dep-20', pos: 20, label: "parar",           type: "verb",        action: "speak", pictogramId: 7196 },
         { id: 'dep-21', pos: 21, label: "ir",              type: "verb",        action: "speak", pictogramId: 8142 },
-        { id: 'dep-22', pos: 22, label: "básquetbol",      type: "noun",        action: "speak"  },
+        { id: 'dep-22', pos: 22, label: "básquetbol",      type: "noun",        action: "speak", pictogramId: 10166 },
         { id: 'dep-23', pos: 23, label: "futbol americano",type: "noun",        action: "speak", pictogramId: 19530 },
         { id: 'dep-24', pos: 24, label: "en",              type: "preposition", action: "speak", pictogramId: 7034 },
         { id: 'dep-25', pos: 25, label: "mal",             type: "adjective",   action: "speak", pictogramId: 5504 },
         { id: 'dep-26', pos: 26, label: "hockey",          type: "noun",        action: "speak", pictogramId: 10161 },
 
         { id: 'dep-27', pos: 27, label: "futbol",          type: "noun",        action: "speak", pictogramId: 16743 },
-        { id: 'dep-28', pos: 28, label: "softball",        type: "noun",        action: "speak" },
+        { id: 'dep-28', pos: 28, label: "softball",        type: "noun",        action: "speak", pictogramId: 10165 },
         { id: 'dep-29', pos: 29, label: "Special Olympics",type: "noun",        action: "speak", pictogramId: 2476 },
         { id: 'dep-30', pos: 30, label: "natación",        type: "noun",        action: "speak", pictogramId: 25038 },
         { id: 'dep-31', pos: 31, label: "mi turno",        type: "phrase",      action: "speak", pictogramId: 7158 },
         { id: 'dep-32', pos: 32, label: "tu turno",        type: "phrase",      action: "speak", pictogramId: 34713 },
         { id: 'dep-33', pos: 33, label: "de",              type: "preposition", action: "speak", pictogramId: 7074 },
-        { id: 'dep-34', pos: 34, label: "Básquetbol",      type: "folder",      action: "navigate", folderTarget: "basquetbol"  },
-        { id: 'dep-35', pos: 35, label: "Boliche",         type: "folder",      action: "navigate", folderTarget: "boliche" },
+        { id: 'dep-34', pos: 34, label: "Básquetbol",      type: "folder",      action: "navigate", folderTarget: "basquetbol", pictogramId: 10166  },
+        { id: 'dep-35', pos: 35, label: "Boliche",         type: "folder",      action: "navigate", folderTarget: "boliche", pictogramId: 2283 },
 
         { id: 'dep-36', pos: 36, label: "Futbol americano",type: "folder",      action: "navigate", folderTarget: "futbol_americano", pictogramId: 19530 },
-        { id: 'dep-37', pos: 37, label: "Cricket",              type: "folder",      action: "navigate", folderTarget: "cricket" },
-        { id: 'dep-38', pos: 38, label: "maratón",               type: "noun",        action: "speak" },
+        { id: 'dep-37', pos: 37, label: "Cricket",              type: "folder",      action: "navigate", folderTarget: "cricket", pictogramId: 6641 },
+        { id: 'dep-38', pos: 38, label: "maratón",               type: "noun",        action: "speak", pictogramId: 6465 },
         { id: 'dep-39', pos: 39, label: "Carreras de caballos",  type: "folder",      action: "navigate", folderTarget: "carreras_caballos", pictogramId: 34830 },
         { id: 'dep-40', pos: 40, label: "premio",          type: "noun",        action: "speak", pictogramId: 26845 },
         { id: 'dep-41', pos: 41, label: "flecha",          type: "noun",        action: "speak", pictogramId: 5471 },
@@ -4815,7 +4815,7 @@ export const AAC_PAGES = {
     'deportes_cosas_2': [
 
         { id: 'dep2-0',  pos: 0,  label: "Beisbol",               type: "folder", action: "navigate", folderTarget: "beisbol", pictogramId: 10165 },
-        { id: 'dep2-1',  pos: 1,  label: "Automovilismo",         type: "folder", action: "navigate", folderTarget: "automovilismo" },
+        { id: 'dep2-1',  pos: 1,  label: "Automovilismo",         type: "folder", action: "navigate", folderTarget: "automovilismo", pictogramId: 34880 },
         { id: 'dep2-2',  pos: 2,  label: "casco para bici",       type: "noun",   action: "speak", pictogramId: 39563 },
         { id: 'dep2-3',  pos: 3,  label: "esquí a campo traviesa",type: "noun",   action: "speak", pictogramId: 38716 },
         { id: 'dep2-4',  pos: 4,  label: "hockey sobre pasto",    type: "noun",   action: "speak", pictogramId: 3113 },
@@ -4826,16 +4826,16 @@ export const AAC_PAGES = {
 
         { id: 'dep2-9',  pos: 9,  label: "ping pong",             type: "noun",   action: "speak", pictogramId: 2471 },
         { id: 'dep2-10', pos: 10, label: "carrera",               type: "noun",   action: "speak", pictogramId: 11205 },
-        { id: 'dep2-11', pos: 11, label: "patineta",              type: "noun",   action: "speak" },
+        { id: 'dep2-11', pos: 11, label: "patineta",              type: "noun",   action: "speak", pictogramId: 2507 },
         { id: 'dep2-12', pos: 12, label: "esquí",                 type: "noun",   action: "speak", pictogramId: 16701 },
         { id: 'dep2-13', pos: 13, label: "snowboarding",          type: "noun",   action: "speak", pictogramId: 29810 },
         { id: 'dep2-14', pos: 14, label: "Súper Tazón",           type: "noun",   action: "speak", pictogramId: 9091 },
         { id: 'dep2-15', pos: 15, label: "surfear",               type: "verb",   action: "speak", pictogramId: 32928 },
-        { id: 'dep2-16', pos: 16, label: "tee ball",              type: "noun",   action: "speak" },
+        { id: 'dep2-16', pos: 16, label: "tee ball",              type: "noun",   action: "speak", pictogramId: 6281 },
         { id: 'dep2-17', pos: 17, label: "equipo",                type: "noun",   action: "speak", pictogramId: 15262 },
 
         { id: 'dep2-18', pos: 18, label: "tenis",                 type: "noun",   action: "speak", pictogramId: 10158 },
-        { id: 'dep2-19', pos: 19, label: "empate",                type: "noun",   action: "speak" },
+        { id: 'dep2-19', pos: 19, label: "empate",                type: "noun",   action: "speak", pictogramId: 16182 },
         { id: 'dep2-20', pos: 20, label: "voleibol",              type: "noun",   action: "speak", pictogramId: 10167 },
         { id: 'dep2-21', pos: 21, label: "esquí acuático",        type: "noun",   action: "speak", pictogramId: 9189 },
         { id: 'dep2-22', pos: 22, label: "lucha",                 type: "noun",   action: "speak", pictogramId: 37041 },
@@ -4867,7 +4867,7 @@ export const AAC_PAGES = {
         { id: 'bsk-17', pos: 17, label: "ya terminé",             type: "adjective",   action: "speak" },
 
         { id: 'bsk-18', pos: 18, label: "encestar",               type: "verb",        action: "speak", pictogramId: 6487 },
-        { id: 'bsk-19', pos: 19, label: "escoltar",               type: "verb",        action: "speak" },
+        { id: 'bsk-19', pos: 19, label: "escoltar",               type: "verb",        action: "speak", pictogramId: 25762 },
         { id: 'bsk-20', pos: 20, label: "parar",                  type: "verb",        action: "speak", pictogramId: 7196 },
         { id: 'bsk-21', pos: 21, label: "ir",                     type: "verb",        action: "speak", pictogramId: 8142 },
         { id: 'bsk-22', pos: 22, label: "pasar",                  type: "verb",        action: "speak", pictogramId: 6829 },
@@ -4876,7 +4876,7 @@ export const AAC_PAGES = {
         { id: 'bsk-25', pos: 25, label: "mal",                    type: "adjective",   action: "speak", pictogramId: 5504 },
         { id: 'bsk-26', pos: 26, label: "lanzar",                 type: "verb",        action: "speak", pictogramId: 6543 },
 
-        { id: 'bsk-27', pos: 27, label: "rebote",                 type: "noun",        action: "speak" },
+        { id: 'bsk-27', pos: 27, label: "rebote",                 type: "noun",        action: "speak", pictogramId: 27218 },
         { id: 'bsk-28', pos: 28, label: "falta",                  type: "noun",        action: "speak", pictogramId: 37641 },
         { id: 'bsk-29', pos: 29, label: "pelota de básquetbol",   type: "noun",        action: "speak", pictogramId: 27218 },
         { id: 'bsk-30', pos: 30, label: "canasta",                type: "noun",        action: "speak", pictogramId: 3260 },
@@ -4895,14 +4895,14 @@ export const AAC_PAGES = {
         { id: 'bsk2-0',  pos: 0,  label: "jugar a básquetbol",    type: "verb",  action: "speak", pictogramId: 10163 },
         { id: 'bsk2-1',  pos: 1,  label: "driblar",               type: "verb",  action: "speak", pictogramId: 39223 },
         { id: 'bsk2-2',  pos: 2,  label: "truco",                 type: "noun",  action: "speak", pictogramId: 39690 },
-        { id: 'bsk2-3',  pos: 3,  label: "uniforme de básquetbol",type: "noun",  action: "speak" },
+        { id: 'bsk2-3',  pos: 3,  label: "uniforme de básquetbol",type: "noun",  action: "speak", pictogramId: 37220 },
         { id: 'bsk2-4',  pos: 4,  label: "Locura de Marzo",       type: "noun",  action: "speak", pictogramId: 6558 },
-        { id: 'bsk2-5',  pos: 5,  label: "NBA",                   type: "noun",  action: "speak" },
-        { id: 'bsk2-6',  pos: 6,  label: "NCAA",                  type: "noun",  action: "speak" },
+        { id: 'bsk2-5',  pos: 5,  label: "NBA",                   type: "noun",  action: "speak", pictogramId: 10166 },
+        { id: 'bsk2-6',  pos: 6,  label: "NCAA",                  type: "noun",  action: "speak", pictogramId: 6641 },
         { id: 'bsk2-7',  pos: 7,  label: "cancha de básquetbol",  type: "noun",  action: "speak", pictogramId: 6186 },
         { id: 'bsk2-8',  pos: 8,  label: "equipo de básquetbol",  type: "noun",  action: "speak", pictogramId: 24665 },
 
-        { id: 'bsk2-9',  pos: 9,  label: "escolta",               type: "noun",  action: "speak" },
+        { id: 'bsk2-9',  pos: 9,  label: "escolta",               type: "noun",  action: "speak", pictogramId: 39276 },
 
         { id: 'bsk2-44', pos: 44, label: "Atrás",                 type: "navigation", action: "back", folderTarget: "basquetbol", pictogramId: 37086 },
     ] as GridCell[],
@@ -4930,7 +4930,7 @@ export const AAC_PAGES = {
         { id: 'bol-17', pos: 17, label: "ya terminé",             type: "adjective",   action: "speak" },
 
         { id: 'bol-18', pos: 18, label: "lanzar",                 type: "verb",        action: "speak", pictogramId: 6543 },
-        { id: 'bol-19', pos: 19, label: "Boliche",                type: "noun",        action: "speak" },
+        { id: 'bol-19', pos: 19, label: "Boliche",                type: "noun",        action: "speak", pictogramId: 2283 },
         { id: 'bol-20', pos: 20, label: "parar",                  type: "verb",        action: "speak", pictogramId: 7196 },
         { id: 'bol-21', pos: 21, label: "ir",                     type: "verb",        action: "speak", pictogramId: 8142 },
         { id: 'bol-22', pos: 22, label: "bola de boliche",        type: "noun",        action: "speak", pictogramId: 24891 },
@@ -4943,7 +4943,7 @@ export const AAC_PAGES = {
         { id: 'bol-28', pos: 28, label: "tarjeta de puntuación",  type: "noun",        action: "speak", pictogramId: 7269 },
         { id: 'bol-29', pos: 29, label: "zapatos de boliche",     type: "noun",        action: "speak", pictogramId: 37935 },
         { id: 'bol-30', pos: 30, label: "canalón",                type: "noun",        action: "speak", pictogramId: 10254 },
-        { id: 'bol-31', pos: 31, label: "split",                  type: "noun",        action: "speak" },
+        { id: 'bol-31', pos: 31, label: "split",                  type: "noun",        action: "speak", pictogramId: 28295 },
         { id: 'bol-32', pos: 32, label: "chuza",                  type: "noun",        action: "speak", pictogramId: 2945 },
         { id: 'bol-33', pos: 33, label: "de",                     type: "preposition", action: "speak", pictogramId: 7074 },
         { id: 'bol-34', pos: 34, label: "rampa",                  type: "noun",        action: "speak", pictogramId: 22799 },
@@ -4990,21 +4990,21 @@ export const AAC_PAGES = {
         { id: 'fa-23', pos: 23, label: "anotar",        type: "verb",        action: "speak", pictogramId: 6487 },
         { id: 'fa-24', pos: 24, label: "en",            type: "preposition", action: "speak", pictogramId: 7034 },
         { id: 'fa-25', pos: 25, label: "mal",           type: "adjective",   action: "speak", pictogramId: 5504 },
-        { id: 'fa-26', pos: 26, label: "taclear",       type: "verb",        action: "speak" },
+        { id: 'fa-26', pos: 26, label: "taclear",       type: "verb",        action: "speak", pictogramId: 19530 },
 
         { id: 'fa-27', pos: 27, label: "bola",          type: "noun",        action: "speak", pictogramId: 24891 },
         { id: 'fa-28', pos: 28, label: "primero y diez",type: "noun",        action: "speak", pictogramId: 35691 },
         { id: 'fa-29', pos: 29, label: "campo",         type: "noun",        action: "speak", pictogramId: 2683 },
         { id: 'fa-30', pos: 30, label: "partido",       type: "noun",        action: "speak", pictogramId: 6170 },
         { id: 'fa-31', pos: 31, label: "casco",         type: "noun",        action: "speak", pictogramId: 2691 },
-        { id: 'fa-32', pos: 32, label: "jugada",        type: "noun",        action: "speak" },
+        { id: 'fa-32', pos: 32, label: "jugada",        type: "noun",        action: "speak", pictogramId: 36431 },
         { id: 'fa-33', pos: 33, label: "de",            type: "preposition", action: "speak", pictogramId: 7074 },
         { id: 'fa-34', pos: 34, label: "poste de gol",  type: "noun",        action: "speak", pictogramId: 6007 },
         { id: 'fa-35', pos: 35, label: "medio tiempo",  type: "noun",        action: "speak", pictogramId: 39393 },
 
-        { id: 'fa-36', pos: 36, label: "receptor",      type: "noun",        action: "speak" },
+        { id: 'fa-36', pos: 36, label: "receptor",      type: "noun",        action: "speak", pictogramId: 8188 },
         { id: 'fa-37', pos: 37, label: "árbitro",       type: "noun",        action: "speak", pictogramId: 4564 },
-        { id: 'fa-38', pos: 38, label: "touchdown",     type: "noun",        action: "speak" },
+        { id: 'fa-38', pos: 38, label: "touchdown",     type: "noun",        action: "speak", pictogramId: 9185 },
 
         // Navigation
         { id: 'fa-44', pos: 44, label: "Más",           type: "navigation",  action: "navigate", folderTarget: "futbol_americano_2", pictogramId: 3220 },
@@ -5016,11 +5016,11 @@ export const AAC_PAGES = {
         { id: 'fa2-1',  pos: 1,  label: "ala defensiva",                     type: "noun", action: "speak", pictogramId: 5368 },
         { id: 'fa2-2',  pos: 2,  label: "zona de anotación",                 type: "noun", action: "speak", pictogramId: 38414 },
         { id: 'fa2-3',  pos: 3,  label: "entrenador",                        type: "noun", action: "speak", pictogramId: 5991 },
-        { id: 'fa2-4',  pos: 4,  label: "hombreras",                         type: "noun", action: "speak" },
+        { id: 'fa2-4',  pos: 4,  label: "hombreras",                         type: "noun", action: "speak", pictogramId: 36855 },
         { id: 'fa2-5',  pos: 5,  label: "jugador de fútbol americano",       type: "noun", action: "speak", pictogramId: 8610 },
-        { id: 'fa2-6',  pos: 6,  label: "playoffs",                          type: "noun", action: "speak" },
+        { id: 'fa2-6',  pos: 6,  label: "playoffs",                          type: "noun", action: "speak", pictogramId: 36431 },
         { id: 'fa2-7',  pos: 7,  label: "uniforme de fútbol americano",      type: "noun", action: "speak", pictogramId: 19530 },
-        { id: 'fa2-8',  pos: 8,  label: "apoyador",                          type: "noun", action: "speak" },
+        { id: 'fa2-8',  pos: 8,  label: "apoyador",                          type: "noun", action: "speak", pictogramId: 6192 },
 
         { id: 'fa2-9',  pos: 9,  label: "mariscal de campo",                 type: "noun", action: "speak", pictogramId: 5066 },
         { id: 'fa2-10', pos: 10, label: "líneas laterales de fútbol americano", type: "noun", action: "speak", pictogramId: 39408 },
@@ -5063,11 +5063,11 @@ export const AAC_PAGES = {
         { id: 'bei-26', pos: 26, label: "pelota de béisbol", type: "noun",        action: "speak", pictogramId: 8660 },
 
         { id: 'bei-27', pos: 27, label: "guante de béisbol",  type: "noun",        action: "speak", pictogramId: 8595 },
-        { id: 'bei-28', pos: 28, label: "strike",             type: "noun",        action: "speak" },
+        { id: 'bei-28', pos: 28, label: "strike",             type: "noun",        action: "speak", pictogramId: 10165 },
         { id: 'bei-29', pos: 29, label: "bola fuera de juego",type: "noun",        action: "speak", pictogramId: 36431 },
         { id: 'bei-30', pos: 30, label: "a salvo",            type: "adjective",   action: "speak", pictogramId: 39393 },
         { id: 'bei-31', pos: 31, label: "out",                type: "noun",        action: "speak", pictogramId: 4885 },
-        { id: 'bei-32', pos: 32, label: "jonrón",             type: "noun",        action: "speak" },
+        { id: 'bei-32', pos: 32, label: "jonrón",             type: "noun",        action: "speak", pictogramId: 8595 },
         { id: 'bei-33', pos: 33, label: "de",                 type: "preposition", action: "speak", pictogramId: 7074 },
         { id: 'bei-34', pos: 34, label: "primera base",       type: "noun",        action: "speak", pictogramId: 31334 },
         { id: 'bei-35', pos: 35, label: "plato",              type: "noun",        action: "speak", pictogramId: 16857 },
@@ -5080,7 +5080,7 @@ export const AAC_PAGES = {
         // Más vocabulario de béisbol
         { id: 'bei2-0',  pos: 0,  label: "bate",              type: "noun",      action: "speak", pictogramId: 8501 },
         { id: 'bei2-1',  pos: 1,  label: "casco de béisbol", type: "noun",      action: "speak", pictogramId: 2691 },
-        { id: 'bei2-2',  pos: 2,  label: "uniforme",          type: "noun",      action: "speak", pictogramId: 5623 },
+        { id: 'bei2-2',  pos: 2,  label: "uniforme",          type: "noun",      action: "speak", pictogramId: 37220 },
         { id: 'bei2-3',  pos: 3,  label: "segunda base",      type: "noun",      action: "speak", pictogramId: 31334 },
         { id: 'bei2-4',  pos: 4,  label: "tercera base",      type: "noun",      action: "speak", pictogramId: 31334 },
         { id: 'bei2-5',  pos: 5,  label: "lanzador",          type: "noun",      action: "speak", pictogramId: 17259 },
@@ -5088,7 +5088,7 @@ export const AAC_PAGES = {
         { id: 'bei2-7',  pos: 7,  label: "árbitro",           type: "noun",      action: "speak", pictogramId: 4564 },
         { id: 'bei2-8',  pos: 8,  label: "entrada",           type: "noun",      action: "speak", pictogramId: 7034 },
         { id: 'bei2-9',  pos: 9,  label: "robar base",        type: "verb",      action: "speak", pictogramId: 36587 },
-        { id: 'bei2-10', pos: 10, label: "empate",            type: "noun",      action: "speak", pictogramId: 5399 },
+        { id: 'bei2-10', pos: 10, label: "empate",            type: "noun",      action: "speak", pictogramId: 8610 },
         { id: 'bei2-11', pos: 11, label: "equipo",            type: "noun",      action: "speak", pictogramId: 15262 },
         { id: 'bei2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "beisbol", pictogramId: 37086 }
     ] as GridCell[],
@@ -5119,8 +5119,8 @@ export const AAC_PAGES = {
         { id: 'auto-19', pos: 19, label: "chocar",                type: "verb",        action: "speak", pictogramId: 4551 },
         { id: 'auto-20', pos: 20, label: "parar",                 type: "verb",        action: "speak", pictogramId: 7196 },
         { id: 'auto-21', pos: 21, label: "ir",                    type: "verb",        action: "speak", pictogramId: 8142 },
-        { id: 'auto-22', pos: 22, label: "rebasar",               type: "verb",        action: "speak" },
-        { id: 'auto-23', pos: 23, label: "NASCAR",                type: "noun",        action: "speak" },
+        { id: 'auto-22', pos: 22, label: "rebasar",               type: "verb",        action: "speak", pictogramId: 8482 },
+        { id: 'auto-23', pos: 23, label: "NASCAR",                type: "noun",        action: "speak", pictogramId: 11206 },
         { id: 'auto-24', pos: 24, label: "en",                    type: "preposition", action: "speak", pictogramId: 7034 },
         { id: 'auto-25', pos: 25, label: "mal",                   type: "adjective",   action: "speak", pictogramId: 5504 },
         { id: 'auto-26', pos: 26, label: "auto de NASCAR",        type: "noun",        action: "speak", pictogramId: 37616 },
@@ -5169,7 +5169,7 @@ export const AAC_PAGES = {
         { id: 'fml-25', pos: 25, label: "mal",                   type: "adjective",   action: "speak", pictogramId: 5504 },
         { id: 'fml-26', pos: 26, label: "botas de futbol",       type: "noun",        action: "speak", pictogramId: 16585 },
 
-        { id: 'fml-27', pos: 27, label: "descuento",             type: "noun",        action: "speak" },
+        { id: 'fml-27', pos: 27, label: "descuento",             type: "noun",        action: "speak", pictogramId: 9874 },
         { id: 'fml-28', pos: 28, label: "portería",              type: "noun",        action: "speak", pictogramId: 2535 },
         { id: 'fml-29', pos: 29, label: "penalti",               type: "noun",        action: "speak", pictogramId: 27021 },
         { id: 'fml-30', pos: 30, label: "tarjeta roja",          type: "noun",        action: "speak", pictogramId: 8371 },
@@ -5189,14 +5189,14 @@ export const AAC_PAGES = {
 
     'futbol_mls_2': [
 
-        { id: 'fml2-0',  pos: 0,  label: "FIFA",                     type: "noun", action: "speak" },
-        { id: 'fml2-1',  pos: 1,  label: "Major League Soccer",      type: "noun", action: "speak" },
+        { id: 'fml2-0',  pos: 0,  label: "FIFA",                     type: "noun", action: "speak", pictogramId: 16743 },
+        { id: 'fml2-1',  pos: 1,  label: "Major League Soccer",      type: "noun", action: "speak", pictogramId: 16743 },
         { id: 'fml2-2',  pos: 2,  label: "MLS Eastern Division",     type: "noun", action: "speak", pictogramId: 5707 },
         { id: 'fml2-3',  pos: 3,  label: "New England Revolution",   type: "noun", action: "speak", pictogramId: 8261 },
         { id: 'fml2-4',  pos: 4,  label: "temporada de fútbol",      type: "noun", action: "speak", pictogramId: 8610 },
         { id: 'fml2-5',  pos: 5,  label: "estadio de fútbol",        type: "noun", action: "speak", pictogramId: 5993 },
-        { id: 'fml2-6',  pos: 6,  label: "Socceroos",                type: "noun", action: "speak" },
-        { id: 'fml2-7',  pos: 7,  label: "Western MLS",              type: "noun", action: "speak" },
+        { id: 'fml2-6',  pos: 6,  label: "Socceroos",                type: "noun", action: "speak", pictogramId: 8610 },
+        { id: 'fml2-7',  pos: 7,  label: "Western MLS",              type: "noun", action: "speak", pictogramId: 8610 },
         { id: 'fml2-8',  pos: 8,  label: "Copa Mundial",             type: "noun", action: "speak", pictogramId: 9074 },
 
         { id: 'fml2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "futbol_mls", pictogramId: 37086 },
@@ -5224,11 +5224,11 @@ export const AAC_PAGES = {
         { id: 'pens-16', pos: 16, label: "deseo",        type: "noun",        action: "speak", pictogramId: 38001 },
         { id: 'pens-17', pos: 17, label: "ya terminé",   type: "adjective",   action: "speak" },
 
-        { id: 'pens-18', pos: 18, label: "discurso",     type: "noun",        action: "speak" },
+        { id: 'pens-18', pos: 18, label: "discurso",     type: "noun",        action: "speak", pictogramId: 6517 },
         { id: 'pens-19', pos: 19, label: "idea",         type: "noun",        action: "speak", pictogramId: 6019 },
         { id: 'pens-20', pos: 20, label: "mala idea",    type: "noun",        action: "speak", pictogramId: 13378 },
         { id: 'pens-21', pos: 21, label: "mente",        type: "noun",        action: "speak", pictogramId: 3210 },
-        { id: 'pens-22', pos: 22, label: "mentira",      type: "noun",        action: "speak" },
+        { id: 'pens-22', pos: 22, label: "mentira",      type: "noun",        action: "speak", pictogramId: 31195 },
         { id: 'pens-23', pos: 23, label: "muerte",       type: "noun",        action: "speak", pictogramId: 16359 },
         { id: 'pens-24', pos: 24, label: "oración",      type: "noun",        action: "speak", pictogramId: 30850 },
         { id: 'pens-25', pos: 25, label: "pensamiento",  type: "noun",        action: "speak", pictogramId: 26310 },
@@ -5236,13 +5236,13 @@ export const AAC_PAGES = {
 
         { id: 'pens-27', pos: 27, label: "plan",         type: "noun",        action: "speak", pictogramId: 2528 },
         { id: 'pens-28', pos: 28, label: "problema",     type: "noun",        action: "speak", pictogramId: 5556 },
-        { id: 'pens-29', pos: 29, label: "promesa",      type: "noun",        action: "speak" },
+        { id: 'pens-29', pos: 29, label: "promesa", pictogramId: 27268,      type: "noun",        action: "speak" },
         { id: 'pens-30', pos: 30, label: "razón",        type: "noun",        action: "speak", pictogramId: 5739 },
         { id: 'pens-31', pos: 31, label: "respuesta",    type: "noun",        action: "speak", pictogramId: 39692 },
         { id: 'pens-32', pos: 32, label: "soñar",        type: "verb",        action: "speak", pictogramId: 7257 },
         { id: 'pens-33', pos: 33, label: "verdad",       type: "noun",        action: "speak", pictogramId: 8715 },
         { id: 'pens-34', pos: 34, label: "vida",         type: "noun",        action: "speak", pictogramId: 8717 },
-        { id: 'pens-35', pos: 35, label: "talento",      type: "noun",        action: "speak" },
+        { id: 'pens-35', pos: 35, label: "talento",      type: "noun",        action: "speak", pictogramId: 34312 },
 
         { id: 'pens-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "pensamientos_2", pictogramId: 3220 },
     ] as GridCell[],
@@ -5282,7 +5282,7 @@ export const AAC_PAGES = {
         { id: 'herr-18', pos: 18, label: "cuerda",                type: "noun",        action: "speak", pictogramId: 7006 },
         { id: 'herr-19', pos: 19, label: "destornillador",        type: "noun",        action: "speak", pictogramId: 2736 },
         { id: 'herr-20', pos: 20, label: "escalera",              type: "noun",        action: "speak", pictogramId: 2379 },
-        { id: 'herr-21', pos: 21, label: "flexómetro",            type: "noun",        action: "speak" },
+        { id: 'herr-21', pos: 21, label: "flexómetro",            type: "noun",        action: "speak", pictogramId: 11219 },
         { id: 'herr-22', pos: 22, label: "linterna",              type: "noun",        action: "speak", pictogramId: 6138 },
         { id: 'herr-23', pos: 23, label: "llave inglesa",         type: "noun",        action: "speak", pictogramId: 2937 },
         { id: 'herr-24', pos: 24, label: "manguera",              type: "noun",        action: "speak", pictogramId: 2929 },
@@ -5290,7 +5290,7 @@ export const AAC_PAGES = {
         { id: 'herr-26', pos: 26, label: "pala",                  type: "noun",        action: "speak", pictogramId: 2867 },
 
         { id: 'herr-27', pos: 27, label: "pinzas",                type: "noun",        action: "speak", pictogramId: 2833 },
-        { id: 'herr-28', pos: 28, label: "podadora",              type: "noun",        action: "speak" },
+        { id: 'herr-28', pos: 28, label: "podadora",              type: "noun",        action: "speak", pictogramId: 37875 },
         { id: 'herr-29', pos: 29, label: "sopladora de hojas",    type: "noun",        action: "speak", pictogramId: 28571 },
         { id: 'herr-30', pos: 30, label: "taladro",               type: "noun",        action: "speak", pictogramId: 3392 },
         { id: 'herr-31', pos: 31, label: "clavo",                 type: "noun",        action: "speak", pictogramId: 8306 },
@@ -5303,11 +5303,11 @@ export const AAC_PAGES = {
     'herramientas_2': [
         // Más herramientas y equipo
         { id: 'herr2-0',  pos: 0,  label: "alicates",            type: "noun", action: "speak", pictogramId: 2644 },
-        { id: 'herr2-1',  pos: 1,  label: "atornillador",       type: "noun", action: "speak", pictogramId: 3392 },
+        { id: 'herr2-1',  pos: 1,  label: "atornillador",       type: "noun", action: "speak", pictogramId: 2736 },
         { id: 'herr2-2',  pos: 2,  label: "cinta adhesiva",     type: "noun", action: "speak", pictogramId: 27681 },
         { id: 'herr2-3',  pos: 3,  label: "cinta métrica",      type: "noun", action: "speak", pictogramId: 11219 },
         { id: 'herr2-4',  pos: 4,  label: "cubo",               type: "noun", action: "speak", pictogramId: 2725 },
-        { id: 'herr2-5',  pos: 5,  label: "engrapadora",        type: "noun", action: "speak", pictogramId: 3368 },
+        { id: 'herr2-5',  pos: 5,  label: "engrapadora",        type: "noun", action: "speak", pictogramId: 2413 },
         { id: 'herr2-6',  pos: 6,  label: "esponja",            type: "noun", action: "speak", pictogramId: 2749 },
         { id: 'herr2-7',  pos: 7,  label: "guantes de trabajo", type: "noun", action: "speak", pictogramId: 9147 },
         { id: 'herr2-8',  pos: 8,  label: "lija",               type: "noun", action: "speak", pictogramId: 5498 },
@@ -5337,7 +5337,7 @@ export const AAC_PAGES = {
         { id: 'jug-14', pos: 14, label: "marioneta",       type: "noun", action: "speak", pictogramId: 5399 },
         { id: 'jug-15', pos: 15, label: "bicicleta",       type: "noun", action: "speak", pictogramId: 6935 },
         { id: 'jug-16', pos: 16, label: "patines",         type: "noun", action: "speak", pictogramId: 2506 },
-        { id: 'jug-17', pos: 17, label: "patineta",        type: "noun", action: "speak", pictogramId: 7200 },
+        { id: 'jug-17', pos: 17, label: "patineta",        type: "noun", action: "speak", pictogramId: 2507 },
         { id: 'jug-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
     ] as GridCell[],
     'primavera': [
@@ -5346,7 +5346,7 @@ export const AAC_PAGES = {
         { id: 'pri-2',  pos: 2,  label: "pájaro",        type: "noun", action: "speak", pictogramId: 2490 },
         { id: 'pri-3',  pos: 3,  label: "mariposa",      type: "noun", action: "speak", pictogramId: 26200 },
         { id: 'pri-4',  pos: 4,  label: "jardín",        type: "noun", action: "speak", pictogramId: 2434 },
-        { id: 'pri-5',  pos: 5,  label: "arcoíris",      type: "noun", action: "speak", pictogramId: 5534 },
+        { id: 'pri-5',  pos: 5,  label: "arcoíris",      type: "noun", action: "speak", pictogramId: 2986 },
         { id: 'pri-6',  pos: 6,  label: "abeja",         type: "noun", action: "speak", pictogramId: 24823 },
         { id: 'pri-7',  pos: 7,  label: "planta",        type: "noun", action: "speak", pictogramId: 3143 },
         { id: 'pri-8',  pos: 8,  label: "semilla",       type: "noun", action: "speak", pictogramId: 8689 },
@@ -5373,7 +5373,7 @@ export const AAC_PAGES = {
         { id: 'oto-1',  pos: 1,  label: "calabaza",      type: "noun", action: "speak", pictogramId: 2679 },
         { id: 'oto-2',  pos: 2,  label: "Halloween",     type: "noun", action: "speak", pictogramId: 6951 },
         { id: 'oto-3',  pos: 3,  label: "manzana",       type: "noun", action: "speak", pictogramId: 2462 },
-        { id: 'oto-4',  pos: 4,  label: "cosecha",       type: "noun", action: "speak", pictogramId: 2982 },
+        { id: 'oto-4',  pos: 4,  label: "cosecha",       type: "noun", action: "speak", pictogramId: 9043 },
         { id: 'oto-5',  pos: 5,  label: "escoba",        type: "noun", action: "speak", pictogramId: 2693 },
         { id: 'oto-6',  pos: 6,  label: "disfraces",     type: "noun", action: "speak", pictogramId: 5985 },
         { id: 'oto-7',  pos: 7,  label: "castaña",       type: "noun", action: "speak", pictogramId: 8302 },
@@ -5444,39 +5444,39 @@ export const AAC_PAGES = {
         // Fila 3
         { id: 'art-18', pos: 18, label: "lapicero", type: "noun", action: "speak", pictogramId: 2440 },
         { id: 'art-19', pos: 19, label: "borrador", type: "noun", action: "speak", pictogramId: 2409 },
-        { id: 'art-20', pos: 20, label: "stickers", type: "noun", action: "speak" },
+        { id: 'art-20', pos: 20, label: "stickers", pictogramId: 37499, type: "noun", action: "speak" },
         { id: 'art-21', pos: 21, label: "cartulina", type: "noun", action: "speak", pictogramId: 17208 },
         { id: 'art-22', pos: 22, label: "cinta adhesiva", type: "noun", action: "speak", pictogramId: 27681 },
-        { id: 'art-23', pos: 23, label: "crayola", type: "noun", action: "speak" },
+        { id: 'art-23', pos: 23, label: "crayola", type: "noun", action: "speak", pictogramId: 2992 },
         { id: 'art-24', pos: 24, label: "mandil", type: "noun", action: "speak", pictogramId: 2366 },
-        { id: 'art-25', pos: 25, label: "escarcha", type: "noun", action: "speak" },
-        { id: 'art-26', pos: 26, label: "engrapadora", type: "noun", action: "speak" },
+        { id: 'art-25', pos: 25, label: "escarcha", type: "noun", action: "speak", pictogramId: 36437 },
+        { id: 'art-26', pos: 26, label: "engrapadora", type: "noun", action: "speak", pictogramId: 2413 },
 
         // Fila 4
         { id: 'art-27', pos: 27, label: "lápiz", type: "noun", action: "speak", pictogramId: 2440 },
-        { id: 'art-28', pos: 28, label: "plumón", type: "noun", action: "speak" },
+        { id: 'art-28', pos: 28, label: "plumón", type: "noun", action: "speak", pictogramId: 36722 },
         { id: 'art-29', pos: 29, label: "papel", type: "noun", action: "speak", pictogramId: 8349 },
         { id: 'art-30', pos: 30, label: "goma", type: "noun", action: "speak", pictogramId: 2409 },
         { id: 'art-31', pos: 31, label: "goma en barra", type: "noun", action: "speak", pictogramId: 38853 },
         { id: 'art-32', pos: 32, label: "perforadora", type: "noun", action: "speak", pictogramId: 24420 },
         { id: 'art-33', pos: 33, label: "pincel", type: "noun", action: "speak", pictogramId: 2523 },
-        { id: 'art-34', pos: 34, label: "témpera", type: "noun", action: "speak" },
+        { id: 'art-34', pos: 34, label: "témpera", type: "noun", action: "speak", pictogramId: 11177 },
         { id: 'art-35', pos: 35, label: "plastilina", type: "noun", action: "speak", pictogramId: 2529 },
 
         // Fila 5
         { id: 'art-36', pos: 36, label: "regla", type: "noun", action: "speak", pictogramId: 32490 },
         { id: 'art-37', pos: 37, label: "tijera", type: "noun", action: "speak", pictogramId: 4964 },
-        { id: 'art-38', pos: 38, label: "tajador", type: "noun", action: "speak" },
-        { id: 'art-39', pos: 39, label: "cartuchera", type: "noun", action: "speak" },
+        { id: 'art-38', pos: 38, label: "tajador", type: "noun", action: "speak", pictogramId: 2553 },
+        { id: 'art-39', pos: 39, label: "cartuchera", type: "noun", action: "speak", pictogramId: 17016 },
         { id: 'art-40', pos: 40, label: "cuaderno", type: "noun", action: "speak", pictogramId: 2359 },
         { id: 'art-41', pos: 41, label: "lápices", type: "noun", action: "speak", pictogramId: 2440 },
         { id: 'art-42', pos: 42, label: "pintura", type: "noun", action: "speak", pictogramId: 4870 },
-        { id: 'art-43', pos: 43, label: "limpiatipo", type: "noun", action: "speak" },
+        { id: 'art-43', pos: 43, label: "limpiatipo", type: "noun", action: "speak", pictogramId: 30614 },
         { id: 'art-44', pos: 44, label: "Más", type: "navigation", action: "navigate", folderTarget: "articulos_arte_2", pictogramId: 3220 }
     ] as GridCell[],
 
     'articulos_arte_2': [
-        { id: 'art2-0', pos: 0, label: "folder", type: "noun", action: "speak" },
+        { id: 'art2-0', pos: 0, label: "folder", type: "noun", action: "speak", pictogramId: 3233 },
         { id: 'art2-1', pos: 1, label: "lana", type: "noun", action: "speak", pictogramId: 2948 },
         { id: 'art2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "articulos_arte", pictogramId: 37086 }
     ] as GridCell[],
@@ -5547,21 +5547,21 @@ export const AAC_PAGES = {
         { id: 'cri-16', pos: 16, label: "bien",                type: "adjective",   action: "speak", pictogramId: 5397 },
         { id: 'cri-17', pos: 17, label: "ya terminé",          type: "phrase",      action: "speak" },
 
-        { id: 'cri-18', pos: 18, label: "cricket",             type: "noun",        action: "speak" },
-        { id: 'cri-19', pos: 19, label: "bateador",            type: "noun",        action: "speak" },
+        { id: 'cri-18', pos: 18, label: "cricket",             type: "noun",        action: "speak", pictogramId: 7010 },
+        { id: 'cri-19', pos: 19, label: "bateador",            type: "noun",        action: "speak", pictogramId: 8502 },
         { id: 'cri-20', pos: 20, label: "parar",               type: "verb",        action: "speak", pictogramId: 7196 },
         { id: 'cri-21', pos: 21, label: "ir",                  type: "verb",        action: "speak", pictogramId: 8142 },
-        { id: 'cri-22', pos: 22, label: "boleador",            type: "noun",        action: "speak" },
+        { id: 'cri-22', pos: 22, label: "boleador",            type: "noun",        action: "speak", pictogramId: 6543 },
         { id: 'cri-23', pos: 23, label: "Cricket Australia",   type: "noun",        action: "speak", pictogramId: 21393 },
         { id: 'cri-24', pos: 24, label: "en",                  type: "preposition", action: "speak", pictogramId: 7034 },
         { id: 'cri-25', pos: 25, label: "mal",                 type: "adjective",   action: "speak", pictogramId: 5504 },
-        { id: 'cri-26', pos: 26, label: "travesáño de cricket", type: "noun",        action: "speak" },
+        { id: 'cri-26', pos: 26, label: "travesáño de cricket", type: "noun",        action: "speak", pictogramId: 2535 },
 
         { id: 'cri-27', pos: 27, label: "pelota de cricket",   type: "noun",        action: "speak", pictogramId: 27218 },
         { id: 'cri-28', pos: 28, label: "bat",                 type: "noun",        action: "speak", pictogramId: 36121 },
         { id: 'cri-29', pos: 29, label: "partido de cricket",  type: "noun",        action: "speak", pictogramId: 31184 },
         { id: 'cri-30', pos: 30, label: "equipo de cricket",   type: "noun",        action: "speak", pictogramId: 24665 },
-        { id: 'cri-31', pos: 31, label: "fildeador",           type: "noun",        action: "speak" },
+        { id: 'cri-31', pos: 31, label: "fildeador",           type: "noun",        action: "speak", pictogramId: 27218 },
         { id: 'cri-33', pos: 33, label: "de",                  type: "preposition", action: "speak", pictogramId: 7074 },
 
         // Navigation — single page, back to sports hub
@@ -5638,11 +5638,11 @@ export const AAC_PAGES = {
         { id: 'bur-22', pos: 22, label: "tomar", type: "verb", action: "speak", pictogramId: 10148 },
         { id: 'bur-23', pos: 23, label: "varita", type: "noun", action: "speak", pictogramId: 6240 },
         { id: 'bur-24', pos: 24, label: "en", type: "preposition", action: "speak", pictogramId: 7034 },
-        { id: 'bur-25', pos: 25, label: "húmedo", type: "adjective", action: "speak" },
-        { id: 'bur-26', pos: 26, label: "tonto", type: "adjective", action: "speak" },
+        { id: 'bur-25', pos: 25, label: "húmedo", type: "adjective", action: "speak", pictogramId: 25253 },
+        { id: 'bur-26', pos: 26, label: "tonto", type: "adjective", action: "speak", pictogramId: 8593 },
 
         // Fila 4
-        { id: 'bur-27', pos: 27, label: "reventar", type: "verb", action: "speak" },
+        { id: 'bur-27', pos: 27, label: "reventar", type: "verb", action: "speak", pictogramId: 30954 },
         { id: 'bur-28', pos: 28, label: "derramar", type: "verb", action: "speak", pictogramId: 5982 },
         { id: 'bur-29', pos: 29, label: "limpiar", type: "verb", action: "speak", pictogramId: 3351 },
         { id: 'bur-30', pos: 30, label: "ayudar", type: "verb", action: "speak", pictogramId: 32648 },
@@ -5650,7 +5650,7 @@ export const AAC_PAGES = {
         { id: 'bur-32', pos: 32, label: "botella", type: "noun", action: "speak", pictogramId: 2288 },
         { id: 'bur-33', pos: 33, label: "tapón", type: "noun", action: "speak", pictogramId: 7267 },
         { id: 'bur-34', pos: 34, label: "mano", type: "noun", action: "speak", pictogramId: 2928 },
-        { id: 'bur-35', pos: 35, label: "brilloso", type: "adjective", action: "speak" },
+        { id: 'bur-35', pos: 35, label: "brilloso", type: "adjective", action: "speak", pictogramId: 6475 },
 
         // Fila 5
         { id: 'bur-36', pos: 36, label: "atrapar", type: "verb", action: "speak", pictogramId: 8188 },
@@ -5683,7 +5683,7 @@ export const AAC_PAGES = {
         { id: 'sup-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
         { id: 'sup-14', pos: 14, label: "delicioso", type: "adjective", action: "speak", pictogramId: 32340 },
         { id: 'sup-15', pos: 15, label: "a", type: "preposition", action: "speak", pictogramId: 3021 },
-        { id: 'sup-16', pos: 16, label: "suficiente", type: "adjective", action: "speak" },
+        { id: 'sup-16', pos: 16, label: "suficiente", type: "adjective", action: "speak", pictogramId: 28429 },
         { id: 'sup-17', pos: 17, label: "ya terminé", type: "adverb", action: "speak" },
 
         // Fila 3
@@ -5734,18 +5734,18 @@ export const AAC_PAGES = {
         // Row 2 (ca → co)
         { id: 'edif-9',  pos: 9,  label: "calefacción",     type: "noun", action: "speak", pictogramId: 34872 },
         { id: 'edif-10', pos: 10, label: "canaleta",        type: "noun", action: "speak", pictogramId: 36189 },
-        { id: 'edif-11', pos: 11, label: "cantera",         type: "noun", action: "speak" },
+        { id: 'edif-11', pos: 11, label: "cantera",         type: "noun", action: "speak", pictogramId: 6594 },
         { id: 'edif-12', pos: 12, label: "cartel",          type: "noun", action: "speak", pictogramId: 8064 },
-        { id: 'edif-13', pos: 13, label: "celosía",         type: "noun", action: "speak" },
+        { id: 'edif-13', pos: 13, label: "celosía",         type: "noun", action: "speak", pictogramId: 11162 },
         { id: 'edif-14', pos: 14, label: "cerradura",       type: "noun", action: "speak", pictogramId: 3261 },
-        { id: 'edif-15', pos: 15, label: "cobertizo",       type: "noun", action: "speak" },
+        { id: 'edif-15', pos: 15, label: "cobertizo",       type: "noun", action: "speak", pictogramId: 6003 },
         { id: 'edif-16', pos: 16, label: "columna",         type: "noun", action: "speak", pictogramId: 31308 },
         { id: 'edif-17', pos: 17, label: "comedor",         type: "noun", action: "speak", pictogramId: 5970 },
 
         // Row 3 (co → do)
         { id: 'edif-18', pos: 18, label: "corredor",        type: "noun", action: "speak", pictogramId: 8544 },
         { id: 'edif-19', pos: 19, label: "cuarto",          type: "noun", action: "speak", pictogramId: 5436 },
-        { id: 'edif-20', pos: 20, label: "desván",          type: "noun", action: "speak" },
+        { id: 'edif-20', pos: 20, label: "desván",          type: "noun", action: "speak", pictogramId: 25819 },
         { id: 'edif-21', pos: 21, label: "dormitorio",      type: "noun", action: "speak", pictogramId: 5988 },
         { id: 'edif-22', pos: 22, label: "ducha",           type: "noun", action: "speak", pictogramId: 32426 },
         { id: 'edif-23', pos: 23, label: "entrada",         type: "noun", action: "speak", pictogramId: 11254 },
@@ -5754,7 +5754,7 @@ export const AAC_PAGES = {
         { id: 'edif-26', pos: 26, label: "fachada",         type: "noun", action: "speak", pictogramId: 39779 },
 
         // Row 4 (ga → pu)
-        { id: 'edif-27', pos: 27, label: "garage",          type: "noun", action: "speak" },
+        { id: 'edif-27', pos: 27, label: "garage",          type: "noun", action: "speak", pictogramId: 6003 },
         { id: 'edif-28', pos: 28, label: "grifo",           type: "noun", action: "speak", pictogramId: 2414 },
         { id: 'edif-29', pos: 29, label: "habitación",      type: "noun", action: "speak", pictogramId: 5988 },
         { id: 'edif-30', pos: 30, label: "jardín",          type: "noun", action: "speak", pictogramId: 2434 },
@@ -5770,7 +5770,7 @@ export const AAC_PAGES = {
         { id: 'edif-38', pos: 38, label: "sala",            type: "noun", action: "speak", pictogramId: 30387 },
         { id: 'edif-39', pos: 39, label: "sótano",          type: "noun", action: "speak", pictogramId: 8223 },
         { id: 'edif-40', pos: 40, label: "terraza",         type: "noun", action: "speak", pictogramId: 22129 },
-        { id: 'edif-41', pos: 41, label: "umbral",          type: "noun", action: "speak" },
+        { id: 'edif-41', pos: 41, label: "umbral",          type: "noun", action: "speak", pictogramId: 4687 },
         { id: 'edif-42', pos: 42, label: "ventana",         type: "noun", action: "speak", pictogramId: 2611 },
         { id: 'edif-43', pos: 43, label: "ventilación",     type: "noun", action: "speak", pictogramId: 28043 },
         { id: 'edif-44', pos: 44, label: "Más",             type: "navigation", action: "navigate", folderTarget: "edificios_2", pictogramId: 3220 }
@@ -5783,9 +5783,9 @@ export const AAC_PAGES = {
         { id: 'edif2-2',  pos: 2,  label: "escalera eléctrica",   type: "noun", action: "speak", pictogramId: 38151 },
         { id: 'edif2-3',  pos: 3,  label: "papel tapiz",          type: "noun", action: "speak", pictogramId: 30981 },
         { id: 'edif2-4',  pos: 4,  label: "perilla",              type: "noun", action: "speak", pictogramId: 38536 },
-        { id: 'edif2-5',  pos: 5,  label: "portón",               type: "noun", action: "speak" },
+        { id: 'edif2-5',  pos: 5,  label: "portón",               type: "noun", action: "speak", pictogramId: 4687 },
         { id: 'edif2-6',  pos: 6,  label: "puertas automáticas",  type: "noun", action: "speak", pictogramId: 36698 },
-        { id: 'edif2-7',  pos: 7,  label: "repisa",               type: "noun", action: "speak" },
+        { id: 'edif2-7',  pos: 7,  label: "repisa",               type: "noun", action: "speak", pictogramId: 37937 },
         { id: 'edif2-8',  pos: 8,  label: "techo",                type: "noun", action: "speak", pictogramId: 2583 },
 
         // Row 2 (2 items: tejado, timbre — remaining cells empty per R3)
@@ -5832,10 +5832,10 @@ export const AAC_PAGES = {
         { id: 'lec-28', pos: 28, label: "periódico",    type: "noun",     action: "speak", pictogramId: 2845 },
         { id: 'lec-29', pos: 29, label: "página",       type: "noun",     action: "speak", pictogramId: 20115 },
         { id: 'lec-30', pos: 30, label: "historia",     type: "noun",     action: "speak", pictogramId: 32634 },
-        { id: 'lec-31', pos: 31, label: "léeme",        type: "phrase",   action: "speak" },
+        { id: 'lec-31', pos: 31, label: "léeme",        type: "phrase",   action: "speak", pictogramId: 30872 },
         { id: 'lec-32', pos: 32, label: "Leer otra vez",type: "phrase",   action: "speak", pictogramId: 30872 },
         { id: 'lec-33', pos: 33, label: "Libros",       type: "folder",   action: "navigate", folderTarget: "libros", pictogramId: 25191 },  // R6 — subcategory embedded
-        { id: 'lec-34', pos: 34, label: "DC Comics",    type: "noun",     action: "speak" },
+        { id: 'lec-34', pos: 34, label: "DC Comics",    type: "noun",     action: "speak", pictogramId: 8227 },
         { id: 'lec-35', pos: 35, label: "tarjeta de felicitación", type: "noun", action: "speak", pictogramId: 28115 },
 
         { id: 'lec-36', pos: 36, label: "oración",      type: "noun",     action: "speak", pictogramId: 30850 },
@@ -5846,19 +5846,19 @@ export const AAC_PAGES = {
 
     'lectura_2': [
 
-        { id: 'lec2-0',  pos: 0,  label: "deletrear",              type: "verb",  action: "speak"  },  // Pinned
+        { id: 'lec2-0',  pos: 0,  label: "deletrear",              type: "verb",  action: "speak", pictogramId: 34361 },  // Pinned
         { id: 'lec2-1',  pos: 1,  label: "regresar a la página anterior", type: "phrase", action: "speak", pictogramId: 39738 }, // Pinned
-        { id: 'lec2-2',  pos: 2,  label: "argumento",              type: "noun",  action: "speak" },
+        { id: 'lec2-2',  pos: 2,  label: "argumento",              type: "noun",  action: "speak", pictogramId: 32634 },
         { id: 'lec2-3',  pos: 3,  label: "audiolibro",             type: "noun",  action: "speak", pictogramId: 26650 },
         { id: 'lec2-4',  pos: 4,  label: "biblioteca",             type: "noun",  action: "speak", pictogramId: 6063 },
         { id: 'lec2-5',  pos: 5,  label: "blog",                   type: "noun",  action: "speak", pictogramId: 16577 },
         { id: 'lec2-6',  pos: 6,  label: "capítulo",               type: "noun",  action: "speak", pictogramId: 39769 },
         { id: 'lec2-7',  pos: 7,  label: "diccionario",            type: "noun",  action: "speak", pictogramId: 7024 },
-        { id: 'lec2-8',  pos: 8,  label: "eLibro",                 type: "noun",  action: "speak" },
+        { id: 'lec2-8',  pos: 8,  label: "eLibro",                 type: "noun",  action: "speak", pictogramId: 9820 },
 
-        { id: 'lec2-9',  pos: 9,  label: "Facebook",               type: "noun",  action: "speak" },
-        { id: 'lec2-10', pos: 10, label: "fónicos",                type: "noun",  action: "speak" },
-        { id: 'lec2-11', pos: 11, label: "Google",                 type: "noun",  action: "speak" },
+        { id: 'lec2-9',  pos: 9,  label: "Facebook",               type: "noun",  action: "speak", pictogramId: 3087 },
+        { id: 'lec2-10', pos: 10, label: "fónicos",                type: "noun",  action: "speak", pictogramId: 35355 },
+        { id: 'lec2-11', pos: 11, label: "Google",                 type: "noun",  action: "speak", pictogramId: 27402 },
         { id: 'lec2-12', pos: 12, label: "idea principal",         type: "noun",  action: "speak", pictogramId: 6019 },
         { id: 'lec2-13', pos: 13, label: "invitación",             type: "noun",  action: "speak", pictogramId: 37535 },
         { id: 'lec2-14', pos: 14, label: "lectura guiada",         type: "noun",  action: "speak", pictogramId: 25686 },
@@ -5868,15 +5868,15 @@ export const AAC_PAGES = {
 
         { id: 'lec2-18', pos: 18, label: "News-2-You",             type: "noun",  action: "speak", pictogramId: 29530 },
         { id: 'lec2-19', pos: 19, label: "pared de palabras",      type: "noun",  action: "speak", pictogramId: 26324 },
-        { id: 'lec2-20', pos: 20, label: "párrafo",                type: "noun",  action: "speak" },
-        { id: 'lec2-21', pos: 21, label: "personaje principal",    type: "noun",  action: "speak" },
+        { id: 'lec2-20', pos: 20, label: "párrafo",                type: "noun",  action: "speak", pictogramId: 37340 },
+        { id: 'lec2-21', pos: 21, label: "personaje principal",    type: "noun",  action: "speak", pictogramId: 8115 },
         { id: 'lec2-22', pos: 22, label: "sílaba",                 type: "noun",  action: "speak", pictogramId: 32722 },
         { id: 'lec2-23', pos: 23, label: "tarjeta de la biblioteca",type: "noun", action: "speak", pictogramId: 28115 },
         { id: 'lec2-24', pos: 24, label: "tarjeta postal",         type: "noun",  action: "speak", pictogramId: 28119 },
         { id: 'lec2-25', pos: 25, label: "tira de oraciones",      type: "noun",  action: "speak", pictogramId: 36454 },
         { id: 'lec2-26', pos: 26, label: "título",                 type: "noun",  action: "speak", pictogramId: 37406 },
 
-        { id: 'lec2-27', pos: 27, label: "twitter",                type: "noun",  action: "speak" },
+        { id: 'lec2-27', pos: 27, label: "twitter",                type: "noun",  action: "speak", pictogramId: 3087 },
 
         // Navigation — "Atrás 1" (R2)
         { id: 'lec2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "lectura", pictogramId: 37086 }
@@ -5905,7 +5905,7 @@ export const AAC_PAGES = {
         { id: 'lib-16', pos: 16, label: "leer",                 type: "verb",     action: "speak", pictogramId: 7141 },  // Contextual slot 8
         { id: 'lib-17', pos: 17, label: "ya terminé",           type: "phrase",   action: "speak" },  // R14 — finite-activity closer
 
-        { id: 'lib-18', pos: 18, label: "La Sirenita",          type: "noun",     action: "speak" },
+        { id: 'lib-18', pos: 18, label: "La Sirenita",          type: "noun",     action: "speak", pictogramId: 5589 },
 
         // Navigation — Más... 2
         { id: 'lib-44', pos: 44, label: "Más",                  type: "navigation", action: "navigate", folderTarget: "libros_2", pictogramId: 3220 }
@@ -5913,17 +5913,17 @@ export const AAC_PAGES = {
 
     'libros_2': [
         // Más títulos y géneros de libros
-        { id: 'lib2-0',  pos: 0,  label: "Harry Potter",       type: "noun", action: "speak" },
-        { id: 'lib2-1',  pos: 1,  label: "El Principito",      type: "noun", action: "speak" },
-        { id: 'lib2-2',  pos: 2,  label: "Matilda",            type: "noun", action: "speak" },
-        { id: 'lib2-3',  pos: 3,  label: "Charlie y la fábrica", type: "noun", action: "speak" },
-        { id: 'lib2-4',  pos: 4,  label: "El mundo de Nemo",   type: "noun", action: "speak" },
+        { id: 'lib2-0',  pos: 0,  label: "Harry Potter",       type: "noun", action: "speak", pictogramId: 2932 },
+        { id: 'lib2-1',  pos: 1,  label: "El Principito",      type: "noun", action: "speak", pictogramId: 25191 },
+        { id: 'lib2-2',  pos: 2,  label: "Matilda",            type: "noun", action: "speak", pictogramId: 37455 },
+        { id: 'lib2-3',  pos: 3,  label: "Charlie y la fábrica", type: "noun", action: "speak", pictogramId: 8581 },
+        { id: 'lib2-4',  pos: 4,  label: "El mundo de Nemo",   type: "noun", action: "speak", pictogramId: 2520 },
         { id: 'lib2-5',  pos: 5,  label: "cuento",             type: "noun", action: "speak", pictogramId: 2364 },
         { id: 'lib2-6',  pos: 6,  label: "poesía",             type: "noun", action: "speak", pictogramId: 22763 },
         { id: 'lib2-7',  pos: 7,  label: "novela",             type: "noun", action: "speak", pictogramId: 9820 },
         { id: 'lib2-8',  pos: 8,  label: "cómic",              type: "noun", action: "speak", pictogramId: 8227 },
         { id: 'lib2-9',  pos: 9,  label: "revista",            type: "noun", action: "speak", pictogramId: 24364 },
-        { id: 'lib2-10', pos: 10, label: "enciclopedia",       type: "noun", action: "speak", pictogramId: 27499 },
+        { id: 'lib2-10', pos: 10, label: "enciclopedia",       type: "noun", action: "speak", pictogramId: 9820 },
         { id: 'lib2-11', pos: 11, label: "diccionario",        type: "noun", action: "speak", pictogramId: 7024 },
         { id: 'lib2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "libros", pictogramId: 37086 }
     ] as GridCell[],
@@ -5954,9 +5954,9 @@ export const AAC_PAGES = {
         { id: 'esc-19', pos: 19, label: "carpeta de anillas", type: "noun",     action: "speak", pictogramId: 8828 },
         { id: 'esc-20', pos: 20, label: "cinta adhesiva",     type: "noun",     action: "speak", pictogramId: 27681 },
         { id: 'esc-21', pos: 21, label: "clip",               type: "noun",     action: "speak", pictogramId: 10309 },
-        { id: 'esc-22', pos: 22, label: "copiadora",          type: "noun",     action: "speak" },
+        { id: 'esc-22', pos: 22, label: "copiadora",          type: "noun",     action: "speak", pictogramId: 8586 },
         { id: 'esc-23', pos: 23, label: "cuaderno",           type: "noun",     action: "speak", pictogramId: 2359 },
-        { id: 'esc-24', pos: 24, label: "engrapadora",        type: "noun",     action: "speak"  },
+        { id: 'esc-24', pos: 24, label: "engrapadora",        type: "noun",     action: "speak", pictogramId: 2413  },
         { id: 'esc-25', pos: 25, label: "lápiz",              type: "noun",     action: "speak", pictogramId: 2440 },
         { id: 'esc-26', pos: 26, label: "plumones de pizarra",type: "noun",     action: "speak", pictogramId: 9162 },
 
@@ -5967,14 +5967,14 @@ export const AAC_PAGES = {
         { id: 'esc-31', pos: 31, label: "regla",              type: "noun",     action: "speak", pictogramId: 32490 },
         { id: 'esc-32', pos: 32, label: "sobre",              type: "noun",     action: "speak", pictogramId: 7814 },
         { id: 'esc-33', pos: 33, label: "tijeras",            type: "noun",     action: "speak", pictogramId: 2591 },
-        { id: 'esc-34', pos: 34, label: "plumón",             type: "noun",     action: "speak" },
-        { id: 'esc-35', pos: 35, label: "tajador",            type: "noun",     action: "speak" },
+        { id: 'esc-34', pos: 34, label: "plumón",             type: "noun",     action: "speak", pictogramId: 6147 },
+        { id: 'esc-35', pos: 35, label: "tajador",            type: "noun",     action: "speak", pictogramId: 2553 },
 
-        { id: 'esc-36', pos: 36, label: "crayolas",           type: "noun",     action: "speak" },
+        { id: 'esc-36', pos: 36, label: "crayolas",           type: "noun",     action: "speak", pictogramId: 8155 },
         { id: 'esc-37', pos: 37, label: "lápices de colores", type: "noun",     action: "speak", pictogramId: 17016 },
         { id: 'esc-38', pos: 38, label: "goma en barra",      type: "noun",     action: "speak", pictogramId: 38853 },
         { id: 'esc-39', pos: 39, label: "útiles escolares",   type: "noun",     action: "speak", pictogramId: 6664 },
-        { id: 'esc-40', pos: 40, label: "cartuchera",         type: "noun",     action: "speak" },
+        { id: 'esc-40', pos: 40, label: "cartuchera",         type: "noun",     action: "speak", pictogramId: 17016 },
         { id: 'esc-41', pos: 41, label: "agenda",             type: "noun",     action: "speak", pictogramId: 5898 },
         { id: 'esc-42', pos: 42, label: "papeles de colores", type: "noun",     action: "speak", pictogramId: 8677 },
         { id: 'esc-43', pos: 43, label: "mochila grande",     type: "noun",        action: "speak", pictogramId: 37519 },
@@ -5987,7 +5987,7 @@ export const AAC_PAGES = {
         { id: 'esc2-1',  pos: 1,  label: "etiquetas",               type: "noun", action: "speak", pictogramId: 9920 },
         { id: 'esc2-2',  pos: 2,  label: "gis",                     type: "noun", action: "speak", pictogramId: 2677 },
         { id: 'esc2-3',  pos: 3,  label: "liga",                    type: "noun", action: "speak", pictogramId: 15523 },
-        { id: 'esc2-4',  pos: 4,  label: "marcatextos",             type: "noun", action: "speak" },
+        { id: 'esc2-4',  pos: 4,  label: "marcatextos",             type: "noun", action: "speak", pictogramId: 6147 },
         { id: 'esc2-5',  pos: 5,  label: "pizarrón",               type: "noun", action: "speak", pictogramId: 2526 },
         { id: 'esc2-6',  pos: 6,  label: "portapapeles",            type: "noun", action: "speak", pictogramId: 39557 },
         { id: 'esc2-7',  pos: 7,  label: "recipiente de reciclaje", type: "noun", action: "speak", pictogramId: 37635 },
