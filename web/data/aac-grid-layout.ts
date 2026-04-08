@@ -1783,7 +1783,20 @@ export const AAC_PAGES = {
         { id: 'beb2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "bebidas", pictogramId: 37086 }
     ] as GridCell[],
 
-    'alcohol': [{ id: 'alc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "bebidas", pictogramId: 37086 }] as GridCell[],
+    'alcohol': [
+        { id: 'alc-0',  pos: 0,  label: "vino",            type: "noun", action: "speak", pictogramId: 2614 },
+        { id: 'alc-1',  pos: 1,  label: "cerveza",         type: "noun", action: "speak", pictogramId: 2330 },
+        { id: 'alc-2',  pos: 2,  label: "champaña",        type: "noun", action: "speak", pictogramId: 3009 },
+        { id: 'alc-3',  pos: 3,  label: "whisky",          type: "noun", action: "speak", pictogramId: 17249 },
+        { id: 'alc-4',  pos: 4,  label: "ron",             type: "noun", action: "speak", pictogramId: 2336 },
+        { id: 'alc-5',  pos: 5,  label: "vodka",           type: "noun", action: "speak", pictogramId: 4648 },
+        { id: 'alc-6',  pos: 6,  label: "tequila",         type: "noun", action: "speak", pictogramId: 4643 },
+        { id: 'alc-7',  pos: 7,  label: "gin",             type: "noun", action: "speak", pictogramId: 4619 },
+        { id: 'alc-8',  pos: 8,  label: "cóctel",          type: "noun", action: "speak", pictogramId: 23941 },
+        { id: 'alc-9',  pos: 9,  label: "copa de vino",    type: "noun", action: "speak", pictogramId: 5401 },
+        { id: 'alc-10', pos: 10, label: "botella",         type: "noun", action: "speak", pictogramId: 2288 },
+        { id: 'alc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "bebidas", pictogramId: 37086 }
+    ] as GridCell[],
     'postres': [
         // Row 1 (Core - Fixed)
         { id: 'pos-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
@@ -1893,7 +1906,22 @@ export const AAC_PAGES = {
         { id: 'pos2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "postres", pictogramId: 37086 }
     ] as GridCell[],
 
-    'sabores_helado': [{ id: 'sab-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "postres", pictogramId: 37086 }] as GridCell[],
+    'sabores_helado': [
+        { id: 'sab-0',  pos: 0,  label: "chocolate",     type: "noun", action: "speak", pictogramId: 25940 },
+        { id: 'sab-1',  pos: 1,  label: "vainilla",      type: "noun", action: "speak", pictogramId: 28679 },
+        { id: 'sab-2',  pos: 2,  label: "fresa",         type: "noun", action: "speak", pictogramId: 2400 },
+        { id: 'sab-3',  pos: 3,  label: "menta",         type: "noun", action: "speak", pictogramId: 21982 },
+        { id: 'sab-4',  pos: 4,  label: "limón",         type: "noun", action: "speak", pictogramId: 3022 },
+        { id: 'sab-5',  pos: 5,  label: "caramelo",      type: "noun", action: "speak", pictogramId: 2686 },
+        { id: 'sab-6',  pos: 6,  label: "cookies",       type: "noun", action: "speak", pictogramId: 2402 },
+        { id: 'sab-7',  pos: 7,  label: "nuez",          type: "noun", action: "speak", pictogramId: 2880 },
+        { id: 'sab-8',  pos: 8,  label: "frambuesa",     type: "noun", action: "speak", pictogramId: 36540 },
+        { id: 'sab-9',  pos: 9,  label: "durazno",       type: "noun", action: "speak", pictogramId: 2468 },
+        { id: 'sab-10', pos: 10, label: "arequipe",      type: "noun", action: "speak", pictogramId: 7763 },
+        { id: 'sab-11', pos: 11, label: "cono",          type: "noun", action: "speak", pictogramId: 2420 },
+        { id: 'sab-12', pos: 12, label: "paleta de hielo", type: "noun", action: "speak", pictogramId: 37076 },
+        { id: 'sab-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "postres", pictogramId: 37086 }
+    ] as GridCell[],
     'desayuno': [
         // Row 1 (Core - Fixed)
         { id: 'des-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
@@ -2311,19 +2339,19 @@ export const AAC_PAGES = {
     ] as GridCell[],
     'verduras': [
         // Row 1 (Core - Fixed)
-        { id: 'ver-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
-        { id: 'ver-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
-        { id: 'ver-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
-        { id: 'ver-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
-        { id: 'ver-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
-        { id: 'ver-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
-        { id: 'ver-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
-        { id: 'ver-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
-        { id: 'ver-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+        { id: 'ver-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 7252 },
+        { id: 'ver-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 30518 },
+        { id: 'ver-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 30516 },
+        { id: 'ver-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 35209 },
+        { id: 'ver-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 39447 },
+        { id: 'ver-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 37979 },
+        { id: 'ver-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 2556 },
+        { id: 'ver-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 2270 },
+        { id: 'ver-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3241 },
 
         // Row 2 (Core - Fixed)
         { id: 'ver-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
-        { id: 'ver-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
+        { id: 'ver-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 5604 },
         { id: 'ver-11', pos: 11, label: "probar", type: "verb", action: "speak" },
         { id: 'ver-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
         { id: 'ver-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
@@ -3362,22 +3390,22 @@ export const AAC_PAGES = {
 
     'electronica': [
         // Row 1 (Core Genérico Activo)
-        { id: 'elec-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 6632 },
-        { id: 'elec-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 36392 },
-        { id: 'elec-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 36480 },
-        { id: 'elec-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 11538 },
-        { id: 'elec-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 37826 },
-        { id: 'elec-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 22620 },
-        { id: 'elec-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 7764 },
-        { id: 'elec-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 5526 },
-        { id: 'elec-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 3220 },
+        { id: 'elec-0', pos: 0, label: "yo", type: "pronoun", action: "speak", pictogramId: 2442 },
+        { id: 'elec-1', pos: 1, label: "estar", type: "verb", action: "speak", pictogramId: 21339 },
+        { id: 'elec-2', pos: 2, label: "ser", type: "verb", action: "speak", pictogramId: 2473 },
+        { id: 'elec-3', pos: 3, label: "querer", type: "verb", action: "speak", pictogramId: 3227 },
+        { id: 'elec-4', pos: 4, label: "gustar", type: "verb", action: "speak", pictogramId: 25498 },
+        { id: 'elec-5', pos: 5, label: "qué", type: "adverb", action: "speak", pictogramId: 29989 },
+        { id: 'elec-6', pos: 6, label: "dónde", type: "adverb", action: "speak", pictogramId: 26431 },
+        { id: 'elec-7', pos: 7, label: "no", type: "adverb", action: "speak", pictogramId: 2444 },
+        { id: 'elec-8', pos: 8, label: "más", type: "adverb", action: "speak", pictogramId: 17175 },
 
         // Row 2 (Core Adaptado Electromecánico)
-        { id: 'elec-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 12281 },
-        { id: 'elec-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 7091 },
-        { id: 'elec-11', pos: 11, label: "poder", type: "verb", action: "speak", pictogramId: 35949 },
-        { id: 'elec-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 32761 },
-        { id: 'elec-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 32751 },
+        { id: 'elec-9', pos: 9, label: "tú", type: "pronoun", action: "speak", pictogramId: 2598 },
+        { id: 'elec-10', pos: 10, label: "eso", type: "pronoun", action: "speak", pictogramId: 30427 },
+        { id: 'elec-11', pos: 11, label: "poder", type: "verb", action: "speak", pictogramId: 2297 },
+        { id: 'elec-12', pos: 12, label: "tener", type: "verb", action: "speak", pictogramId: 2612 },
+        { id: 'elec-13', pos: 13, label: "hacer", type: "verb", action: "speak", pictogramId: 34872 },
         { id: 'elec-14', pos: 14, label: "poner", type: "verb", action: "speak", pictogramId: 32757 },
         { id: 'elec-15', pos: 15, label: "conectar", type: "verb", action: "speak", pictogramId: 23967 },
         { id: 'elec-16', pos: 16, label: "desconectar", type: "verb", action: "speak", pictogramId: 27518 },
@@ -3850,13 +3878,70 @@ export const AAC_PAGES = {
         { id: 'pun-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "numeros", pictogramId: 37086 }
     ] as GridCell[],
 
-    'ropa_de_cama': [{ id: 'rdc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
+    'ropa_de_cama': [
+        { id: 'rdc-0',  pos: 0,  label: "sábanas",        type: "noun", action: "speak", pictogramId: 8367 },
+        { id: 'rdc-1',  pos: 1,  label: "almohada",       type: "noun", action: "speak", pictogramId: 2250 },
+        { id: 'rdc-2',  pos: 2,  label: "cobija",         type: "noun", action: "speak", pictogramId: 2556 },
+        { id: 'rdc-3',  pos: 3,  label: "colchón",        type: "noun", action: "speak", pictogramId: 8078 },
+        { id: 'rdc-4',  pos: 4,  label: "edredón",        type: "noun", action: "speak", pictogramId: 16297 },
+        { id: 'rdc-5',  pos: 5,  label: "funda",          type: "noun", action: "speak", pictogramId: 17237 },
+        { id: 'rdc-6',  pos: 6,  label: "manta",          type: "noun", action: "speak", pictogramId: 2459 },
+        { id: 'rdc-7',  pos: 7,  label: "cama individual",type: "noun", action: "speak", pictogramId: 7144 },
+        { id: 'rdc-8',  pos: 8,  label: "cama doble",     type: "noun", action: "speak", pictogramId: 7144 },
+        { id: 'rdc-9',  pos: 9,  label: "litera",         type: "noun", action: "speak", pictogramId: 2939 },
+        { id: 'rdc-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }
+    ] as GridCell[],
 
-    'harry_potter': [{ id: 'hp-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+    'harry_potter': [
+        { id: 'hp-0',  pos: 0,  label: "Harry Potter",   type: "noun", action: "speak" },
+        { id: 'hp-1',  pos: 1,  label: "Hermione",       type: "noun", action: "speak" },
+        { id: 'hp-2',  pos: 2,  label: "Ron Weasley",    type: "noun", action: "speak" },
+        { id: 'hp-3',  pos: 3,  label: "Dumbledore",     type: "noun", action: "speak" },
+        { id: 'hp-4',  pos: 4,  label: "Voldemort",      type: "noun", action: "speak" },
+        { id: 'hp-5',  pos: 5,  label: "varita mágica",  type: "noun", action: "speak", pictogramId: 6240 },
+        { id: 'hp-6',  pos: 6,  label: "escoba voladora",type: "noun", action: "speak", pictogramId: 2693 },
+        { id: 'hp-7',  pos: 7,  label: "Hogwarts",       type: "noun", action: "speak", pictogramId: 5421 },
+        { id: 'hp-8',  pos: 8,  label: "mago",           type: "noun", action: "speak", pictogramId: 2932 },
+        { id: 'hp-9',  pos: 9,  label: "búho",           type: "noun", action: "speak", pictogramId: 2945 },
+        { id: 'hp-10', pos: 10, label: "sombrero",       type: "noun", action: "speak", pictogramId: 2572 },
+        { id: 'hp-11', pos: 11, label: "quidditch",      type: "noun", action: "speak", pictogramId: 10190 },
+        { id: 'hp-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }
+    ] as GridCell[],
 
-    'a_comer': [{ id: 'ac-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+    'a_comer': [
+        { id: 'ac-0',  pos: 0,  label: "lavarse las manos",type: "verb", action: "speak", pictogramId: 10384 },
+        { id: 'ac-1',  pos: 1,  label: "sentarse",        type: "verb", action: "speak", pictogramId: 27268 },
+        { id: 'ac-2',  pos: 2,  label: "mesa",            type: "noun", action: "speak", pictogramId: 3129 },
+        { id: 'ac-3',  pos: 3,  label: "plato",           type: "noun", action: "speak", pictogramId: 38505 },
+        { id: 'ac-4',  pos: 4,  label: "tenedor",         type: "noun", action: "speak", pictogramId: 2588 },
+        { id: 'ac-5',  pos: 5,  label: "cuchara",         type: "noun", action: "speak", pictogramId: 2362 },
+        { id: 'ac-6',  pos: 6,  label: "cuchillo",        type: "noun", action: "speak", pictogramId: 4931 },
+        { id: 'ac-7',  pos: 7,  label: "vaso",            type: "noun", action: "speak", pictogramId: 2610 },
+        { id: 'ac-8',  pos: 8,  label: "comer",           type: "verb", action: "speak", pictogramId: 6456 },
+        { id: 'ac-9',  pos: 9,  label: "beber",           type: "verb", action: "speak", pictogramId: 6452 },
+        { id: 'ac-10', pos: 10, label: "masticar",        type: "verb", action: "speak", pictogramId: 32654 },
+        { id: 'ac-11', pos: 11, label: "tragar",          type: "verb", action: "speak", pictogramId: 27099 },
+        { id: 'ac-12', pos: 12, label: "pedir comida",    type: "verb", action: "speak", pictogramId: 11538 },
+        { id: 'ac-13', pos: 13, label: "ya terminé",      type: "phrase", action: "speak" },
+        { id: 'ac-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }
+    ] as GridCell[],
 
-    'hoy_escuela': [{ id: 'he-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
+    'hoy_escuela': [
+        { id: 'he-0',  pos: 0,  label: "llegar a la escuela", type: "verb", action: "speak", pictogramId: 16807 },
+        { id: 'he-1',  pos: 1,  label: "guardar mochila",    type: "verb", action: "speak", pictogramId: 2475 },
+        { id: 'he-2',  pos: 2,  label: "saludar",           type: "verb", action: "speak", pictogramId: 6610 },
+        { id: 'he-3',  pos: 3,  label: "clase",             type: "noun", action: "speak", pictogramId: 11245 },
+        { id: 'he-4',  pos: 4,  label: "recreo",            type: "noun", action: "speak", pictogramId: 33064 },
+        { id: 'he-5',  pos: 5,  label: "almuerzo",          type: "noun", action: "speak", pictogramId: 6456 },
+        { id: 'he-6',  pos: 6,  label: "aprender",          type: "verb", action: "speak", pictogramId: 37810 },
+        { id: 'he-7',  pos: 7,  label: "escribir",          type: "verb", action: "speak", pictogramId: 2380 },
+        { id: 'he-8',  pos: 8,  label: "leer",              type: "verb", action: "speak", pictogramId: 7141 },
+        { id: 'he-9',  pos: 9,  label: "maestra",           type: "noun", action: "speak", pictogramId: 4956 },
+        { id: 'he-10', pos: 10, label: "compañero",         type: "noun", action: "speak", pictogramId: 39421 },
+        { id: 'he-11', pos: 11, label: "ir a casa",         type: "verb", action: "speak", pictogramId: 16031 },
+        { id: 'he-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }
+    ] as GridCell[],
+
 
     'numeros_2': [
         ...Array.from({ length: 90 }, (_, i) => ({
@@ -3880,7 +3965,28 @@ export const AAC_PAGES = {
     ] as GridCell[],
     'actividades': [{ id: 'acti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
     'casa_cosas': [{ id: 'casa-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
-    'mes_caa': [{ id: 'mes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }] as GridCell[],
+    'mes_caa': [
+        { id: 'mes-0',  pos: 0,  label: "lunes",        type: "noun", action: "speak", pictogramId: 37723 },
+        { id: 'mes-1',  pos: 1,  label: "martes",       type: "noun", action: "speak", pictogramId: 37730 },
+        { id: 'mes-2',  pos: 2,  label: "miércoles",    type: "noun", action: "speak", pictogramId: 37729 },
+        { id: 'mes-3',  pos: 3,  label: "jueves",       type: "noun", action: "speak", pictogramId: 37728 },
+        { id: 'mes-4',  pos: 4,  label: "viernes",      type: "noun", action: "speak", pictogramId: 37727 },
+        { id: 'mes-5',  pos: 5,  label: "sábado",       type: "noun", action: "speak", pictogramId: 37726 },
+        { id: 'mes-6',  pos: 6,  label: "domingo",      type: "noun", action: "speak", pictogramId: 37725 },
+        { id: 'mes-7',  pos: 7,  label: "enero",        type: "noun", action: "speak", pictogramId: 6488 },
+        { id: 'mes-8',  pos: 8,  label: "febrero",      type: "noun", action: "speak", pictogramId: 6498 },
+        { id: 'mes-9',  pos: 9,  label: "marzo",        type: "noun", action: "speak", pictogramId: 6558 },
+        { id: 'mes-10', pos: 10, label: "abril",        type: "noun", action: "speak", pictogramId: 6024 },
+        { id: 'mes-11', pos: 11, label: "mayo",         type: "noun", action: "speak", pictogramId: 6559 },
+        { id: 'mes-12', pos: 12, label: "junio",        type: "noun", action: "speak", pictogramId: 6539 },
+        { id: 'mes-13', pos: 13, label: "julio",        type: "noun", action: "speak", pictogramId: 6538 },
+        { id: 'mes-14', pos: 14, label: "agosto",       type: "noun", action: "speak", pictogramId: 6034 },
+        { id: 'mes-15', pos: 15, label: "septiembre",   type: "noun", action: "speak", pictogramId: 6613 },
+        { id: 'mes-16', pos: 16, label: "octubre",      type: "noun", action: "speak", pictogramId: 6571 },
+        { id: 'mes-17', pos: 17, label: "noviembre",    type: "noun", action: "speak", pictogramId: 6570 },
+        { id: 'mes-18', pos: 18, label: "diciembre",    type: "noun", action: "speak", pictogramId: 6476 },
+        { id: 'mes-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
+    ] as GridCell[],
 
     // Sub-folders of Personas
     'quien_es': [
@@ -3970,10 +4076,38 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'adaptivo_2': [
-        // Dummy target pending physical screenshot, ensures navigation integrity
+        // Más dispositivos y apoyos de CAA / Comunicación Aumentativa
+        { id: 'ada2-0',  pos: 0,  label: "tableta",                 type: "noun", action: "speak", pictogramId: 28099 },
+        { id: 'ada2-1',  pos: 1,  label: "teléfono inteligente",    type: "noun", action: "speak", pictogramId: 3258 },
+        { id: 'ada2-2',  pos: 2,  label: "micrófono",               type: "noun", action: "speak", pictogramId: 2912 },
+        { id: 'ada2-3',  pos: 3,  label: "teclado",                 type: "noun", action: "speak", pictogramId: 2793 },
+        { id: 'ada2-4',  pos: 4,  label: "ratón de ordenador",      type: "noun", action: "speak", pictogramId: 6201 },
+        { id: 'ada2-5',  pos: 5,  label: "joystick",                type: "noun", action: "speak", pictogramId: 6201 },
+        { id: 'ada2-6',  pos: 6,  label: "casco",                   type: "noun", action: "speak", pictogramId: 2691 },
+        { id: 'ada2-7',  pos: 7,  label: "auriculares",             type: "noun", action: "speak", pictogramId: 5915 },
+        { id: 'ada2-8',  pos: 8,  label: "protector bucal",         type: "noun", action: "speak", pictogramId: 37715 },
+        { id: 'ada2-9',  pos: 9,  label: "colchón de posicionamiento", type: "noun", action: "speak", pictogramId: 8079 },
+        { id: 'ada2-10', pos: 10, label: "arnés",                   type: "noun", action: "speak", pictogramId: 39060 },
+        { id: 'ada2-11', pos: 11, label: "cojín antiescaras",        type: "noun", action: "speak", pictogramId: 38552 },
         { id: 'ada2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "adaptivo", pictogramId: 37086 }
     ] as GridCell[],
-    'electrodomesticos': [{ id: 'elec2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
+    'electrodomesticos': [
+        { id: 'elec-0',  pos: 0,  label: "lavadora",         type: "noun", action: "speak", pictogramId: 2442 },
+        { id: 'elec-1',  pos: 1,  label: "refrigerador",     type: "noun", action: "speak", pictogramId: 21339 },
+        { id: 'elec-2',  pos: 2,  label: "microondas",       type: "noun", action: "speak", pictogramId: 2473 },
+        { id: 'elec-3',  pos: 3,  label: "aspiradora",       type: "noun", action: "speak", pictogramId: 3227 },
+        { id: 'elec-4',  pos: 4,  label: "television",       type: "noun", action: "speak", pictogramId: 25498 },
+        { id: 'elec-5',  pos: 5,  label: "estufa",           type: "noun", action: "speak", pictogramId: 29989 },
+        { id: 'elec-6',  pos: 6,  label: "secadora",         type: "noun", action: "speak", pictogramId: 26431 },
+        { id: 'elec-7',  pos: 7,  label: "lavavajillas",     type: "noun", action: "speak", pictogramId: 2444 },
+        { id: 'elec-8',  pos: 8,  label: "licuadora",        type: "noun", action: "speak", pictogramId: 17175 },
+        { id: 'elec-9',  pos: 9,  label: "tostadora",        type: "noun", action: "speak", pictogramId: 2598 },
+        { id: 'elec-10', pos: 10, label: "plancha",          type: "noun", action: "speak", pictogramId: 30427 },
+        { id: 'elec-11', pos: 11, label: "cafetera",         type: "noun", action: "speak", pictogramId: 2297 },
+        { id: 'elec-12', pos: 12, label: "ventilador",       type: "noun", action: "speak", pictogramId: 2612 },
+        { id: 'elec-13', pos: 13, label: "calentador",       type: "noun", action: "speak", pictogramId: 34872 },
+        { id: 'elec-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
     'limpieza': [
         { id: 'lim-43', pos: 43, label: "Más", type: "navigation", action: "navigate", folderTarget: "limpieza_2", pictogramId: 3220 },
         { id: 'lim-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
@@ -4943,7 +5077,20 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'beisbol_2': [
-        { id: 'bei2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "beisbol", pictogramId: 37086 },
+        // Más vocabulario de béisbol
+        { id: 'bei2-0',  pos: 0,  label: "bate",              type: "noun",      action: "speak", pictogramId: 8501 },
+        { id: 'bei2-1',  pos: 1,  label: "casco de béisbol", type: "noun",      action: "speak", pictogramId: 2691 },
+        { id: 'bei2-2',  pos: 2,  label: "uniforme",          type: "noun",      action: "speak", pictogramId: 5623 },
+        { id: 'bei2-3',  pos: 3,  label: "segunda base",      type: "noun",      action: "speak", pictogramId: 31334 },
+        { id: 'bei2-4',  pos: 4,  label: "tercera base",      type: "noun",      action: "speak", pictogramId: 31334 },
+        { id: 'bei2-5',  pos: 5,  label: "lanzador",          type: "noun",      action: "speak", pictogramId: 17259 },
+        { id: 'bei2-6',  pos: 6,  label: "jardinero",         type: "noun",      action: "speak", pictogramId: 6533 },
+        { id: 'bei2-7',  pos: 7,  label: "árbitro",           type: "noun",      action: "speak", pictogramId: 4564 },
+        { id: 'bei2-8',  pos: 8,  label: "entrada",           type: "noun",      action: "speak", pictogramId: 7034 },
+        { id: 'bei2-9',  pos: 9,  label: "robar base",        type: "verb",      action: "speak", pictogramId: 36587 },
+        { id: 'bei2-10', pos: 10, label: "empate",            type: "noun",      action: "speak", pictogramId: 5399 },
+        { id: 'bei2-11', pos: 11, label: "equipo",            type: "noun",      action: "speak", pictogramId: 15262 },
+        { id: 'bei2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "beisbol", pictogramId: 37086 }
     ] as GridCell[],
 
     'automovilismo': [
@@ -5154,19 +5301,120 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'herramientas_2': [
-        { id: 'herr2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "herramientas", pictogramId: 37086 },
+        // Más herramientas y equipo
+        { id: 'herr2-0',  pos: 0,  label: "alicates",            type: "noun", action: "speak", pictogramId: 2644 },
+        { id: 'herr2-1',  pos: 1,  label: "atornillador",       type: "noun", action: "speak", pictogramId: 3392 },
+        { id: 'herr2-2',  pos: 2,  label: "cinta adhesiva",     type: "noun", action: "speak", pictogramId: 27681 },
+        { id: 'herr2-3',  pos: 3,  label: "cinta métrica",      type: "noun", action: "speak", pictogramId: 11219 },
+        { id: 'herr2-4',  pos: 4,  label: "cubo",               type: "noun", action: "speak", pictogramId: 2725 },
+        { id: 'herr2-5',  pos: 5,  label: "engrapadora",        type: "noun", action: "speak", pictogramId: 3368 },
+        { id: 'herr2-6',  pos: 6,  label: "esponja",            type: "noun", action: "speak", pictogramId: 2749 },
+        { id: 'herr2-7',  pos: 7,  label: "guantes de trabajo", type: "noun", action: "speak", pictogramId: 9147 },
+        { id: 'herr2-8',  pos: 8,  label: "lija",               type: "noun", action: "speak", pictogramId: 5498 },
+        { id: 'herr2-9',  pos: 9,  label: "nivel",              type: "noun", action: "speak", pictogramId: 9119 },
+        { id: 'herr2-10', pos: 10, label: "pegamento",          type: "noun", action: "speak", pictogramId: 2510 },
+        { id: 'herr2-11', pos: 11, label: "pintura",            type: "noun", action: "speak", pictogramId: 4870 },
+        { id: 'herr2-12', pos: 12, label: "pistola de silicón", type: "noun", action: "speak", pictogramId: 37513 },
+        { id: 'herr2-13', pos: 13, label: "rastrillo",          type: "noun", action: "speak", pictogramId: 6200 },
+        { id: 'herr2-14', pos: 14, label: "rodillo",            type: "noun", action: "speak", pictogramId: 2809 },
+        { id: 'herr2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "herramientas", pictogramId: 37086 }
     ] as GridCell[],
-    'juguetes': [{ id: 'jug-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
-    'primavera': [{ id: 'pri-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
-    'verano': [{ id: 'ver-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
-    'otono': [{ id: 'oto-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
-    'invierno': [{ id: 'inv-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }] as GridCell[],
+    'juguetes': [
+        { id: 'jug-0',  pos: 0,  label: "pelota",          type: "noun", action: "speak", pictogramId: 3241 },
+        { id: 'jug-1',  pos: 1,  label: "muñeca",          type: "noun", action: "speak", pictogramId: 26238 },
+        { id: 'jug-2',  pos: 2,  label: "carro de juguete",type: "noun", action: "speak", pictogramId: 2340 },
+        { id: 'jug-3',  pos: 3,  label: "bloques",         type: "noun", action: "speak", pictogramId: 4935 },
+        { id: 'jug-4',  pos: 4,  label: "rompecabezas",    type: "noun", action: "speak", pictogramId: 26403 },
+        { id: 'jug-5',  pos: 5,  label: "peluche",         type: "noun", action: "speak", pictogramId: 4945 },
+        { id: 'jug-6',  pos: 6,  label: "tren de juguete", type: "noun", action: "speak", pictogramId: 5094 },
+        { id: 'jug-7',  pos: 7,  label: "avión de juguete",type: "noun", action: "speak", pictogramId: 2307 },
+        { id: 'jug-8',  pos: 8,  label: "dinosaurio",      type: "noun", action: "speak", pictogramId: 2738 },
+        { id: 'jug-9',  pos: 9,  label: "robot",           type: "noun", action: "speak", pictogramId: 6208 },
+        { id: 'jug-10', pos: 10, label: "yoyo",            type: "noun", action: "speak", pictogramId: 8734 },
+        { id: 'jug-11', pos: 11, label: "trompo",          type: "noun", action: "speak", pictogramId: 8663 },
+        { id: 'jug-12', pos: 12, label: "cometa",          type: "noun", action: "speak", pictogramId: 2350 },
+        { id: 'jug-13', pos: 13, label: "peonza",          type: "noun", action: "speak", pictogramId: 6248 },
+        { id: 'jug-14', pos: 14, label: "marioneta",       type: "noun", action: "speak", pictogramId: 5399 },
+        { id: 'jug-15', pos: 15, label: "bicicleta",       type: "noun", action: "speak", pictogramId: 6935 },
+        { id: 'jug-16', pos: 16, label: "patines",         type: "noun", action: "speak", pictogramId: 2506 },
+        { id: 'jug-17', pos: 17, label: "patineta",        type: "noun", action: "speak", pictogramId: 7200 },
+        { id: 'jug-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'primavera': [
+        { id: 'pri-0',  pos: 0,  label: "flor",         type: "noun", action: "speak", pictogramId: 7104 },
+        { id: 'pri-1',  pos: 1,  label: "lluvia",        type: "noun", action: "speak", pictogramId: 7148 },
+        { id: 'pri-2',  pos: 2,  label: "pájaro",        type: "noun", action: "speak", pictogramId: 2490 },
+        { id: 'pri-3',  pos: 3,  label: "mariposa",      type: "noun", action: "speak", pictogramId: 26200 },
+        { id: 'pri-4',  pos: 4,  label: "jardín",        type: "noun", action: "speak", pictogramId: 2434 },
+        { id: 'pri-5',  pos: 5,  label: "arcoíris",      type: "noun", action: "speak", pictogramId: 5534 },
+        { id: 'pri-6',  pos: 6,  label: "abeja",         type: "noun", action: "speak", pictogramId: 24823 },
+        { id: 'pri-7',  pos: 7,  label: "planta",        type: "noun", action: "speak", pictogramId: 3143 },
+        { id: 'pri-8',  pos: 8,  label: "semilla",       type: "noun", action: "speak", pictogramId: 8689 },
+        { id: 'pri-9',  pos: 9,  label: "paraguas",      type: "noun", action: "speak", pictogramId: 2500 },
+        { id: 'pri-10', pos: 10, label: "primavera",     type: "noun", action: "speak", pictogramId: 5553 },
+        { id: 'pri-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'verano': [
+        { id: 'ver-0',  pos: 0,  label: "sol",            type: "noun", action: "speak", pictogramId: 7252 },
+        { id: 'ver-1',  pos: 1,  label: "playa",          type: "noun", action: "speak", pictogramId: 30518 },
+        { id: 'ver-2',  pos: 2,  label: "piscina",        type: "noun", action: "speak", pictogramId: 30516 },
+        { id: 'ver-3',  pos: 3,  label: "helado",         type: "noun", action: "speak", pictogramId: 35209 },
+        { id: 'ver-4',  pos: 4,  label: "vacaciones",     type: "noun", action: "speak", pictogramId: 39447 },
+        { id: 'ver-5',  pos: 5,  label: "bloqueador",     type: "noun", action: "speak", pictogramId: 37979 },
+        { id: 'ver-6',  pos: 6,  label: "sandalias",      type: "noun", action: "speak", pictogramId: 2556 },
+        { id: 'ver-7',  pos: 7,  label: "traje de baño",  type: "noun", action: "speak", pictogramId: 2270 },
+        { id: 'ver-8',  pos: 8,  label: "pelota de playa",type: "noun", action: "speak", pictogramId: 3241 },
+        { id: 'ver-9',  pos: 9,  label: "cubo y pala",    type: "noun", action: "speak", pictogramId: 2693 },
+        { id: 'ver-10', pos: 10, label: "verano",         type: "noun", action: "speak", pictogramId: 5604 },
+        { id: 'ver-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'otono': [
+        { id: 'oto-0',  pos: 0,  label: "hoja",          type: "noun", action: "speak", pictogramId: 5077 },
+        { id: 'oto-1',  pos: 1,  label: "calabaza",      type: "noun", action: "speak", pictogramId: 2679 },
+        { id: 'oto-2',  pos: 2,  label: "Halloween",     type: "noun", action: "speak", pictogramId: 6951 },
+        { id: 'oto-3',  pos: 3,  label: "manzana",       type: "noun", action: "speak", pictogramId: 2462 },
+        { id: 'oto-4',  pos: 4,  label: "cosecha",       type: "noun", action: "speak", pictogramId: 2982 },
+        { id: 'oto-5',  pos: 5,  label: "escoba",        type: "noun", action: "speak", pictogramId: 2693 },
+        { id: 'oto-6',  pos: 6,  label: "disfraces",     type: "noun", action: "speak", pictogramId: 5985 },
+        { id: 'oto-7',  pos: 7,  label: "castaña",       type: "noun", action: "speak", pictogramId: 8302 },
+        { id: 'oto-8',  pos: 8,  label: "paraguas",      type: "noun", action: "speak", pictogramId: 2500 },
+        { id: 'oto-9',  pos: 9,  label: "viento",        type: "noun", action: "speak", pictogramId: 7259 },
+        { id: 'oto-10', pos: 10, label: "otoño",         type: "noun", action: "speak", pictogramId: 5531 },
+        { id: 'oto-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
+    'invierno': [
+        { id: 'inv-0',  pos: 0,  label: "nieve",          type: "noun", action: "speak", pictogramId: 7172 },
+        { id: 'inv-1',  pos: 1,  label: "navidad",        type: "noun", action: "speak", pictogramId: 3134 },
+        { id: 'inv-2',  pos: 2,  label: "abrigo",         type: "noun", action: "speak", pictogramId: 8122 },
+        { id: 'inv-3',  pos: 3,  label: "bufanda",        type: "noun", action: "speak", pictogramId: 2290 },
+        { id: 'inv-4',  pos: 4,  label: "guantes",        type: "noun", action: "speak", pictogramId: 2415 },
+        { id: 'inv-5',  pos: 5,  label: "muñeco de nieve",type: "noun", action: "speak", pictogramId: 3131 },
+        { id: 'inv-6',  pos: 6,  label: "esquiar",        type: "verb", action: "speak", pictogramId: 16701 },
+        { id: 'inv-7',  pos: 7,  label: "trineo",         type: "noun", action: "speak", pictogramId: 8710 },
+        { id: 'inv-8',  pos: 8,  label: "frío",           type: "adjective", action: "speak", pictogramId: 4652 },
+        { id: 'inv-9',  pos: 9,  label: "chocolate caliente", type: "noun", action: "speak", pictogramId: 21326 },
+        { id: 'inv-10', pos: 10, label: "invierno",       type: "noun", action: "speak", pictogramId: 5493 },
+        { id: 'inv-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
+    ] as GridCell[],
 
     'diversion': [
         { id: 'div-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'accesorios_ropa_2': [
+        // Más accesorios — continuación de accesorios_ropa
+        { id: 'acc2-0',  pos: 0,  label: "bufanda",          type: "noun", action: "speak", pictogramId: 2290 },
+        { id: 'acc2-1',  pos: 1,  label: "guantes",          type: "noun", action: "speak", pictogramId: 2415 },
+        { id: 'acc2-2',  pos: 2,  label: "paraguas",         type: "noun", action: "speak", pictogramId: 2500 },
+        { id: 'acc2-3',  pos: 3,  label: "cartera",          type: "noun", action: "speak", pictogramId: 11207 },
+        { id: 'acc2-4',  pos: 4,  label: "pin",              type: "noun", action: "speak", pictogramId: 2833 },
+        { id: 'acc2-5',  pos: 5,  label: "pulsera de cuero", type: "noun", action: "speak", pictogramId: 2537 },
+        { id: 'acc2-6',  pos: 6,  label: "clip de cabello",  type: "noun", action: "speak", pictogramId: 37390 },
+        { id: 'acc2-7',  pos: 7,  label: "cintillo",         type: "noun", action: "speak", pictogramId: 3304 },
+        { id: 'acc2-8',  pos: 8,  label: "máscara",          type: "noun", action: "speak", pictogramId: 5944 },
+        { id: 'acc2-9',  pos: 9,  label: "boina",            type: "noun", action: "speak", pictogramId: 36577 },
+        { id: 'acc2-10', pos: 10, label: "tirantes",         type: "noun", action: "speak", pictogramId: 16901 },
+        { id: 'acc2-11', pos: 11, label: "chaleco",          type: "noun", action: "speak", pictogramId: 2698 },
         { id: 'acc2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "accesorios_ropa", pictogramId: 37086 }
     ] as GridCell[],
 
@@ -5664,8 +5912,19 @@ export const AAC_PAGES = {
     ] as GridCell[],
 
     'libros_2': [
-        // Row 1 (añadir títulos de libros del usuario aquí)
-        // Navigation
+        // Más títulos y géneros de libros
+        { id: 'lib2-0',  pos: 0,  label: "Harry Potter",       type: "noun", action: "speak" },
+        { id: 'lib2-1',  pos: 1,  label: "El Principito",      type: "noun", action: "speak" },
+        { id: 'lib2-2',  pos: 2,  label: "Matilda",            type: "noun", action: "speak" },
+        { id: 'lib2-3',  pos: 3,  label: "Charlie y la fábrica", type: "noun", action: "speak" },
+        { id: 'lib2-4',  pos: 4,  label: "El mundo de Nemo",   type: "noun", action: "speak" },
+        { id: 'lib2-5',  pos: 5,  label: "cuento",             type: "noun", action: "speak", pictogramId: 2364 },
+        { id: 'lib2-6',  pos: 6,  label: "poesía",             type: "noun", action: "speak", pictogramId: 22763 },
+        { id: 'lib2-7',  pos: 7,  label: "novela",             type: "noun", action: "speak", pictogramId: 9820 },
+        { id: 'lib2-8',  pos: 8,  label: "cómic",              type: "noun", action: "speak", pictogramId: 8227 },
+        { id: 'lib2-9',  pos: 9,  label: "revista",            type: "noun", action: "speak", pictogramId: 24364 },
+        { id: 'lib2-10', pos: 10, label: "enciclopedia",       type: "noun", action: "speak", pictogramId: 27499 },
+        { id: 'lib2-11', pos: 11, label: "diccionario",        type: "noun", action: "speak", pictogramId: 7024 },
         { id: 'lib2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "libros", pictogramId: 37086 }
     ] as GridCell[],
 
