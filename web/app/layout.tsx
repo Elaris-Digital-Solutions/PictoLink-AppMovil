@@ -14,6 +14,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'PictoLink — AAC Communication Platform',
   description: 'Augmentative and Alternative Communication via pictograms',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PictoLink',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
@@ -24,9 +33,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#FF8844',
-  maximumScale: 1,    // prevent zoom on tap (AAC UX)
+  maximumScale: 1,
   userScalable: false,
+  themeColor: '#000000',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

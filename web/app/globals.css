@@ -18,18 +18,21 @@
 
 html,
 body,
+#root,
 #__next {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
 }
 
 body {
-  background-color: #F8FAFC;
+  /* Main background handled by the html/body reset above */
 }
 
 /* ─── Focus ring (AAC: thick and visible) ────────────────────────────────── */
@@ -60,11 +63,17 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* ─── Disable text selection on boards ───────────────────────────────────── */
-button,
-[role="button"] {
+/* ─── Disable text selection and touch callouts (AAC UX) ───────────────────── */
+* {
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Allow selection in inputs if needed, though AAC typically uses custom keyboards */
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* ─── Scrollbar utilities ────────────────────────────────────────────────── */
