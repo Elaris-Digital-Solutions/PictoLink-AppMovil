@@ -1,7 +1,7 @@
 /**
- * middleware.ts  (root of /web)
+ * proxy.ts  (root of /web)
  *
- * Supabase session middleware for Next.js App Router.
+ * Supabase session proxy for Next.js App Router (Next.js 16+ convention).
  *
  * Responsibilities:
  *   1. Read the Supabase session cookie on every request
@@ -19,7 +19,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     let supabaseResponse = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -64,7 +64,7 @@ export const config = {
          * - Public asset patterns (.svg, .png, .jpg, .json)
          *
          * Onboarding and all app routes are included intentionally —
-         * the middleware only refreshes the session, it does NOT enforce auth.
+         * the proxy only refreshes the session, it does NOT enforce auth.
          * Auth redirection is handled by AppShell (client-side guard).
          */
         '/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|json)$).*)',
