@@ -3,6 +3,7 @@
   "short_name": "PictoLink",
   "description": "Augmentative and Alternative Communication via pictograms",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",

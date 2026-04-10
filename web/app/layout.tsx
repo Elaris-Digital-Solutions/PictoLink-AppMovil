@@ -5,6 +5,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { StoreHydrator } from '@/components/StoreHydrator';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { PWARegistry } from '@/components/layout/PWARegistry';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'PictoLink',
+    startupImage: '/icon-512.png',
   },
   formatDetection: {
     telephone: false,
@@ -28,7 +30,10 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    apple: [
+      { url: '/icon-192.png' },
+      { url: '/icon-512.png', sizes: '512x512' },
+    ],
   },
 };
 
@@ -49,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={inter.variable}>
       <body className="font-sans antialiased">
+        <PWARegistry />
         <StoreHydrator />
         <AppShell>{children}</AppShell>
         <Analytics />
