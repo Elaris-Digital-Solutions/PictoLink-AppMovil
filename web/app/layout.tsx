@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { StoreHydrator } from '@/components/StoreHydrator';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -49,6 +51,8 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <StoreHydrator />
         <AppShell>{children}</AppShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
