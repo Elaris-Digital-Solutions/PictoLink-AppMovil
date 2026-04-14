@@ -51,12 +51,24 @@ function Avatar({
     contact, size = 'md',
 }: { contact: Contact; size?: 'sm' | 'md' | 'lg' }) {
     const px = size === 'sm' ? 36 : size === 'md' ? 48 : 64;
+    if (contact.avatarUrl) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={contact.avatarUrl}
+                alt={contact.name}
+                className="rounded-full object-cover flex-shrink-0 select-none"
+                style={{ width: px, height: px }}
+            />
+        );
+    }
+    const initial = contact.name.charAt(0).toUpperCase();
     return (
         <div
-            className="rounded-full flex items-center justify-center flex-shrink-0 font-black select-none"
-            style={{ width: px, height: px, backgroundColor: contact.avatarColor, fontSize: px * 0.42 }}
+            className="rounded-full flex items-center justify-center flex-shrink-0 select-none bg-[#FFE6D6]"
+            style={{ width: px, height: px, fontSize: px * 0.38 }}
         >
-            {contact.avatarEmoji}
+            <span className="font-black text-[#C85F27]">{initial}</span>
         </div>
     );
 }
@@ -67,12 +79,14 @@ function Avatar({
 
 function ContactList({
     contacts,
+    isLoading,
     selectedId,
     entries,
     onSelect,
     onAdd,
 }: {
     contacts: Contact[];
+    isLoading: boolean;
     selectedId: string | null;
     entries: ChatMessage[];
     onSelect: (c: Contact) => void;
@@ -124,7 +138,7 @@ function ContactList({
                         >
                             <Plus size={20} />
                         </button>
-                        <Link href="/settings" className="p-2 -mr-2 text-[#C85F27] hover:bg-[#FFE6D6] rounded-full transition-colors" aria-label="Ajustes">
+                        <Link href="/cuidador/settings" className="p-2 -mr-2 text-[#C85F27] hover:bg-[#FFE6D6] rounded-full transition-colors" aria-label="Ajustes">
                             <Settings size={20} />
                         </Link>
                     </div>
@@ -143,7 +157,20 @@ function ContactList({
 
             {/* List */}
             <div className="flex-1 overflow-y-auto divide-y divide-[#FFF0E8] flex flex-col">
-                {contacts.length === 0 ? (
+                {isLoading ? (
+                    // Loading skeleton while contacts fetch from Supabase
+                    <div className="flex flex-col divide-y divide-[#FFF0E8]">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3.5 animate-pulse">
+                                <div className="w-12 h-12 rounded-full bg-[#FFE9DC] flex-shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3.5 bg-[#FFE9DC] rounded-full w-1/2" />
+                                    <div className="h-3 bg-[#FFF0E8] rounded-full w-3/4" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : contacts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16 text-gray-400">
                         <UserRound size={48} className="opacity-20" />
                         <p className="text-sm font-semibold">No tienes contactos aún</p>
@@ -289,16 +316,21 @@ function ThreadPanel({
     const profile = useProfileStore(s => s.profile);
     const messages = useChatStore(s => s.messages);
     const setCurrentContact = useChatStore(s => s.setCurrentContact);
+    const setContactName = useChatStore(s => s.setContactName);
     const unsubscribeFromMessages = useChatStore(s => s.unsubscribeFromMessages);
-    
+
     const [text, setText] = useState('');
     const [isTranslating, setIsTranslating] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Initialise chat — only re-run when IDs change, NOT when store reference changes
+    // Initialise chat — only re-run when IDs change
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
+            setContactName(contact.name);
             setCurrentContact(contact.contact_id, profile.id);
+            import('@/lib/notifications').then(({ requestNotificationPermission }) => {
+                requestNotificationPermission();
+            });
         }
         return () => unsubscribeFromMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -438,6 +470,7 @@ function NoChat() {
 
 export default function CuidadorPage() {
     const contacts = useContactStore(s => s.contacts);
+    const isLoadingContacts = useContactStore(s => s.isLoading);
     const { addContact, loadContacts } = useContactStore();
     const profile = useProfileStore(s => s.profile);
     const chatStore = useChatStore();
@@ -470,6 +503,7 @@ export default function CuidadorPage() {
             )}>
                 <ContactList
                     contacts={contacts}
+                    isLoading={isLoadingContacts}
                     selectedId={selectedContact?.id ?? null}
                     entries={chatStore.messages}
                     onSelect={setSelectedContact}

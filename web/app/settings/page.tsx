@@ -4,17 +4,14 @@
  * /settings — Ajustes Generales (Usuario AAC)
  *
  * - Selección de voz TTS
- * - Tamaño de la grilla del tablero
  * - Velocidad de habla
- * - Volumen de TTS
+ * - Cerrar sesión
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Volume2, ChevronRight, Check, Play, LayoutGrid, Languages, LogOut, CreditCard } from 'lucide-react';
+import { Volume2, Check, Play, Languages, LogOut } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
-import type { Plan } from '@/types';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { langName } from '@/lib/utils/translate';
 import { cn } from '@/lib/utils';
@@ -22,7 +19,6 @@ import { createClient } from '@/lib/supabase/client';
 
 const BRAND = '#FF8844';
 const BRAND_DARK = '#C85F27';
-const BRAND_SOFT = '#FFF4ED';
 const BRAND_BORDER = '#FFD5BF';
 
 
@@ -41,32 +37,6 @@ function Section({ icon: Icon, title, children }: {
                 {children}
             </div>
         </div>
-    );
-}
-
-function Row({ label, desc, right, onPress, border = true }: {
-    label: string;
-    desc?: React.ReactNode;
-    right?: React.ReactNode;
-    onPress?: () => void;
-    border?: boolean;
-}) {
-    const Wrapper = onPress ? 'button' : 'div';
-    return (
-        <Wrapper
-            onClick={onPress}
-            className={cn(
-                'w-full flex items-center gap-4 px-5 py-4 text-left transition-colors',
-                onPress && 'hover:bg-[#FFFAF7] active:bg-[#FFF0E8]',
-                border && 'border-b border-[#FFF0E8]'
-            )}
-        >
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900">{label}</p>
-                {desc && <p className="text-xs text-gray-500 mt-0.5">{desc}</p>}
-            </div>
-            {right ?? (onPress && <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />)}
-        </Wrapper>
     );
 }
 
@@ -108,10 +78,6 @@ export default function SettingsPage() {
         updateProfile({ tts_rate: val });
     }
 
-    function testVoice() {
-        speak('Hola, así suena mi voz en PictoLink.');
-    }
-
     const selectedVoiceObj = voices.find(v => v.voiceURI === selectedURI);
     const currentVoiceName = selectedVoiceObj?.name ?? 'Voz del sistema';
     const isNonSpanish = selectedVoiceObj && !selectedVoiceObj.lang.startsWith('es');
@@ -128,10 +94,13 @@ export default function SettingsPage() {
 
                 {/* TTS Section */}
                 <Section icon={Volume2} title="Voz y Síntesis de Habla">
-                    <Row
-                        label="Voz seleccionada"
-                        desc={
-                            <span className="flex items-center gap-1.5">
+                    <button
+                        onClick={() => setShowVoicePicker(v => !v)}
+                        className="w-full flex items-center gap-4 px-5 py-4 text-left border-b border-[#FFF0E8] hover:bg-[#FFFAF7] active:bg-[#FFF0E8] transition-colors"
+                    >
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-900">Voz seleccionada</p>
+                            <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
                                 {currentVoiceName}
                                 {isNonSpanish && (
                                     <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-blue-200">
@@ -139,11 +108,10 @@ export default function SettingsPage() {
                                         Auto-traducción
                                     </span>
                                 )}
-                            </span>
-                        }
-                        onPress={() => setShowVoicePicker(v => !v)}
-                        border={showVoicePicker}
-                    />
+                            </p>
+                        </div>
+                        <Volume2 size={18} className="text-[#C85F27] flex-shrink-0" />
+                    </button>
 
                     {/* Voice picker — grouped by language */}
                     {showVoicePicker && (
@@ -203,78 +171,26 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Test button */}
-                    <Row
-                        label="Probar voz"
-                        desc="Escucha cómo sonará la síntesis"
-                        onPress={testVoice}
-                        border={false}
-                        right={
-                            <div className={cn(
-                                'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all',
-                                isSpeaking ? 'bg-[#FF8844] text-white animate-pulse' : 'bg-[#FFF0E8] text-[#C85F27]'
-                            )}>
-                                {isSpeaking ? <Volume2 size={16} /> : <Play size={14} />}
-                            </div>
-                        }
-                    />
-                </Section>
-
-                {/* Tools Section */}
-                <Section icon={LayoutGrid} title="Herramientas del Cuidador">
-                    <Link href="/board/edit" className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#FFFAF7] active:bg-[#FFF0E8] transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-[#FFF0E8] flex items-center justify-center flex-shrink-0">
-                            <LayoutGrid size={18} className="text-[#C85F27]" />
-                        </div>
+                    <button
+                        onClick={() => speak('Hola, así suena mi voz en PictoLink.')}
+                        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#FFFAF7] active:bg-[#FFF0E8] transition-colors"
+                    >
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-900">Editor del Tablero</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Añadir o eliminar pictogramas · Requiere PIN</p>
+                            <p className="text-sm font-bold text-gray-900">Probar voz</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Escucha cómo sonará la síntesis</p>
                         </div>
-                        <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
-                    </Link>
+                        <div className={cn(
+                            'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all',
+                            isSpeaking ? 'bg-[#FF8844] text-white animate-pulse' : 'bg-[#FFF0E8] text-[#C85F27]'
+                        )}>
+                            {isSpeaking ? <Volume2 size={16} /> : <Play size={14} />}
+                        </div>
+                    </button>
                 </Section>
 
-                {/* Account Section */}
-                <Section icon={CreditCard} title="Cuenta y Suscripción">
-                    <div className="p-5 border-b border-[#FFF0E8]">
-                        <p className="text-sm font-bold text-gray-900 mb-1">Plan actual</p>
-                        <p className="text-xs text-gray-500 mb-4">
-                            Selecciona el plan que mejor se adapte a tus necesidades.
-                        </p>
-                        
-                        <div className="flex flex-col gap-2">
-                            {(['free', 'basic', 'premium'] as Plan[]).map((p) => {
-                                const selected = profile?.plan_type === p;
-                                const labels = { free: 'Gratis', basic: 'Básico ($10/mes)', premium: 'Premium ($15/mes)' };
-                                return (
-                                    <button
-                                        key={p}
-                                        onClick={async () => {
-                                            if (!profile?.id) return;
-                                            const supabase = createClient();
-                                            await supabase.from('profiles').update({ plan_type: p }).eq('id', profile.id);
-                                            updateProfile({ plan_type: p });
-                                        }}
-                                        className={cn(
-                                            "flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all active:scale-95 text-left",
-                                            selected 
-                                                ? "border-[#FF8844] bg-[#FFF8F3]" 
-                                                : "border-[#FFF0E8] bg-white hover:bg-gray-50 text-gray-700"
-                                        )}
-                                    >
-                                        <span className={cn("font-bold text-sm", selected && "text-[#C85F27]")}>
-                                            {labels[p]}
-                                        </span>
-                                        {selected && <Check size={18} className="text-[#FF8844]" />}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </Section>
-
-                {/* Account Section */}
+                {/* Sign out */}
                 <div className="mb-6 px-3">
-                    <button 
+                    <button
                         onClick={async () => {
                             const supabase = createClient();
                             await supabase.auth.signOut();

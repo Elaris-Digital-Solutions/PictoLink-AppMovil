@@ -152,7 +152,10 @@ export function useSpeechSynthesis() {
         utterance.rate = 1.0; // Increased slightly for faster feedback
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = (e) => {
-            console.error('Speech synthesis error:', e);
+            // 'interrupted' fires when cancel() is called before a new speak() — expected, not an error
+            if (e.error !== 'interrupted') {
+                console.error('Speech synthesis error:', e.error);
+            }
             setIsSpeaking(false);
         };
 

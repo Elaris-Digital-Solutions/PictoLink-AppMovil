@@ -11,12 +11,13 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Volume2, Check, Play, Languages, LogOut } from 'lucide-react';
+import { Volume2, Check, Play, Languages, LogOut, UserCircle } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { langName } from '@/lib/utils/translate';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
+import AvatarUpload from '@/components/ui/AvatarUpload';
 
 const BRAND = '#FF8844';
 const BRAND_DARK = '#C85F27';
@@ -81,6 +82,13 @@ export default function AACSettingsPage() {
     const currentVoiceName = selectedVoiceObj?.name ?? 'Voz del sistema';
     const isNonSpanish = selectedVoiceObj && !selectedVoiceObj.lang.startsWith('es');
 
+    async function handleAvatarUpload(url: string) {
+        updateProfile({ avatar_url: url });
+        // Persist to Supabase so contacts see the new photo
+        const supabase = createClient();
+        await supabase.from('profiles').update({ avatar_url: url }).eq('id', profile!.id);
+    }
+
     async function handleSignOut() {
         const supabase = createClient();
         await supabase.auth.signOut();
@@ -101,6 +109,24 @@ export default function AACSettingsPage() {
             </div>
 
             <div className="flex-1 py-4">
+
+                {/* Profile photo section */}
+                <Section icon={UserCircle} title="Foto de perfil">
+                    <div className="flex items-center gap-4 px-5 py-4">
+                        <AvatarUpload
+                            currentUrl={profile?.avatar_url}
+                            displayName={profile?.display_name}
+                            onUpload={handleAvatarUpload}
+                            size={72}
+                        />
+                        <div>
+                            <p className="text-sm font-bold text-gray-900">{profile?.display_name}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                {profile?.avatar_url ? 'Toca para cambiar la foto' : 'Sin foto de perfil — toca para agregar'}
+                            </p>
+                        </div>
+                    </div>
+                </Section>
 
                 {/* TTS Section */}
                 <Section icon={Volume2} title="Voz y habla">

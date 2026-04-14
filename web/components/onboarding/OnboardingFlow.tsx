@@ -3,15 +3,16 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Heart, Building2, ExternalLink, X, Check, ArrowLeft, Loader2 } from 'lucide-react';
+import { MessageSquare, Heart, Building2, ExternalLink, ArrowLeft, Loader2 } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { createClient } from '@/lib/supabase/client';
-import type { Profile, UserType, Plan } from '@/types';
+import type { Profile, UserType } from '@/types';
 import logoPng from '@/assets/favicon.png';
+import AvatarUpload from '@/components/ui/AvatarUpload';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 'welcome' | 'auth' | 'name' | 'user-type' | 'plan' | 'institution';
+type Step = 'welcome' | 'auth' | 'name' | 'user-type' | 'institution';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -41,79 +42,7 @@ const USER_TYPE_OPTIONS: {
   },
 ];
 
-const PLANS: {
-  id: Plan;
-  title: string;
-  price: string;
-  period?: string;
-  contacts: string;
-  features: string[];
-  note: string;
-  badge?: string;
-}[] = [
-  {
-    id: 'free',
-    title: 'Plan Gratis',
-    price: 'Gratis',
-    contacts: '1 Contacto',
-    features: [
-      'Todos los pictogramas base',
-      'Síntesis de voz',
-      'Historial de frases (7 días)',
-      'Tablero principal personalizable',
-    ],
-    note: 'Ideal para comenzar',
-  },
-  {
-    id: 'basic',
-    title: 'Plan 10 Dls',
-    price: '$10',
-    period: '/mes',
-    contacts: '10 Contactos',
-    features: [
-      'Todos los pictogramas base',
-      'Historial ilimitado',
-      'Respaldo de perfil en la nube',
-      'Favoritos y frases rápidas',
-      'Soporte por correo',
-    ],
-    note: 'Para uso familiar continuo',
-  },
-  {
-    id: 'premium',
-    title: 'Plan 15 Dls',
-    price: '$15',
-    period: '/mes',
-    contacts: '20 Contactos',
-    features: [
-      'Todos los pictogramas base',
-      'Pictogramas personalizados',
-      'Tableros por rutina',
-      'Perfiles múltiples',
-      'Exportar e importar tableros',
-      'Soporte prioritario',
-    ],
-    note: 'Máxima personalización y soporte',
-    badge: 'Más popular',
-  },
-];
-
 const BRAND_ORANGE = '#FF8844';
-
-const PLAN_FEATURES_SHOWCASE: Array<{ label: string; includedIn: Plan[] }> = [
-  { label: 'Todos los pictogramas base', includedIn: ['free', 'basic', 'premium'] },
-  { label: 'Síntesis de voz', includedIn: ['free', 'basic', 'premium'] },
-  { label: 'Pictogramas personalizados', includedIn: ['premium'] },
-  { label: 'Respaldo de perfil en la nube', includedIn: ['basic', 'premium'] },
-  { label: 'Perfiles múltiples', includedIn: ['premium'] },
-  { label: 'Soporte prioritario', includedIn: ['premium'] },
-];
-
-const PLAN_CARD_COLORS: Record<Plan, { header: string; fold: string; text: string }> = {
-  free: { header: '#FFB067', fold: '#F39B4D', text: '#7A3310' },
-  basic: { header: '#FF8844', fold: '#E56F2C', text: '#FFFFFF' },
-  premium: { header: '#C85F27', fold: '#A94E1F', text: '#FFFFFF' },
-};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -140,28 +69,32 @@ export function OnboardingFlow() {
 
   const [step, setStep] = useState<Step>('welcome');
   const [userType, setUserType] = useState<UserType | null>(null);
-  const [plan, setPlan] = useState<Plan>('free');
 
   // Auth state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLogin, setIsLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  function handleUserTypeSelect(type: UserType) {
+  // User-type selection → immediately completes onboarding (no plan step)
+  async function handleUserTypeSelect(type: UserType) {
     setUserType(type);
-    setStep(type === 'institution' ? 'institution' : 'plan');
+    if (type === 'institution') {
+      setStep('institution');
+      return;
+    }
+    await handleComplete(type);
   }
 
-  async function handleComplete() {
+  async function handleComplete(type: UserType) {
     setIsLoading(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error('No se encontro usuario autenticado para completar el onboarding');
       setAuthError('Error: Supabase requiere verificar tu correo para iniciar sesión. Para quitar este paso, ve a tu panel de Supabase > Authentication > Providers > Email y apaga "Confirm email".');
       setStep('auth');
       setIsLoading(false);
@@ -171,17 +104,17 @@ export function OnboardingFlow() {
     const profile: Profile = {
       id: user.id,
       display_name: displayName.trim() || 'Usuario',
-      avatar_emoji: '😊',
-      mode: userType === 'communicator' ? 'communicator' : 'caregiver',
+      avatar_url: avatarUrl ?? undefined,
+      mode: type === 'communicator' ? 'communicator' : 'caregiver',
       color_theme: 'blue',
       grid_columns: 4,
       tts_enabled: true,
       tts_rate: 1.0,
       created_at: new Date().toISOString(),
-      plan_type: plan,
+      plan_type: 'free',
     };
 
-    // Guardar el perfil en Supabase (upsert manual via REST)
+    // Save profile to Supabase (upsert via REST)
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
@@ -197,7 +130,7 @@ export function OnboardingFlow() {
           name: profile.display_name
         })
       });
-      
+
       if (!res.ok) {
         const errText = await res.text();
         console.error('REST ERROR CRUDO DE SUPABASE:', errText);
@@ -205,14 +138,14 @@ export function OnboardingFlow() {
         setIsLoading(false);
         return;
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('FETCH ERROR:', e);
     }
-    
+
     setProfile(profile);
     completeOnboarding();
-    
-    const dest = userType === 'communicator' ? '/board' : '/cuidador';
+
+    const dest = type === 'communicator' ? '/chat' : '/cuidador';
     router.replace(dest);
   }
 
@@ -254,7 +187,7 @@ export function OnboardingFlow() {
           >
             Crear nueva cuenta
           </button>
-          
+
           <button
             onClick={() => { setStep('auth'); setIsLogin(true); }}
             className="w-full text-slate-600 font-bold text-base py-3.5 rounded-2xl border-2 border-[#FFE2D0] bg-[#FFF8F3] active:scale-95 transition-transform"
@@ -291,7 +224,7 @@ export function OnboardingFlow() {
           if (profile) {
             setProfile(profile);
             completeOnboarding();
-            const dest = profile.mode === 'caregiver' ? '/cuidador' : '/board';
+            const dest = profile.mode === 'caregiver' ? '/cuidador' : '/chat';
             router.replace(dest);
             return;
           } else {
@@ -299,13 +232,11 @@ export function OnboardingFlow() {
           }
         }
       } else {
-        const { error } = await supabase.auth.signUp({ 
-          email, 
+        const { error } = await supabase.auth.signUp({
+          email,
           password,
           options: {
-            data: {
-              display_name: displayName
-            }
+            data: { display_name: displayName }
           }
         });
         if (error) {
@@ -359,7 +290,7 @@ export function OnboardingFlow() {
               disabled={isLoading}
               minLength={6}
             />
-            
+
             {authError && (
               <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 font-medium leading-snug">
                 {authError === 'Invalid login credentials' ? 'Credenciales incorrectas' : authError === 'User already registered' ? 'El correo ya está registrado' : authError}
@@ -393,22 +324,35 @@ export function OnboardingFlow() {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <ProgressDots current={1} total={3} />
+          <ProgressDots current={1} total={2} />
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col pt-6 gap-6">
+        <div className="flex-1 flex flex-col pt-6 gap-6 overflow-y-auto">
           <div>
             <h2 className="text-3xl font-black leading-tight text-[#FF8844]">
               ¿Cómo te llamas?
             </h2>
             <p className="text-sm text-slate-500 mt-1.5 font-medium">
-              Este nombre será visible para tus contactos
+              Este nombre y foto serán visibles para tus contactos
             </p>
           </div>
 
-          <form 
-            onSubmit={(e) => { e.preventDefault(); if (displayName.trim()) setStep('user-type'); }} 
+          {/* Photo upload */}
+          <div className="flex flex-col items-center gap-2">
+            <AvatarUpload
+              currentUrl={avatarUrl}
+              displayName={displayName}
+              onUpload={setAvatarUrl}
+              size={100}
+            />
+            <p className="text-xs text-slate-400">
+              {avatarUrl ? 'Toca la foto para cambiarla' : 'Agrega una foto de perfil (opcional)'}
+            </p>
+          </div>
+
+          <form
+            onSubmit={(e) => { e.preventDefault(); if (displayName.trim()) setStep('user-type'); }}
             className="flex flex-col gap-4 mt-2"
           >
             <input
@@ -442,12 +386,13 @@ export function OnboardingFlow() {
         {/* Nav */}
         <div className="flex items-center gap-3 pt-4 pb-2">
           <button
-            onClick={() => setStep('welcome')}
+            onClick={() => setStep('name')}
             className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
+            disabled={isLoading}
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <ProgressDots current={1} total={2} />
+          <ProgressDots current={2} total={2} />
         </div>
 
         {/* Content */}
@@ -468,7 +413,8 @@ export function OnboardingFlow() {
                 <button
                   key={id}
                   onClick={() => handleUserTypeSelect(id)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left active:scale-[0.98] transition-all ${
+                  disabled={isLoading}
+                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left active:scale-[0.98] transition-all disabled:opacity-70 ${
                     selected
                       ? 'border-[#FF8844] bg-[#FF8844] text-white'
                       : 'border-[#FFD5BF] bg-white text-slate-900'
@@ -479,15 +425,14 @@ export function OnboardingFlow() {
                       selected ? 'bg-white/20' : 'bg-[#FFF1E8] text-[#FF8844]'
                     }`}
                   >
-                    <Icon className="w-6 h-6" />
+                    {isLoading && selected
+                      ? <Loader2 className="w-6 h-6 animate-spin" />
+                      : <Icon className="w-6 h-6" />
+                    }
                   </div>
                   <div>
                     <p className="font-bold leading-snug">{title}</p>
-                    <p
-                      className={`text-sm mt-0.5 ${
-                        selected ? 'text-white/70' : 'text-slate-500'
-                      }`}
-                    >
+                    <p className={`text-sm mt-0.5 ${selected ? 'text-white/70' : 'text-slate-500'}`}>
                       {subtitle}
                     </p>
                   </div>
@@ -558,153 +503,5 @@ export function OnboardingFlow() {
     );
   }
 
-  // ── Step: Plan ───────────────────────────────────────────────────────────────
-  return (
-    <div className="flex flex-col h-dvh bg-white px-6">
-      {/* Nav */}
-      <div className="flex items-center gap-3 pt-4 pb-2">
-        <button
-          onClick={() => setStep('user-type')}
-          className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <ProgressDots current={2} total={2} />
-      </div>
-
-      {/* Scrollable content */}
-      <div className="flex-1 flex flex-col pt-4 gap-5 overflow-y-auto scrollbar-hide">
-        <div>
-          <h2 className="text-2xl font-black leading-tight">Elige tu plan</h2>
-          <p className="text-sm text-slate-500 mt-1.5">
-            Puedes cambiar de plan en cualquier momento
-          </p>
-        </div>
-
-        <div className="pb-4 md:pb-6">
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory md:overflow-visible md:flex-wrap md:justify-center md:gap-7 md:max-w-[1120px] md:mx-auto">
-            {PLANS.map((p) => {
-              const selected = plan === p.id;
-              const color = PLAN_CARD_COLORS[p.id];
-              const darkHeaderText = color.text !== '#FFFFFF';
-              const cardLabel = p.id === 'free' ? 'Gratis' : p.id === 'basic' ? 'Basic' : 'Premium';
-
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => setPlan(p.id)}
-                  className={`relative min-w-[248px] w-[82vw] max-w-[330px] md:w-[312px] lg:w-[330px] flex-shrink-0 rounded-[28px] overflow-hidden text-left bg-white snap-start transition-all active:scale-[0.98] border-2 ${
-                    selected
-                      ? 'border-[#FF8844] shadow-[0_14px_30px_rgba(255,136,68,0.28)]'
-                      : 'border-[#FFE2D0] shadow-[0_10px_24px_rgba(200,95,39,0.16)]'
-                  }`}
-                >
-                  {/* Top angled banner */}
-                  <div className="relative h-[148px]">
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        backgroundColor: color.header,
-                        clipPath: 'polygon(0 0, 100% 0, 100% 82%, 0 62%)',
-                      }}
-                    />
-                    <div
-                      className="absolute top-0 right-0 h-full w-[88px]"
-                      style={{
-                        backgroundColor: color.fold,
-                        clipPath: 'polygon(0 0, 100% 0, 100% 82%, 22% 66%)',
-                      }}
-                    />
-
-                    <div className="absolute left-5 top-6" style={{ color: color.text }}>
-                      <p
-                        className="text-[32px] font-black leading-none uppercase tracking-tight"
-                        style={{ textShadow: darkHeaderText ? 'none' : '0 1px 2px rgba(0,0,0,0.24)' }}
-                      >
-                        {cardLabel}
-                      </p>
-                      <p
-                        className="text-[11px] uppercase font-bold tracking-wide mt-1"
-                        style={{ opacity: darkHeaderText ? 0.9 : 0.86, textShadow: darkHeaderText ? 'none' : '0 1px 2px rgba(0,0,0,0.2)' }}
-                      >
-                        {p.period ? 'por mes' : 'plan inicial'}
-                      </p>
-                    </div>
-
-                    <p
-                      className="absolute right-4 top-[72px] text-[46px] font-black leading-none"
-                      style={{ color: color.text, textShadow: darkHeaderText ? 'none' : '0 1px 2px rgba(0,0,0,0.18)' }}
-                    >
-                      {p.price}
-                    </p>
-
-                    {p.badge && (
-                      <span className="absolute right-4 top-3 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-[#A94E1F]">
-                        {p.badge}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Body */}
-                  <div className="px-5 pt-4 pb-5 bg-white">
-                    <div className="rounded-xl border border-[#FFE2D0] bg-[#FFF8F3] px-3 py-2 mb-3">
-                      <p className="text-[10px] uppercase tracking-wide font-extrabold text-[#C85F27]">
-                        Contactos incluidos
-                      </p>
-                      <p className="text-base font-black text-slate-900 mt-0.5">{p.contacts}</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{p.note}</p>
-                    </div>
-
-                    <ul className="space-y-2.5">
-                      {PLAN_FEATURES_SHOWCASE.map((feature) => {
-                        const included = feature.includedIn.includes(p.id);
-                        return (
-                          <li key={feature.label} className="flex items-center gap-2.5">
-                            {included ? (
-                              <Check className="w-4 h-4 text-[#00B469] flex-shrink-0" strokeWidth={3} />
-                            ) : (
-                              <X className="w-4 h-4 text-[#E11D48] flex-shrink-0" strokeWidth={3} />
-                            )}
-                            <span className="text-xs font-semibold text-slate-600 leading-snug">
-                              {feature.label}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-
-                    <div className="mt-5">
-                      <div
-                        className={`w-full rounded-full py-2.5 text-center text-xs font-black uppercase tracking-wide text-white ${
-                          selected ? 'opacity-100' : 'opacity-90'
-                        }`}
-                        style={{ backgroundColor: selected ? '#C85F27' : '#E56F2C' }}
-                      >
-                        {selected ? 'Plan seleccionado' : 'Elegir plan'}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <p className="text-xs text-slate-500 mt-2 px-1 md:hidden">
-            Desliza para ver los 3 planes.
-          </p>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="pb-10 pt-2">
-        <button
-          onClick={handleComplete}
-          className="w-full text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform"
-          style={{ backgroundColor: BRAND_ORANGE }}
-        >
-          Comenzar con PictoLink
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }

@@ -36,7 +36,7 @@ export function RouteGuard({ allowed, children }: RouteGuardProps) {
             router.replace('/cuidador');
         }
         if (allowed === 'caregiver' && mode !== 'caregiver') {
-            router.replace('/board');
+            router.replace('/chat');
         }
     }, [isOnboarded, mode, allowed, router]);
 

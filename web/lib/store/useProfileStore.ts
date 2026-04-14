@@ -7,7 +7,6 @@ import type { Profile, CommunicationMode } from '@/types';
 const DEFAULT_PROFILE: Profile = {
     id: '',
     display_name: '',
-    avatar_emoji: '😊',
     mode: 'communicator',
     color_theme: 'blue',
     grid_columns: 4,

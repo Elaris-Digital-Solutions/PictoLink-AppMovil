@@ -25,7 +25,7 @@ export type Plan = 'free' | 'basic' | 'premium';
 export interface Profile {
   id: string;
   display_name: string;
-  avatar_emoji: string;
+  avatar_url?: string;
   mode: CommunicationMode;
   color_theme: string;
   grid_columns: number;   // 3 | 4 | 5
@@ -57,7 +57,7 @@ export interface Message {
   type: MessageType;
   content: string; // JSON string for pictogram_sequence
   created_at: string;
-  profiles?: Pick<Profile, 'display_name' | 'avatar_emoji'>;
+  profiles?: Pick<Profile, 'display_name' | 'avatar_url'>;
 }
 
 export interface Room {

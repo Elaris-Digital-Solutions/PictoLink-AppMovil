@@ -15,7 +15,7 @@ export interface Database {
                 Row: {
                     id: string;
                     display_name: string;
-                    avatar_emoji: string;
+                    avatar_url: string | null;
                     mode: string;
                     color_theme: string;
                     grid_columns: number;

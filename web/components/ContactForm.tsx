@@ -1,28 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Check, Loader2 } from 'lucide-react';
+import { X, Loader2, User } from 'lucide-react';
 import { type Contact } from '@/lib/store/useContactStore';
+import { getAvatarUrl, uploadToCloudinary } from '@/lib/cloudinary';
 import { cn } from '@/lib/utils';
 
-export const EMOJI_OPTIONS = ['👩', '👨', '👧', '👦', '👩‍⚕️', '👨‍⚕️', '👩‍🏫', '👨‍🏫', '👴', '👵', '🧑', '👶'];
-export const COLOR_OPTIONS = [
-    '#F97316', '#3B82F6', '#8B5CF6', '#10B981',
-    '#EC4899', '#EF4444', '#F59E0B', '#06B6D4',
-];
 export const ROLE_OPTIONS = ['Familia', 'Profesional', 'Escuela', 'Amigo'];
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+// Used in dashboard and other places that import from ContactForm.
 
 export function Avatar({ contact, size = 'md' }: { contact: Contact; size?: 'sm' | 'md' | 'lg' }) {
     const px = size === 'sm' ? 40 : size === 'md' ? 56 : 80;
+    if (contact.avatarUrl) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={getAvatarUrl(contact.avatarUrl, px * 2)}
+                alt={contact.name}
+                className="rounded-full object-cover flex-shrink-0 select-none"
+                style={{ width: px, height: px }}
+            />
+        );
+    }
+    const initial = contact.name.charAt(0).toUpperCase();
     return (
         <div
-            className="rounded-full flex items-center justify-center flex-shrink-0 select-none"
-            style={{ width: px, height: px, backgroundColor: contact.avatarColor, fontSize: px * 0.44 }}
+            className="rounded-full flex items-center justify-center flex-shrink-0 select-none bg-[#FFE6D6]"
+            style={{ width: px, height: px, fontSize: px * 0.38 }}
         >
-            {contact.avatarEmoji}
+            <span className="font-black text-[#C85F27]">{initial}</span>
         </div>
     );
 }
+
+// ─── ContactForm ──────────────────────────────────────────────────────────────
 
 export function ContactForm({
     initial,
@@ -38,22 +51,28 @@ export function ContactForm({
     const [email, setEmail] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState('');
-    const [contactId, setContactId] = useState(initial?.contact_id ?? '');
 
-    // Stage 2: Customise clinical UI
+    // Resolved from search
+    const [contactId, setContactId] = useState(initial?.contact_id ?? '');
+    const [foundAvatarUrl, setFoundAvatarUrl] = useState<string | null>(initial?.avatarUrl ?? null);
+    const [foundName, setFoundName] = useState<string>('');
+
+    // Stage 2: Customise
     const [name, setName] = useState(initial?.name ?? '');
     const [role, setRole] = useState(initial?.role ?? 'Familia');
-    const [emoji, setEmoji] = useState(initial?.avatarEmoji ?? '👩');
-    const [color, setColor] = useState(initial?.avatarColor ?? COLOR_OPTIONS[0]);
 
-    const previewContact: Contact = { id: 'preview', contact_id: contactId, name: name || 'Nombre', role, avatarEmoji: emoji, avatarColor: color };
+    // Photo upload state (for when contact has no avatar_url yet)
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
+    const displayAvatarUrl = foundAvatarUrl ?? initial?.avatarUrl ?? null;
+    const previewInitials = (name || foundName || 'N').charAt(0).toUpperCase();
 
     const handleSearchEmail = async () => {
         if (!email.trim() || !email.includes('@')) {
             setSearchError('Ingresa un email válido');
             return;
         }
-
         setIsSearching(true);
         setSearchError('');
         try {
@@ -63,29 +82,49 @@ export function ContactForm({
                 body: JSON.stringify({ email: email.trim() }),
             });
             const data = await res.json();
-            
-            if (!res.ok) {
-                throw new Error(data.error || 'Usuario no encontrado');
-            }
-            
+            if (!res.ok) throw new Error(data.error || 'Usuario no encontrado');
+
             setContactId(data.contactId);
-            setStep(2); // Avanza a personalización
-        } catch (err: any) {
-            setSearchError(err.message);
+            setFoundAvatarUrl(data.avatarUrl ?? null);
+            setFoundName(data.displayName ?? '');
+            // Pre-fill name from their profile name if editing a blank name
+            if (!name && data.displayName) setName(data.displayName);
+            setStep(2);
+        } catch (err: unknown) {
+            setSearchError(err instanceof Error ? err.message : 'Error');
         } finally {
             setIsSearching(false);
         }
     };
 
+    async function handleUploadPhoto(file: File | undefined) {
+        if (!file) return;
+        setUploadError(null);
+        setUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setFoundAvatarUrl(url);
+        } catch (e: unknown) {
+            setUploadError(e instanceof Error ? e.message : 'Error al subir');
+        } finally {
+            setUploading(false);
+        }
+    }
+
     const handleSave = () => {
         if (!name.trim() || !contactId) return;
-        onSave({ contact_id: contactId, name: name.trim(), role, avatarEmoji: emoji, avatarColor: color });
+        onSave({
+            contact_id: contactId,
+            name: name.trim(),
+            role,
+            avatarUrl: displayAvatarUrl ?? undefined,
+        });
     };
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-white md:bg-black/40 md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200">
             <div className="flex-1 w-full bg-white md:max-w-md md:rounded-[2rem] md:shadow-2xl md:flex-initial flex flex-col md:max-h-[85vh] overflow-hidden">
-                
+
                 {/* Header */}
                 <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 bg-[#FFF8F3] border-b border-[#FFD5BF]">
                     <h2 className="text-xl font-black text-[#FF8844]">
@@ -99,7 +138,7 @@ export function ContactForm({
                     </button>
                 </div>
 
-                {/* Form Body Scrollable */}
+                {/* Form Body */}
                 <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
                     {step === 1 ? (
                         <>
@@ -134,18 +173,58 @@ export function ContactForm({
                         </>
                     ) : (
                         <>
-                            {/* Preview */}
+                            {/* Profile photo preview */}
                             <div className="flex items-center gap-4 p-4 bg-[#FFF4ED] rounded-2xl border border-[#FFD5BF]">
-                                <Avatar contact={previewContact} size="lg" />
-                                <div>
-                                    <p className="text-xl font-black text-gray-900">{name || 'Nombre'}</p>
+                                {/* Avatar preview */}
+                                <div className="relative flex-shrink-0">
+                                    {displayAvatarUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={getAvatarUrl(displayAvatarUrl, 160)}
+                                            alt={name || foundName}
+                                            className="w-20 h-20 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-full bg-[#FFE6D6] flex items-center justify-center">
+                                            {uploading ? (
+                                                <Loader2 size={28} className="text-[#C85F27] animate-spin" />
+                                            ) : (
+                                                <span className="text-3xl font-black text-[#C85F27]">
+                                                    {previewInitials}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Upload button overlay */}
+                                    {!displayAvatarUrl && !uploading && (
+                                        <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#FF8844] rounded-full flex items-center justify-center cursor-pointer shadow">
+                                            <User size={14} className="text-white" />
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={e => handleUploadPhoto(e.target.files?.[0])}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xl font-black text-gray-900 truncate">{name || foundName || 'Nombre'}</p>
                                     <p className="text-sm text-[#FF8844] font-bold">{role}</p>
+                                    {!displayAvatarUrl && (
+                                        <p className="text-[11px] text-slate-400 mt-1">Sin foto de perfil</p>
+                                    )}
+                                    {uploadError && (
+                                        <p className="text-[11px] text-red-500 mt-1">{uploadError}</p>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Name */}
                             <div>
-                                <label className="text-xs font-black text-[#C85F27] uppercase tracking-widest mb-2 block">Nombre en Tablero</label>
+                                <label className="text-xs font-black text-[#C85F27] uppercase tracking-widest mb-2 block">Nombre en la app</label>
                                 <input
                                     value={name}
                                     onChange={e => setName(e.target.value)}
@@ -175,44 +254,6 @@ export function ContactForm({
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Emoji */}
-                            <div>
-                                <label className="text-xs font-black text-[#C85F27] uppercase tracking-widest mb-2 block">Pictograma / Emoji</label>
-                                <div className="grid grid-cols-6 gap-2">
-                                    {EMOJI_OPTIONS.map(e => (
-                                        <button
-                                            key={e}
-                                            onClick={() => setEmoji(e)}
-                                            className={cn(
-                                                'h-12 rounded-2xl text-2xl flex items-center justify-center border-2 transition-all active:scale-95',
-                                                emoji === e
-                                                    ? 'border-[#FF8844] bg-[#FFF0E8] shadow-[0_2px_8px_rgba(255,136,68,0.3)]'
-                                                    : 'border-[#FFE2D0] bg-white hover:border-[#FF8844]/40'
-                                            )}
-                                        >
-                                            {e}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Color */}
-                            <div>
-                                <label className="text-xs font-black text-[#C85F27] uppercase tracking-widest mb-2 block">Color del avatar</label>
-                                <div className="flex gap-3 flex-wrap">
-                                    {COLOR_OPTIONS.map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => setColor(c)}
-                                            className="w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-95"
-                                            style={{ backgroundColor: c, outline: color === c ? `3px solid ${c}` : 'none', outlineOffset: 2 }}
-                                        >
-                                            {color === c && <Check size={16} className="text-white" strokeWidth={3} />}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                         </>
                     )}
                 </div>
@@ -222,13 +263,13 @@ export function ContactForm({
                     <div className="px-5 pb-6 pt-2 bg-white border-t border-[#FFD5BF]">
                         <button
                             onClick={handleSave}
-                            disabled={!name.trim()}
+                            disabled={!name.trim() || uploading}
                             className={cn(
                                 'w-full h-14 rounded-2xl text-white font-black text-lg transition-all active:scale-[0.98]',
-                                name.trim() ? 'bg-[#FF8844] shadow-[0_4px_12px_rgba(255,136,68,0.35)]' : 'bg-[#FFD5BF]'
+                                name.trim() && !uploading ? 'bg-[#FF8844] shadow-[0_4px_12px_rgba(255,136,68,0.35)]' : 'bg-[#FFD5BF]'
                             )}
                         >
-                            Registrar Contacto
+                            {uploading ? <Loader2 size={20} className="animate-spin mx-auto" /> : 'Registrar Contacto'}
                         </button>
                     </div>
                 )}

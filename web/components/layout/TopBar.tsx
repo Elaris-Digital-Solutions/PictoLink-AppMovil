@@ -2,21 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, MessageCircle, Home, Settings } from 'lucide-react';
+import { MessageCircle, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChatNavStore } from '@/lib/store/useChatNavStore';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-    { href: '/board',        label: 'Tablero',  icon: LayoutGrid },
-    { href: '/chat',         label: 'Mensajes', icon: MessageCircle },
-    { href: '/dashboard',    label: 'Inicio',   icon: Home },
-    { href: '/settings/aac', label: 'Ajustes',  icon: Settings },
+    { href: '/chat',         label: 'Mensajes',  icon: MessageCircle },
+    { href: '/dashboard',    label: 'Contactos', icon: Users },
+    { href: '/settings/aac', label: 'Ajustes',   icon: Settings },
 ] as const;
 
 // ─── BottomNav ────────────────────────────────────────────────────────────────
-// Universal bottom navigation — visible on every screen.
+// Universal bottom navigation — visible on every AAC communicator screen.
 
 export function BottomNav() {
     const pathname = usePathname();

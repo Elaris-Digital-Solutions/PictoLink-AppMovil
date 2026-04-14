@@ -15,6 +15,7 @@ import { create } from 'zustand';
 import { getSupabase } from '@/lib/supabase/client';
 import type { PictoNode } from '@/types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { notifyNewMessage } from '@/lib/notifications';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,10 +54,15 @@ interface ChatStore {
     /** Append a message received from realtime without a full reload */
     appendMessage: (msg: ChatMessage) => void;
 
-    // ── Realtime subscription ──────────────────────────────────────────────────
+    // ── Realtime subscription + polling ───────────────────────────────────────
     subscribeToMessages: (contactId: string, profileId: string) => void;
     unsubscribeFromMessages: () => void;
     _channel: RealtimeChannel | null;
+    _pollInterval: ReturnType<typeof setInterval> | null;
+    _currentProfileId: string | null;
+    /** Contact name for notifications — set before setCurrentContact */
+    _contactName: string;
+    setContactName: (name: string) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -64,13 +70,24 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>()((set, get) => ({
 
     currentContactId: null,
+    _pollInterval: null,
+    _currentProfileId: null,
+    _contactName: '',
+    setContactName: (name) => set({ _contactName: name }),
 
     setCurrentContact: (contactId, profileId) => {
         const { unsubscribeFromMessages, subscribeToMessages, loadMessages } = get();
         unsubscribeFromMessages();
-        set({ currentContactId: contactId, messages: [] });
+        set({ currentContactId: contactId, messages: [], _currentProfileId: profileId });
+
         loadMessages(contactId, profileId);
         subscribeToMessages(contactId, profileId);
+
+        // Polling fallback — guarantees messages appear even if realtime is down
+        const interval = setInterval(() => {
+            loadMessages(contactId, profileId);
+        }, 3000);
+        set({ _pollInterval: interval });
     },
 
     // ── Messages ───────────────────────────────────────────────────────────────
@@ -93,9 +110,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
 
             if (error) throw error;
             set({ messages: (data ?? []) as ChatMessage[] });
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : 'Error cargando mensajes';
+        } catch (e: any) {
+            const msg: string = e?.message ?? 'Error cargando mensajes';
             set({ error: msg });
+            console.error('[chat] loadMessages:', msg);
         } finally {
             set({ isLoading: false });
         }
@@ -137,10 +155,20 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             // Optimistic: append immediately (realtime will also fire, deduplication via id)
             const newMsg = data as ChatMessage;
             get().appendMessage(newMsg);
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : 'Error enviando mensaje';
+
+            // Fire Web Push to notify the recipient even if their app is closed.
+            // Non-blocking — failures don't affect the message send.
+            // The API route resolves the sender's display_name for the notification title.
+            const pushBody = text || (pictoPayload.length > 0 ? `${pictoPayload.length} pictograma(s)` : 'Nuevo mensaje');
+            fetch('/api/push/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipientId: targetReceiverId, body: pushBody }),
+            }).catch(() => { /* non-fatal */ });
+        } catch (e: any) {
+            const msg: string = e?.message ?? 'Error enviando mensaje';
             set({ error: msg });
-            console.error('[chat] sendMessage:', e);
+            console.error('[chat] sendMessage:', msg);
         } finally {
             set({ isSending: false });
         }
@@ -150,8 +178,13 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
 
     appendMessage: (msg) =>
         set((s) => {
-            // Deduplicate by id (realtime + optimistic insert might both fire)
             if (s.messages.some((m) => m.id === msg.id)) return s;
+            // Show notification if incoming (from the other person) via realtime
+            if (s._currentProfileId && msg.sender_id !== s._currentProfileId) {
+                const body = msg.content
+                    || (msg.pictograms?.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
+                notifyNewMessage(s._contactName || 'Contacto', body);
+            }
             return { messages: [...s.messages, msg] };
         }),
 
@@ -188,10 +221,13 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     },
 
     unsubscribeFromMessages: () => {
-        const { _channel } = get();
+        const { _channel, _pollInterval } = get();
         if (_channel) {
             getSupabase().removeChannel(_channel);
-            set({ _channel: null });
         }
+        if (_pollInterval) {
+            clearInterval(_pollInterval);
+        }
+        set({ _channel: null, _pollInterval: null });
     },
 }));

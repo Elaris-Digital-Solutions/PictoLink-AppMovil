@@ -85,8 +85,8 @@ export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoa
     const currentCells = getPageContent(currentPageId);
 
     return (
-        <div className="w-full h-full p-1 bg-black/5 select-none">
-            <div className="grid grid-cols-9 grid-rows-5 gap-1 w-full h-full min-h-[400px]">
+        <div className="w-full h-full p-1 bg-black/5 select-none overflow-hidden">
+            <div className="grid grid-cols-9 grid-rows-5 gap-1 w-full h-full">
                 {currentCells.map((cell) => (
                     cell.label ? (
                         <AACButton

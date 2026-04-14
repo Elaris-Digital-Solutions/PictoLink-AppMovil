@@ -52,12 +52,24 @@ const BRAND_BORDER = '#FFD5BF';
 
 function Avatar({ contact, size = 'md' }: { contact: Contact; size?: 'sm' | 'md' | 'lg' }) {
     const px = size === 'sm' ? 40 : size === 'md' ? 60 : 96;
+    if (contact.avatarUrl) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={contact.avatarUrl}
+                alt={contact.name}
+                className="rounded-full object-cover flex-shrink-0 select-none"
+                style={{ width: px, height: px }}
+            />
+        );
+    }
+    const initial = contact.name.charAt(0).toUpperCase();
     return (
         <div
-            className="rounded-full flex items-center justify-center flex-shrink-0 select-none"
-            style={{ width: px, height: px, backgroundColor: contact.avatarColor, fontSize: px * 0.44 }}
+            className="rounded-full flex items-center justify-center flex-shrink-0 select-none bg-[#FFE6D6]"
+            style={{ width: px, height: px, fontSize: px * 0.38 }}
         >
-            {contact.avatarEmoji}
+            <span className="font-black text-[#C85F27]">{initial}</span>
         </div>
     );
 }
@@ -336,6 +348,7 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 
 function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     const contacts = useContactStore((s) => s.contacts);
+    const isLoading = useContactStore((s) => s.isLoading);
     const { addContact } = useContactStore();
     const messages = useChatStore((s) => s.messages);
     const profile = useProfileStore((s) => s.profile);
@@ -399,7 +412,20 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
 
             {/* Contact list — high-contrast cards */}
             <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col">
-                {contacts.length === 0 ? (
+                {isLoading ? (
+                    // Loading skeleton while contacts fetch from Supabase
+                    <div className="flex flex-col gap-2 pt-2">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-white border border-[#FFD5BF] animate-pulse">
+                                <div className="w-[60px] h-[60px] rounded-full bg-[#FFE9DC] flex-shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-[#FFE9DC] rounded-full w-1/2" />
+                                    <div className="h-3 bg-[#FFF0E8] rounded-full w-3/4" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : contacts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16 text-gray-400">
                         <UserRound size={48} className="opacity-20" />
                         <p className="text-sm font-semibold">No tienes contactos aún</p>
@@ -511,12 +537,18 @@ function ConversationBoard({
     // Profile & Chat layer
     const profile = useProfileStore((s) => s.profile);
     const setCurrentContact = useChatStore((s) => s.setCurrentContact);
+    const setContactName = useChatStore((s) => s.setContactName);
     const unsubscribeFromMessages = useChatStore((s) => s.unsubscribeFromMessages);
 
-    // Init conversation on mount
+    // Init conversation on mount + request notification permission
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
+            setContactName(contact.name);
             setCurrentContact(contact.contact_id, profile.id);
+            // Ask for notification permission lazily (after user interaction)
+            import('@/lib/notifications').then(({ requestNotificationPermission }) => {
+                requestNotificationPermission();
+            });
         }
         return () => unsubscribeFromMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -562,10 +594,10 @@ function ConversationBoard({
     }, [sentence, profile?.id, contact.contact_id, sendMessage, clearSentence]);
 
     return (
-        <div className="relative flex flex-col w-full h-[100dvh] overflow-hidden bg-[#FFF0E6]">
+        <div className="relative flex flex-col w-full h-full overflow-hidden bg-[#FFF0E6]">
 
             {/* TOP BAR / HEADER UNIFICADO (1 ÚNICA FRANJA) */}
-            <header className="flex-shrink-0 flex flex-col pt-safe bg-white border-b border-[#FFD5BF] z-10 shadow-sm">
+            <header className="flex-shrink-0 flex flex-col bg-white border-b border-[#FFD5BF] z-10 shadow-sm">
                 
                 {/* 1. Fila principal consolidada: Nav + Avatar + Mensaje Recibido + Historial */}
                 <div className="flex items-center gap-3 h-[72px] px-3 bg-[#FF8844]">

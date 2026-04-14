@@ -36,10 +36,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No puedes añadirte a ti mismo como contacto' }, { status: 400 });
         }
 
-        return NextResponse.json({ 
-            found: true, 
+        // Fetch the contact's public profile fields (avatar_url, display_name)
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('id', foundId)
+            .single();
+
+        return NextResponse.json({
+            found: true,
             contactId: foundId,
-            message: 'Usuario encontrado' 
+            displayName: profileData?.display_name ?? null,
+            avatarUrl: profileData?.avatar_url ?? null,
+            message: 'Usuario encontrado'
         });
 
     } catch (error: any) {

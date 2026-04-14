@@ -1,44 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { createClient } from '@/lib/supabase/client';
 
-// Root → redirect based on onboarding status and user profile after store hydration.
-// - Not onboarded          → /onboarding
-// - communicator           → /board  (AAC picto interface)
-// - caregiver / companion  → /cuidador  (support network interface)
+// Root → redirect based on onboarding status and user profile.
+//
+// AppShell (parent) blocks render until Zustand has hydrated from localStorage,
+// so by the time this page runs isOnboarded and profile are already correct.
+//
+// Fast path  — store says logged in → redirect immediately (no network call).
+// Slow path  — store says not onboarded → verify with Supabase in case the
+//              cookie session is still valid but the store was cleared.
 export default function RootPage() {
-  const [ready, setReady] = useState(false);
   const router = useRouter();
   const isOnboarded = useProfileStore((s) => s.isOnboarded);
   const profile = useProfileStore((s) => s.profile);
 
   useEffect(() => {
-    useProfileStore.persist.rehydrate();
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-
-    async function checkAuthAndRoute() {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session || !isOnboarded) {
-        router.replace('/onboarding');
-        return;
-      }
-
-      // Route by profile mode so the browser back button never crosses interfaces
-      const dest = profile?.mode === 'caregiver' ? '/cuidador' : '/board';
+    // Fast path: store is already hydrated with a valid profile → go immediately.
+    if (isOnboarded && profile) {
+      const dest = profile.mode === 'caregiver' ? '/cuidador' : '/chat';
       router.replace(dest);
+      return;
     }
 
-    checkAuthAndRoute();
-  }, [ready, isOnboarded, profile?.mode, router]);
+    // Slow path: store has no profile — check if a Supabase session exists
+    // (e.g. localStorage was cleared but the cookie is still valid).
+    async function checkSession() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/onboarding');
+      }
+      // If session exists but no profile in store, send to onboarding to rebuild profile.
+      else {
+        router.replace('/onboarding');
+      }
+    }
+
+    checkSession();
+  }, [isOnboarded, profile, router]);
 
   return (
     <div className="flex h-dvh items-center justify-center bg-white">
