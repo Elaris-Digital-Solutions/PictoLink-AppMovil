@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
         const { data: profileData } = await supabase
             .from('profiles')
             .select('display_name, avatar_url')
-            .eq('id', foundId)
-            .single();
+            .eq('id', foundId as string)
+            .single() as { data: { display_name: string; avatar_url: string | null } | null; error: unknown };
 
         return NextResponse.json({
             found: true,

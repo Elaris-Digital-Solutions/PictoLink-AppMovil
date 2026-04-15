@@ -17,20 +17,17 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import {
     ArrowLeft, MessageCircle, MessageSquare,
     X, Send, Home, ChevronRight, Volume2, UserRound
 } from 'lucide-react';
 
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
-import { usePhraseLogStore, type PhraseEntry } from '@/lib/store/usePhraseLogStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useChatNavStore } from '@/lib/store/useChatNavStore';
-import { useChatStore, type ChatMessage } from '@/lib/store/useChatStore';
+import { useChatStore } from '@/lib/store/useChatStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
-import { pictosToText } from '@/lib/ai/picto-nlp';
 
 import { SentenceBar } from '@/components/board/SentenceBar';
 import { AACBoard } from '@/components/board/AACBoard';
@@ -350,8 +347,8 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
     const contacts = useContactStore((s) => s.contacts);
     const isLoading = useContactStore((s) => s.isLoading);
     const { addContact } = useContactStore();
-    const messages = useChatStore((s) => s.messages);
     const profile = useProfileStore((s) => s.profile);
+    const summary = useChatStore((s) => s.summary);
     const [showAddContact, setShowAddContact] = useState(false);
 
     async function handleAddContact(data: Omit<Contact, 'id'>) {
@@ -359,43 +356,6 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
         await addContact(data, profile.id);
         setShowAddContact(false);
     }
-
-    // Last message per contact (any direction) for preview
-    const lastMessages = useMemo(() => {
-        const map: Record<string, ChatMessage> = {};
-        if (!profile?.id) return map;
-        // Newest to oldest — first hit per contact wins
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const m = messages[i];
-            const otherId = m.sender_id === profile.id ? m.receiver_id : m.sender_id;
-            if (!map[otherId]) map[otherId] = m;
-        }
-        return map;
-    }, [messages, profile?.id]);
-
-    // Last *received* message per contact — shown as the preview text
-    const lastReplies = useMemo(() => {
-        const map: Record<string, ChatMessage> = {};
-        if (!profile?.id) return map;
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const m = messages[i];
-            const otherId = m.sender_id === profile.id ? m.receiver_id : m.sender_id;
-            if (!map[otherId] && m.sender_id !== profile.id) map[otherId] = m;
-        }
-        return map;
-    }, [messages, profile?.id]);
-
-    // Unread received count per contact
-    const unreadCount = useMemo(() => {
-        const map: Record<string, number> = {};
-        if (!profile?.id) return map;
-        for (const m of messages) {
-            if (m.receiver_id === profile.id && !m.read) {
-                map[m.sender_id] = (map[m.sender_id] ?? 0) + 1;
-            }
-        }
-        return map;
-    }, [messages, profile?.id]);
 
     return (
         <>
@@ -437,12 +397,16 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                         </button>
                     </div>
                 ) : contacts.map((contact) => {
-                    const unread = unreadCount[contact.contact_id] ?? 0;
-                    const preview = lastReplies[contact.contact_id];   // last received (for content preview)
-                    const anyLast = lastMessages[contact.contact_id];  // any direction (for timestamp)
-                    const timeStr = anyLast
-                        ? new Date(anyLast.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+                    const s = summary[contact.contact_id];
+                    const lastMsg = s?.lastMessage;
+                    const unread = s?.unreadCount ?? 0;
+                    const timeStr = lastMsg
+                        ? new Date(lastMsg.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
                         : '';
+
+                    // Find last *received* message for pictogram preview
+                    const lastReceived = lastMsg && lastMsg.sender_id !== profile?.id ? lastMsg : null;
+
                     return (
                         <button
                             key={contact.id}
@@ -461,20 +425,19 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="flex-1 min-w-0 flex items-center">
-                                        {preview?.pictograms && preview.pictograms.length > 0 ? (
+                                        {lastReceived?.pictograms && lastReceived.pictograms.length > 0 ? (
                                             <div className="flex gap-1 items-center flex-wrap">
-                                                {preview.pictograms.map((p: PictoNode, i: number) => (
+                                                {lastReceived.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
                                                     <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
                                                 ))}
                                             </div>
-                                        ) : preview ? (
+                                        ) : lastReceived ? (
                                             <p className="text-[13px] text-gray-500 truncate font-medium">
-                                                ← {preview.content}
+                                                ← {lastReceived.content}
                                             </p>
-                                        ) : anyLast ? (
-                                            // AAC user sent the last message — show it with arrow indicator
+                                        ) : lastMsg ? (
                                             <p className="text-[13px] text-gray-400 truncate font-medium">
-                                                → {anyLast.content}
+                                                → {lastMsg.content}
                                             </p>
                                         ) : (
                                             <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
@@ -559,11 +522,11 @@ function ConversationBoard({
     const sentence = useBoardStore((s) => s.sentence);
     const clearSentence = useBoardStore((s) => s.clearSentence);
 
-    // Context messages
+    // Unread count for the historial button badge
     const messages = useChatStore((s) => s.messages);
     const msgCount = useMemo(
-        () => messages.length,
-        [messages]
+        () => messages.filter(m => m.sender_id === contact.contact_id && !m.read).length,
+        [messages, contact.contact_id]
     );
 
     const sendMessage = useChatStore((s) => s.sendMessage);
@@ -670,12 +633,15 @@ export default function ChatPage() {
     const profile = useProfileStore((s) => s.profile);
     const { selectedContactId, setSelectedContactId, clearSelectedContact } = useChatNavStore();
 
-    // Carga inicial de contactos
+    const loadSummary = useChatStore((s) => s.loadSummary);
+
+    // Carga inicial de contactos + resumen de conversaciones
     useEffect(() => {
         if (profile?.id) {
             loadContacts(profile.id);
+            loadSummary(profile.id);
         }
-    }, [profile?.id, loadContacts]);
+    }, [profile?.id, loadContacts, loadSummary]);
 
     const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
 

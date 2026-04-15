@@ -81,44 +81,18 @@ function ContactList({
     contacts,
     isLoading,
     selectedId,
-    entries,
     onSelect,
     onAdd,
 }: {
     contacts: Contact[];
     isLoading: boolean;
     selectedId: string | null;
-    entries: ChatMessage[];
     onSelect: (c: Contact) => void;
     onAdd: () => void;
 }) {
     const [query, setQuery] = useState('');
-
     const profileId = useProfileStore(s => s.profile?.id);
-
-    const lastMsg = useMemo(() => {
-        const map: Record<string, ChatMessage> = {};
-        for (const e of entries) {
-            // El cuidador quiere ver el último mensaje de cada chat
-            // Para simplificar (ya que el store de chat tiene todos), asumimos 1 a 1 por ahora 
-            // o lo agrupamos por participante en base a las conversations.
-            const otherId = e.sender_id === profileId ? e.receiver_id : e.sender_id;
-            map[otherId] = e; // P2P mapping
-        }
-        return map;
-    }, [entries, profileId]);
-
-    const unread = useMemo(() => {
-        const map: Record<string, number> = {};
-        for (const e of entries) {
-            // Un mensaje recibido es aquel cuyo sender NO es el perfil actual.
-            // Sumamos al contactId que nos lo envió.
-            if (profileId && e.sender_id !== profileId && !e.read) {
-                map[e.sender_id] = (map[e.sender_id] ?? 0) + 1;
-            }
-        }
-        return map;
-    }, [entries, profileId]);
+    const summary = useChatStore(s => s.summary);
 
     const filtered = contacts.filter(c =>
         c.name.toLowerCase().includes(query.toLowerCase())
@@ -182,9 +156,23 @@ function ContactList({
                         </button>
                     </div>
                 ) : filtered.map(contact => {
-                    const preview = lastMsg[contact.contact_id];
-                    const count = unread[contact.contact_id] ?? 0;
+                    const s = summary[contact.contact_id];
+                    const lastMsg = s?.lastMessage;
+                    const count = s?.unreadCount ?? 0;
                     const isActive = contact.id === selectedId;
+
+                    // Build text preview from last message
+                    let previewText = '';
+                    if (lastMsg) {
+                        const isSent = lastMsg.sender_id === profileId;
+                        const arrow = isSent ? '→ ' : '← ';
+                        const body = lastMsg.content
+                            || (lastMsg.pictograms?.length > 0
+                                ? lastMsg.pictograms.map(p => p.label).join(' ')
+                                : '');
+                        previewText = arrow + body;
+                    }
+
                     return (
                         <button
                             key={contact.id}
@@ -199,17 +187,18 @@ function ContactList({
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                    <span className="text-sm font-bold text-gray-900 truncate">{contact.name}</span>
-                                    {preview && (
+                                    <span className={cn('text-sm font-bold truncate', count > 0 ? 'text-gray-900' : 'text-gray-800')}>
+                                        {contact.name}
+                                    </span>
+                                    {lastMsg && (
                                         <span className={cn('text-[10px] flex-shrink-0', count > 0 ? 'text-[#C85F27] font-bold' : 'text-gray-400')}>
-                                            {timeLabel(preview.created_at)}
+                                            {timeLabel(lastMsg.created_at)}
                                         </span>
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between gap-2 mt-0.5">
-                                    <p className="text-xs text-gray-500 truncate">
-                                        {/* TODO: Connect preview properly with Supabase conversations */}
-                                        <span className="italic text-gray-300">Click para ver mensajes</span>
+                                    <p className={cn('text-xs truncate flex-1', count > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400')}>
+                                        {previewText || <span className="italic">Sin mensajes</span>}
                                     </p>
                                     {count > 0 && (
                                         <span className="flex-shrink-0 bg-[#FF8844] text-white text-[10px] font-black min-w-[20px] h-5 rounded-full flex items-center justify-center px-1">
@@ -327,6 +316,7 @@ function ThreadPanel({
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
             setContactName(contact.name);
+            // setCurrentContact already calls markAsRead internally
             setCurrentContact(contact.contact_id, profile.id);
             import('@/lib/notifications').then(({ requestNotificationPermission }) => {
                 requestNotificationPermission();
@@ -473,16 +463,17 @@ export default function CuidadorPage() {
     const isLoadingContacts = useContactStore(s => s.isLoading);
     const { addContact, loadContacts } = useContactStore();
     const profile = useProfileStore(s => s.profile);
-    const chatStore = useChatStore();
+    const loadSummary = useChatStore(s => s.loadSummary);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [showAddContact, setShowAddContact] = useState(false);
 
-    // Carga inicial de contactos
+    // Carga inicial de contactos + resumen de conversaciones
     useEffect(() => {
         if (profile?.id) {
             loadContacts(profile.id);
+            loadSummary(profile.id);
         }
-    }, [profile?.id, loadContacts]);
+    }, [profile?.id, loadContacts, loadSummary]);
 
     async function handleAddContact(data: Omit<Contact, 'id'>) {
         if (!profile?.id) return;
@@ -505,7 +496,6 @@ export default function CuidadorPage() {
                     contacts={contacts}
                     isLoading={isLoadingContacts}
                     selectedId={selectedContact?.id ?? null}
-                    entries={chatStore.messages}
                     onSelect={setSelectedContact}
                     onAdd={() => setShowAddContact(true)}
                 />

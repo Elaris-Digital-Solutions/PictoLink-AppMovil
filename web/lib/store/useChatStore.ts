@@ -1,12 +1,13 @@
 /**
  * lib/store/useChatStore.ts
  *
- * Zustand store for the Conversation Engine (Legacy Schema P2P mapping).
+ * Zustand store for the Conversation Engine.
  *
  * Responsibilities:
  *  • Send a message (pictograms → Supabase 'messages' insert)
  *  • Load message history directly between two users (sender_id ↔ receiver_id)
  *  • Subscribe to Supabase realtime for live updates
+ *  • Maintain a per-contact summary (last message + unread count) for contact lists
  */
 
 'use client';
@@ -23,10 +24,15 @@ export interface ChatMessage {
     id: string;
     sender_id: string;
     receiver_id: string;
-    content: string; // The Legacy text value
+    content: string;
     pictograms: PictoNode[];
     created_at: string;
     read: boolean;
+}
+
+export interface ContactSummary {
+    lastMessage: ChatMessage | null;
+    unreadCount: number;
 }
 
 // ─── State interface ───────────────────────────────────────────────────────────
@@ -35,6 +41,14 @@ interface ChatStore {
     // ── Contacts / Routing ─────────────────────────────────────────────────────
     currentContactId: string | null;
     setCurrentContact: (contactId: string, currentProfileId: string) => void;
+
+    // ── Per-contact summary (for contact lists) ────────────────────────────────
+    /** Keyed by the OTHER person's profile id */
+    summary: Record<string, ContactSummary>;
+    /** Load recent messages for all contacts to populate summary + badges */
+    loadSummary: (profileId: string) => Promise<void>;
+    /** Mark all unread messages from contactId → profileId as read */
+    markAsRead: (contactId: string, profileId: string) => Promise<void>;
 
     // ── Messages ───────────────────────────────────────────────────────────────
     messages: ChatMessage[];
@@ -75,10 +89,76 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     _contactName: '',
     setContactName: (name) => set({ _contactName: name }),
 
+    // ── Summary ────────────────────────────────────────────────────────────────
+
+    summary: {},
+
+    loadSummary: async (profileId) => {
+        try {
+            const sb = getSupabase();
+            // Fetch the most recent messages involving this user (any direction)
+            const { data, error } = await sb
+                .from('messages')
+                .select('*')
+                .or(`sender_id.eq.${profileId},receiver_id.eq.${profileId}`)
+                .order('created_at', { ascending: false })
+                .limit(500);
+
+            if (error || !data) return;
+
+            const map: Record<string, ContactSummary> = {};
+
+            // Process newest-first: first hit per contact = last message
+            for (const msg of data as ChatMessage[]) {
+                const otherId = msg.sender_id === profileId ? msg.receiver_id : msg.sender_id;
+                if (!map[otherId]) {
+                    map[otherId] = { lastMessage: msg, unreadCount: 0 };
+                }
+                // Count all unread incoming messages (not just the last one)
+                if (msg.sender_id !== profileId && !msg.read) {
+                    map[otherId].unreadCount++;
+                }
+            }
+
+            set({ summary: map });
+        } catch { /* non-fatal — contact list still works, just no preview */ }
+    },
+
+    markAsRead: async (contactId, profileId) => {
+        // Optimistic: clear badge and mark local messages as read immediately
+        set((s) => ({
+            messages: s.messages.map((m) =>
+                m.sender_id === contactId && m.receiver_id === profileId && !m.read
+                    ? { ...m, read: true }
+                    : m
+            ),
+            summary: s.summary[contactId]
+                ? { ...s.summary, [contactId]: { ...s.summary[contactId], unreadCount: 0 } }
+                : s.summary,
+        }));
+
+        // Persist to DB (fire-and-forget)
+        try {
+            await getSupabase()
+                .from('messages')
+                .update({ read: true })
+                .eq('sender_id', contactId)
+                .eq('receiver_id', profileId)
+                .eq('read', false);
+        } catch (e: any) {
+            console.error('[chat] markAsRead:', e?.message);
+        }
+    },
+
+    // ── Contact selection ──────────────────────────────────────────────────────
+
     setCurrentContact: (contactId, profileId) => {
-        const { unsubscribeFromMessages, subscribeToMessages, loadMessages } = get();
+        const { unsubscribeFromMessages, subscribeToMessages, loadMessages, markAsRead } = get();
         unsubscribeFromMessages();
         set({ currentContactId: contactId, messages: [], _currentProfileId: profileId });
+
+        // Mark existing unread messages as read immediately when opening a chat
+        markAsRead(contactId, profileId);
 
         loadMessages(contactId, profileId);
         subscribeToMessages(contactId, profileId);
@@ -91,6 +171,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     },
 
     // ── Messages ───────────────────────────────────────────────────────────────
+
     messages: [],
     isSending: false,
     isLoading: false,
@@ -100,7 +181,6 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const sb = getSupabase();
-            // Fetch P2P messages in both directions
             const { data, error } = await sb
                 .from('messages')
                 .select('*')
@@ -130,7 +210,6 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         try {
             const sb = getSupabase();
 
-            // Convert PictoNode[] to plain JSON (strip non-serialisable fields)
             const pictoPayload = pictograms.map((p) => ({
                 id: p.id,
                 label: p.label,
@@ -144,21 +223,18 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                     sender_id: senderId,
                     receiver_id: targetReceiverId,
                     pictograms: pictoPayload,
-                    content: text, // 'text' in UI maps to 'content' in Legacy DB
-                    read: false
+                    content: text,
+                    read: false,
                 })
                 .select()
                 .single();
 
             if (error) throw error;
 
-            // Optimistic: append immediately (realtime will also fire, deduplication via id)
             const newMsg = data as ChatMessage;
             get().appendMessage(newMsg);
 
-            // Fire Web Push to notify the recipient even if their app is closed.
-            // Non-blocking — failures don't affect the message send.
-            // The API route resolves the sender's display_name for the notification title.
+            // Fire Web Push to notify the recipient even when their app is closed.
             const pushBody = text || (pictoPayload.length > 0 ? `${pictoPayload.length} pictograma(s)` : 'Nuevo mensaje');
             fetch('/api/push/send', {
                 method: 'POST',
@@ -179,32 +255,62 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
     appendMessage: (msg) =>
         set((s) => {
             if (s.messages.some((m) => m.id === msg.id)) return s;
-            // Show notification if incoming (from the other person) via realtime
-            if (s._currentProfileId && msg.sender_id !== s._currentProfileId) {
+
+            const profileId = s._currentProfileId;
+            const isIncoming = !!(profileId && msg.sender_id !== profileId);
+            // Is this message part of the currently open chat?
+            const isActiveChat = !!(
+                s.currentContactId &&
+                (msg.sender_id === s.currentContactId || msg.receiver_id === s.currentContactId)
+            );
+
+            // In-app background notification (tab in background)
+            if (isIncoming) {
                 const body = msg.content
                     || (msg.pictograms?.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
                 notifyNewMessage(s._contactName || 'Contacto', body);
             }
-            return { messages: [...s.messages, msg] };
+
+            // Auto-mark read if the user has this chat open
+            let msgToStore = msg;
+            if (isIncoming && isActiveChat && !msg.read) {
+                msgToStore = { ...msg, read: true };
+                // DB update — fire-and-forget
+                getSupabase().from('messages').update({ read: true }).eq('id', msg.id).then(() => {});
+            }
+
+            // Update per-contact summary
+            const otherId = profileId
+                ? (msg.sender_id === profileId ? msg.receiver_id : msg.sender_id)
+                : null;
+
+            let newSummary = s.summary;
+            if (otherId) {
+                const prev = s.summary[otherId];
+                const addUnread = isIncoming && !msgToStore.read ? 1 : 0;
+                newSummary = {
+                    ...s.summary,
+                    [otherId]: {
+                        lastMessage: msgToStore,
+                        unreadCount: (prev?.unreadCount ?? 0) + addUnread,
+                    },
+                };
+            }
+
+            return { messages: [...s.messages, msgToStore], summary: newSummary };
         }),
 
     // ── Realtime ───────────────────────────────────────────────────────────────
+
     _channel: null,
 
     subscribeToMessages: (contactId, profileId) => {
         const sb = getSupabase();
-        
-        // Listen to all inserts on messages. We filter purely in Javascript 
-        // because Supabase realtime filters limit OR logic across two columns easily.
         const channel = sb
             .channel(`p2p_messages:${profileId}_${contactId}`)
             .on(
                 'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                },
+                { event: 'INSERT', schema: 'public', table: 'messages' },
                 (payload) => {
                     const msg = payload.new as ChatMessage;
                     if (

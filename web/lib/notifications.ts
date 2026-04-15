@@ -24,12 +24,13 @@ export function notifyNewMessage(senderName: string, body: string) {
     // Don't notify if the user is actively looking at the app
     if (document.visibilityState === 'visible') return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new Notification(`PictoLink — ${senderName}`, {
         body,
         icon: '/icon-192.png',
         tag: 'pictolink-message',
         renotify: true,
-    });
+    } as any);
 }
 
 // ── Web Push (background notifications) ────────────────────────────────────────
@@ -64,7 +65,7 @@ export async function subscribeToPush(): Promise<void> {
         // Re-use existing subscription if it's already registered
         const subscription = existing ?? await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as unknown as ArrayBuffer,
         });
 
         // Save to server (upsert — safe to call every time)
