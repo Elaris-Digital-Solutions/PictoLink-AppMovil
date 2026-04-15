@@ -1,6 +1,6 @@
 import { Pictogram } from './pictograms';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_HF_API_URL || 'https://elarisdigitalsolutions-pictolink.hf.space/api/v1';
 
 export async function convertTextToPictos(text: string): Promise<Pictogram[]> {
     const controller = new AbortController();
