@@ -3581,10 +3581,6 @@ export const AAC_PAGES = {
         { id: 'nat2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "naturaleza", pictogramId: 37086 }
     ] as GridCell[],
 
-    'palabritas': [
-        { id: 'pal-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
-    ] as GridCell[],
-
     'tiempo': [
         { id: 'ti-0', pos: 0, label: "ahora", type: "adverb", action: "speak", pictogramId: 32747 },
         { id: 'ti-1', pos: 1, label: "hoy", type: "adverb", action: "speak", pictogramId: 7131 },
@@ -3952,7 +3948,6 @@ export const AAC_PAGES = {
             action: "speak"
         }))
     ] as GridCell[],
-    'escuela': [{ id: 'escu-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "escolares", pictogramId: 37086 }] as GridCell[],
     'religion': [
         { id: 'rel-0', pos: 0, label: "iglesia", type: "noun", action: "speak", pictogramId: 9116 },
         { id: 'rel-1', pos: 1, label: "orar", type: "verb", action: "speak", pictogramId: 30850 },
@@ -3963,8 +3958,6 @@ export const AAC_PAGES = {
         { id: 'rel-6', pos: 6, label: "Navidad", type: "folder", action: "navigate", folderTarget: "festivas", pictogramId: 3134 },
         { id: 'rel-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root_2", pictogramId: 37086 }
     ] as GridCell[],
-    'actividades': [{ id: 'acti-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "actividades_de_ejemplo", pictogramId: 37086 }] as GridCell[],
-    'casa_cosas': [{ id: 'casa-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "hogar", pictogramId: 37086 }] as GridCell[],
     'mes_caa': [
         { id: 'mes-0',  pos: 0,  label: "lunes",        type: "noun", action: "speak", pictogramId: 37723 },
         { id: 'mes-1',  pos: 1,  label: "martes",       type: "noun", action: "speak", pictogramId: 37730 },
@@ -5395,10 +5388,6 @@ export const AAC_PAGES = {
         { id: 'inv-9',  pos: 9,  label: "chocolate caliente", type: "noun", action: "speak", pictogramId: 21326 },
         { id: 'inv-10', pos: 10, label: "invierno",       type: "noun", action: "speak", pictogramId: 5493 },
         { id: 'inv-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "cosas_2", pictogramId: 37086 }
-    ] as GridCell[],
-
-    'diversion': [
-        { id: 'div-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'accesorios_ropa_2': [

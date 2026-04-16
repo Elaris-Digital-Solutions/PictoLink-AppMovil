@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node /c/Users/fabri/Downloads/Dev/PictoLink-AppMovil/web/scripts/audit_empty_folders.js)",
+      "Bash(node -e ':*)",
+      "Bash(sed -n '3582,3590p' /c/Users/fabri/Downloads/Dev/PictoLink-AppMovil/web/data/aac-grid-layout.ts)",
+      "Bash(sed -n '3953,3970p' /c/Users/fabri/Downloads/Dev/PictoLink-AppMovil/web/data/aac-grid-layout.ts)",
+      "Bash(sed -n '5398,5408p' /c/Users/fabri/Downloads/Dev/PictoLink-AppMovil/web/data/aac-grid-layout.ts)",
+      "Bash(python3)"
     ]
   }
 }

@@ -548,7 +548,6 @@ function ConversationBoard({
             );
             
             clearSentence();
-            console.log('[AAC Send Success] Mensaje guardado:', content);
         } catch (err) {
             console.error('[AAC Send Error]', err);
         } finally {
@@ -610,7 +609,7 @@ function ConversationBoard({
                 <div className="flex-1 overflow-hidden">
                     <AACBoard
                         onWordAdd={addWord}
-                        onNavigate={(target: string) => console.log('[AACBoard] external folder:', target)}
+                        onNavigate={() => { /* external folder navigation — handled internally by AACBoard */ }}
                     />
                 </div>
             </main>

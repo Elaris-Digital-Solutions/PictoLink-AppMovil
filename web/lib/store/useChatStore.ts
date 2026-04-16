@@ -276,7 +276,8 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             if (isIncoming && isActiveChat && !msg.read) {
                 msgToStore = { ...msg, read: true };
                 // DB update — fire-and-forget
-                getSupabase().from('messages').update({ read: true }).eq('id', msg.id).then(() => {});
+                getSupabase().from('messages').update({ read: true }).eq('id', msg.id)
+                    .then(({ error }) => { if (error) console.warn('[chat] markRead inline:', error.message); });
             }
 
             // Update per-contact summary
