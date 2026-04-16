@@ -1,7 +1,8 @@
 'use client';
 
 import { create } from 'zustand';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabase } from '@/lib/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Contact {
     id: string;           // ID de la relación
@@ -17,15 +18,25 @@ interface ContactStore {
     loadContacts: (userId: string) => Promise<void>;
     addContact: (data: Omit<Contact, 'id'>, userId: string) => Promise<void>;
     removeContact: (id: string) => Promise<void>;
+
+    /**
+     * Subscribe to INSERT events on the contacts table so auto-created contacts
+     * (from the DB trigger `auto_create_reverse_contact`) appear immediately
+     * without a manual page reload.
+     */
+    subscribeToContacts: (userId: string) => void;
+    unsubscribeFromContacts: () => void;
+    _contactsChannel: RealtimeChannel | null;
 }
 
 export const useContactStore = create<ContactStore>()((set, get) => ({
     contacts: [],
     isLoading: false,
+    _contactsChannel: null,
 
     loadContacts: async (userId: string) => {
         set({ isLoading: true });
-        const supabase = createClient();
+        const supabase = getSupabase();
 
         const { data, error } = await supabase
             .from('contacts')
@@ -60,12 +71,15 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         try {
+            const session = await getSupabase().auth.getSession();
+            const token = session.data.session?.access_token;
+
             const res = await fetch(`${supabaseUrl}/rest/v1/contacts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': supabaseKey || '',
-                    'Authorization': `Bearer ${(await createClient().auth.getSession()).data.session?.access_token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Prefer': 'return=representation',
                 },
                 body: JSON.stringify(payload),
@@ -103,7 +117,7 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
     },
 
     removeContact: async (id) => {
-        const supabase = createClient();
+        const supabase = getSupabase();
         const { error } = await supabase.from('contacts').delete().eq('id', id);
 
         if (!error) {
@@ -111,5 +125,45 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
         } else {
             console.error('[removeContact Error]', error);
         }
+    },
+
+    subscribeToContacts: (userId: string) => {
+        const sb = getSupabase();
+
+        const channel = sb
+            .channel(`contacts:${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const row = payload.new as any;
+                    const newContact: Contact = {
+                        id: row.id,
+                        contact_id: row.contact_id,
+                        name: row.custom_name || 'Nuevo contacto',
+                        role: row.role || 'usuario',
+                        avatarUrl: row.avatar_url ?? undefined,
+                    };
+                    set(s => {
+                        // Skip if already in the list (e.g. from an optimistic add)
+                        if (s.contacts.some(c => c.contact_id === newContact.contact_id)) return s;
+                        return { contacts: [...s.contacts, newContact] };
+                    });
+                }
+            )
+            .subscribe();
+
+        set({ _contactsChannel: channel });
+    },
+
+    unsubscribeFromContacts: () => {
+        const { _contactsChannel } = get();
+        if (_contactsChannel) getSupabase().removeChannel(_contactsChannel);
+        set({ _contactsChannel: null });
     },
 }));

@@ -3,29 +3,31 @@
 /**
  * Mensajes — AAC communication hub
  *
- * Screen 1  Contact grid
+ * Screen 1  Contact + Group grid
  *   Large accessible contact cards (photo + name + role).
- *   Tap to open the conversation with that person.
+ *   Group cards appear below contacts.
+ *   Tap to open the conversation with that person or group.
  *
- * Screen 2  Conversation + embedded AAC board
+ * Screen 2a Conversation + embedded AAC board (P2P)
  *   The board IS the message composer.
  *   Tap pictograms → build sentence → ENVIAR → message saved for this contact.
- *   "Ver conversación" button opens a thread panel (slide-over) where the
- *   caregiver can read sent messages and type a text reply.
+ *   "Historial" button opens a thread panel (slide-over).
  *
- * Everything is stored locally (no backend required for the prototype).
+ * Screen 2b Group Conversation + embedded AAC board
+ *   Same as 2a but sends to a group_messages row instead of a P2P message.
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
     ArrowLeft, MessageCircle, MessageSquare,
-    X, Send, Home, ChevronRight, Volume2, UserRound
+    X, Send, Home, ChevronRight, Volume2, UserRound, Users
 } from 'lucide-react';
 
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useChatNavStore } from '@/lib/store/useChatNavStore';
 import { useChatStore } from '@/lib/store/useChatStore';
+import { useGroupStore, type Group, type GroupMessage } from '@/lib/store/useGroupStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 
@@ -40,12 +42,14 @@ const BRAND_ORANGE = '#FF8844';
 const BRAND_ORANGE_DARK = '#C85F27';
 const BRAND_SOFT = '#FFF1E8';
 const BRAND_BORDER = '#FFD5BF';
+const GROUP_COLOR = '#4B6BC8';
+const GROUP_BG = '#E0E8FF';
 
 // =============================================================================
 // Shared sub-components
 // =============================================================================
 
-// ─── Avatar ───────────────────────────────────────────────────────────────────
+// ─── Contact Avatar ───────────────────────────────────────────────────────────
 
 function Avatar({ contact, size = 'md' }: { contact: Contact; size?: 'sm' | 'md' | 'lg' }) {
     const px = size === 'sm' ? 40 : size === 'md' ? 60 : 96;
@@ -71,7 +75,23 @@ function Avatar({ contact, size = 'md' }: { contact: Contact; size?: 'sm' | 'md'
     );
 }
 
-// ─── Folder breadcrumb (for grid navigation) ──────────────────────────────────
+// ─── Group Avatar ─────────────────────────────────────────────────────────────
+
+function GroupAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+    const px = size === 'sm' ? 40 : size === 'md' ? 60 : 96;
+    return (
+        <div
+            className="rounded-full flex items-center justify-center flex-shrink-0 select-none"
+            style={{ width: px, height: px, fontSize: px * 0.38, backgroundColor: GROUP_BG }}
+        >
+            <span className="font-black" style={{ color: GROUP_COLOR }}>
+                {name.charAt(0).toUpperCase()}
+            </span>
+        </div>
+    );
+}
+
+// ─── Folder breadcrumb ────────────────────────────────────────────────────────
 
 function Breadcrumb({
     path, onHome, onNavigateTo,
@@ -105,7 +125,7 @@ function Breadcrumb({
     );
 }
 
-// ─── Mini pictogram chip (inside thread) ─────────────────────────────────────
+// ─── Mini pictogram chip ──────────────────────────────────────────────────────
 
 function PictoChip({ label, arasaacId, color, size = 'sm' }: {
     label: string; arasaacId?: number; color?: string; size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -139,9 +159,7 @@ function PictoChip({ label, arasaacId, color, size = 'sm' }: {
 }
 
 // =============================================================================
-// Inline Reply Viewer — Embedded in the main consolidated header
-// Shows the last message received from this contact.
-// Auto-TTS so the person doesn't have to read.
+// Inline Reply — shows last received message in the header bar (P2P)
 // =============================================================================
 
 function InlineReply({ contact }: { contact: Contact }) {
@@ -151,7 +169,6 @@ function InlineReply({ contact }: { contact: Contact }) {
 
     const lastReply = useMemo(() => {
         if (!profile?.id) return null;
-        // Search backwards for the last message *received* from this contact
         const received = messages.filter(
             (m) => m.sender_id === contact.contact_id && m.receiver_id === profile.id
         );
@@ -184,7 +201,52 @@ function InlineReply({ contact }: { contact: Contact }) {
 }
 
 // =============================================================================
-// Thread panel (slide-over — caregiver side)
+// Inline Reply — for groups (shows last message from any other member)
+// =============================================================================
+
+function GroupInlineReply({ group }: { group: Group }) {
+    const groupMessages = useGroupStore((s) => s.groupMessages);
+    const profile = useProfileStore((s) => s.profile);
+    const { speak } = useSpeech();
+
+    const lastReply = useMemo(() => {
+        if (!profile?.id) return null;
+        const received = groupMessages.filter(m => m.sender_id !== profile.id);
+        return received.length > 0 ? received[received.length - 1] : null;
+    }, [groupMessages, profile?.id]);
+
+    const prevIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (lastReply && lastReply.id !== prevIdRef.current) {
+            prevIdRef.current = lastReply.id;
+            speak(lastReply.content);
+        }
+    }, [lastReply, speak]);
+
+    if (!lastReply) {
+        return (
+            <div className="flex-1 flex items-center px-4">
+                <span className="text-sm font-bold text-white/70 italic">{group.name}</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex items-center gap-2 overflow-x-auto py-1 px-3">
+            <span className="text-white/60 text-xs font-bold flex-shrink-0">{lastReply.sender_name}:</span>
+            {lastReply.pictograms?.length > 0 ? (
+                lastReply.pictograms.slice(0, 5).map((p, i) => (
+                    <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
+                ))
+            ) : (
+                <p className="text-base font-bold text-white leading-snug line-clamp-2">{lastReply.content}</p>
+            )}
+        </div>
+    );
+}
+
+// =============================================================================
+// Thread panel (slide-over — caregiver P2P history)
 // =============================================================================
 
 function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => void }) {
@@ -195,9 +257,8 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
     const [replyText, setReplyText] = useState('');
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Filter messages for this contact
     const thread = useMemo(
-        () => messages.filter((m) => 
+        () => messages.filter((m) =>
             (m.sender_id === profile?.id && m.receiver_id === contact.contact_id) ||
             (m.sender_id === contact.contact_id && m.receiver_id === profile?.id)
         ),
@@ -217,38 +278,24 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 
     return (
         <>
-            {/* Backdrop strictly fixed over everything */}
             <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
-
-            {/* Panel strictly fixed to the right */}
             <div className="fixed top-0 right-0 h-full w-full sm:max-w-[400px] flex flex-col bg-white shadow-[0_0_40px_rgba(0,0,0,0.3)] z-50 animate-in slide-in-from-right">
-
-                {/* Header */}
                 <div className="flex-shrink-0 flex items-center gap-4 px-6 py-5 border-b-2 border-[#FFD5BF] bg-[#FFF8F3] shadow-sm">
                     <Avatar contact={contact} size="md" />
                     <div className="flex-1 min-w-0">
                         <p className="text-xl font-black text-gray-900 truncate">{contact.name}</p>
                         <p className="text-sm font-bold text-[#FF8844] uppercase tracking-widest">{contact.role}</p>
                     </div>
-                    {/* Big visible close button */}
-                    <button
-                        onClick={onClose}
-                        className="w-16 h-16 rounded-2xl bg-white border-2 border-[#FFD5BF] hover:bg-[#FFE6D6] active:scale-95 flex items-center justify-center transition-all shadow-md"
-                        aria-label="Cerrar"
-                    >
+                    <button onClick={onClose} className="w-16 h-16 rounded-2xl bg-white border-2 border-[#FFD5BF] hover:bg-[#FFE6D6] active:scale-95 flex items-center justify-center transition-all shadow-md">
                         <X size={32} className="text-[#C85F27]" strokeWidth={3} />
                     </button>
                 </div>
 
-                {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-3 space-y-4">
                     {thread.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 h-full py-12 text-gray-400">
                             <MessageCircle size={36} className="opacity-25" />
-                            <p className="text-xs text-center font-medium px-6">
-                                Sin mensajes todavía.<br />
-                                Construye una frase en el tablero y envíala.
-                            </p>
+                            <p className="text-xs text-center font-medium px-6">Sin mensajes todavía.<br />Construye una frase en el tablero y envíala.</p>
                         </div>
                     ) : (
                         thread.map((entry) => {
@@ -257,7 +304,6 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                 <div key={entry.id} className={cn('flex flex-col gap-1.5', isSent ? 'items-end' : 'items-start')}>
                                     {isSent ? (
                                         <>
-                                            {/* Pictogram strip */}
                                             {entry.pictograms?.length > 0 && (
                                                 <div className="flex gap-2 flex-wrap justify-end max-w-[320px]">
                                                     {entry.pictograms.map((p, i) => (
@@ -265,13 +311,8 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                                     ))}
                                                 </div>
                                             )}
-                                            {/* Text bubble + speak */}
                                             <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => speak(entry.content)}
-                                                    className="w-10 h-10 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0 shadow-sm"
-                                                    aria-label="Escuchar"
-                                                >
+                                                <button onClick={() => speak(entry.content)} className="w-10 h-10 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0 shadow-sm">
                                                     <Volume2 size={20} className="text-[#FF8844]" />
                                                 </button>
                                                 <div className="bg-[#FF8844] text-white px-5 py-3 rounded-[1.5rem] rounded-br-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
@@ -283,7 +324,6 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                         <div className="flex items-start gap-3">
                                             <Avatar contact={contact} size="md" />
                                             <div className="flex flex-col gap-2">
-                                                {/* Pictograms — primary display */}
                                                 {entry.pictograms?.length > 0 ? (
                                                     <div className="flex gap-2 flex-wrap max-w-[280px]">
                                                         {entry.pictograms.map((p, i) => (
@@ -291,12 +331,10 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    // New reply, still pending AI translation
                                                     <div className="bg-[#FFF1E8] text-slate-700 px-5 py-3 rounded-[1.5rem] rounded-bl-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
                                                         {entry.content}
                                                     </div>
                                                 )}
-                                                {/* Text caption — for caregiver context */}
                                                 {entry.pictograms?.length > 0 && (
                                                     <p className="text-xs text-gray-400 font-bold px-1 max-w-[280px]">{entry.content}</p>
                                                 )}
@@ -313,7 +351,6 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                     <div ref={bottomRef} />
                 </div>
 
-                {/* Reply input — caregiver types here */}
                 <div className="flex-shrink-0 flex items-center gap-2 px-3 py-3 border-t border-[#FFD5BF] bg-[#FFF8F3]">
                     <input
                         type="text"
@@ -321,16 +358,10 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
                         onChange={(e) => setReplyText(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleReply(); }}
                         placeholder={`${contact.name} responde…`}
-                        className="flex-1 px-3 py-2.5 rounded-xl border border-[#FFD5BF] text-sm
-                                   focus:outline-none focus:border-[#FF8844] bg-white"
+                        className="flex-1 px-3 py-2.5 rounded-xl border border-[#FFD5BF] text-sm focus:outline-none focus:border-[#FF8844] bg-white"
                     />
-                    <button
-                        onClick={handleReply}
-                        disabled={!replyText.trim()}
-                        className="w-11 h-11 rounded-xl bg-[#FF8844] hover:bg-[#F57D37] active:bg-[#E56F2C]
-                                   disabled:opacity-30 flex items-center justify-center transition-colors"
-                        aria-label="Enviar respuesta"
-                    >
+                    <button onClick={handleReply} disabled={!replyText.trim()}
+                        className="w-11 h-11 rounded-xl bg-[#FF8844] hover:bg-[#F57D37] active:bg-[#E56F2C] disabled:opacity-30 flex items-center justify-center">
                         <Send size={18} className="text-white" />
                     </button>
                 </div>
@@ -340,15 +371,125 @@ function ThreadPanel({ contact, onClose }: { contact: Contact; onClose: () => vo
 }
 
 // =============================================================================
-// Screen 1 — Contact grid
+// Group Historial slide-over (for AAC view)
 // =============================================================================
 
-function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
+function GroupHistorial({ group, onClose }: { group: Group; onClose: () => void }) {
+    const groupMessages = useGroupStore((s) => s.groupMessages);
+    const profile = useProfileStore((s) => s.profile);
+    const { speak } = useSpeech();
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    function timeLabel(ts: string) {
+        return new Date(ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [groupMessages.length]);
+
+    return (
+        <>
+            <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+            <div className="fixed top-0 right-0 h-full w-full sm:max-w-[400px] flex flex-col bg-white shadow-[0_0_40px_rgba(0,0,0,0.3)] z-50 animate-in slide-in-from-right">
+                {/* Header */}
+                <div className="flex-shrink-0 flex items-center gap-4 px-6 py-5 border-b-2 border-[#D0D8F0] bg-[#F7F8FF] shadow-sm">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: GROUP_BG }}>
+                        <span className="font-black text-xl" style={{ color: GROUP_COLOR }}>{group.name.charAt(0)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xl font-black text-gray-900">{group.name}</p>
+                    </div>
+                    <button onClick={onClose} className="w-16 h-16 rounded-2xl bg-white border-2 border-[#D0D8F0] hover:bg-[#EEF1FF] active:scale-95 flex items-center justify-center shadow-md">
+                        <X size={32} strokeWidth={3} style={{ color: GROUP_COLOR }} />
+                    </button>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                    {groupMessages.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 h-full py-12 text-gray-400">
+                            <MessageCircle size={36} className="opacity-25" />
+                            <p className="text-xs text-center font-medium px-6">Sin mensajes en el grupo todavía.</p>
+                        </div>
+                    ) : (
+                        groupMessages.map((msg) => {
+                            const isSent = msg.sender_id === profile?.id;
+                            return (
+                                <div key={msg.id} className={cn('flex flex-col gap-1.5', isSent ? 'items-end' : 'items-start')}>
+                                    {!isSent && (
+                                        <span className="text-[10px] font-bold px-1" style={{ color: GROUP_COLOR }}>{msg.sender_name}</span>
+                                    )}
+                                    {isSent ? (
+                                        <>
+                                            {msg.pictograms?.length > 0 && (
+                                                <div className="flex gap-2 flex-wrap justify-end max-w-[320px]">
+                                                    {msg.pictograms.map((p, i) => (
+                                                        <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div className="flex items-center gap-3">
+                                                <button onClick={() => speak(msg.content)} className="w-10 h-10 rounded-full bg-[#FFF1E8] hover:bg-[#FFE6D6] flex items-center justify-center flex-shrink-0">
+                                                    <Volume2 size={20} className="text-[#FF8844]" />
+                                                </button>
+                                                <div className="bg-[#FF8844] text-white px-5 py-3 rounded-[1.5rem] rounded-br-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
+                                                    &ldquo;{msg.content}&rdquo;
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black"
+                                                style={{ backgroundColor: GROUP_BG, color: GROUP_COLOR }}>
+                                                {msg.sender_name.charAt(0)}
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                {msg.pictograms?.length > 0 ? (
+                                                    <div className="flex gap-2 flex-wrap max-w-[280px]">
+                                                        {msg.pictograms.map((p, i) => (
+                                                            <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="bg-[#FFF1E8] text-slate-700 px-5 py-3 rounded-[1.5rem] rounded-bl-none text-lg font-bold max-w-[280px] leading-tight shadow-sm">
+                                                        {msg.content}
+                                                    </div>
+                                                )}
+                                                {msg.pictograms?.length > 0 && (
+                                                    <p className="text-xs text-gray-400 font-bold px-1">{msg.content}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <span className="text-[10px] text-gray-400 font-bold px-1">{timeLabel(msg.created_at)}</span>
+                                </div>
+                            );
+                        })
+                    )}
+                    <div ref={bottomRef} />
+                </div>
+            </div>
+        </>
+    );
+}
+
+// =============================================================================
+// Screen 1 — Contact + Group grid
+// =============================================================================
+
+function ContactGrid({ onSelectContact, onSelectGroup }: {
+    onSelectContact: (c: Contact) => void;
+    onSelectGroup: (g: Group) => void;
+}) {
     const contacts = useContactStore((s) => s.contacts);
     const isLoading = useContactStore((s) => s.isLoading);
     const { addContact } = useContactStore();
     const profile = useProfileStore((s) => s.profile);
     const summary = useChatStore((s) => s.summary);
+    const groups = useGroupStore((s) => s.groups);
+    const groupSummary = useGroupStore((s) => s.groupSummary);
     const [showAddContact, setShowAddContact] = useState(false);
 
     async function handleAddContact(data: Omit<Contact, 'id'>) {
@@ -357,23 +498,20 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
         setShowAddContact(false);
     }
 
+    function timeStr(ts: string) {
+        return new Date(ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    }
+
     return (
         <>
         <div className="flex flex-col h-full bg-[#FFF7F2]">
-
-            {/* Header — clean, modern, no gradient */}
-            <div
-                className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#FFF4ED]"
-                style={{ borderBottom: `1px solid ${BRAND_BORDER}` }}
-            >
+            <div className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#FFF4ED]" style={{ borderBottom: `1px solid ${BRAND_BORDER}` }}>
                 <h1 className="text-[30px] font-black text-[#FF8844] leading-none tracking-tight">Mensajes</h1>
                 <p className="text-[14px] text-slate-500 font-semibold mt-1.5">¿Con quién quieres hablar?</p>
             </div>
 
-            {/* Contact list — high-contrast cards */}
             <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col">
                 {isLoading ? (
-                    // Loading skeleton while contacts fetch from Supabase
                     <div className="flex flex-col gap-2 pt-2">
                         {[1, 2, 3].map(i => (
                             <div key={i} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-white border border-[#FFD5BF] animate-pulse">
@@ -385,106 +523,118 @@ function ContactGrid({ onSelect }: { onSelect: (c: Contact) => void }) {
                             </div>
                         ))}
                     </div>
-                ) : contacts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center flex-1 gap-3 py-16 text-gray-400">
-                        <UserRound size={48} className="opacity-20" />
-                        <p className="text-sm font-semibold">No tienes contactos aún</p>
-                        <button
-                            onClick={() => setShowAddContact(true)}
-                            className="text-sm font-bold text-[#FF8844] underline"
-                        >
-                            Añadir el primero
-                        </button>
-                    </div>
-                ) : contacts.map((contact) => {
-                    const s = summary[contact.contact_id];
-                    const lastMsg = s?.lastMessage;
-                    const unread = s?.unreadCount ?? 0;
-                    const timeStr = lastMsg
-                        ? new Date(lastMsg.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
-                        : '';
+                ) : (
+                    <>
+                        {/* ── Contacts ──────────────────────────────────────────── */}
+                        {contacts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-3 py-10 text-gray-400">
+                                <UserRound size={48} className="opacity-20" />
+                                <p className="text-sm font-semibold">No tienes contactos aún</p>
+                                <button onClick={() => setShowAddContact(true)} className="text-sm font-bold text-[#FF8844] underline">
+                                    Añadir el primero
+                                </button>
+                            </div>
+                        ) : contacts.map((contact) => {
+                            const s = summary[contact.contact_id];
+                            const lastMsg = s?.lastMessage;
+                            const unread = s?.unreadCount ?? 0;
+                            const t = lastMsg ? timeStr(lastMsg.created_at) : '';
+                            const lastReceived = lastMsg && lastMsg.sender_id !== profile?.id ? lastMsg : null;
 
-                    // Find last *received* message for pictogram preview
-                    const lastReceived = lastMsg && lastMsg.sender_id !== profile?.id ? lastMsg : null;
-
-                    return (
-                        <button
-                            key={contact.id}
-                            onClick={() => onSelect(contact)}
-                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-[#FFD5BF] shadow-[0_1px_3px_rgba(200,95,39,0.14)] active:bg-[#FFF4ED] press-anim text-left"
-                        >
-                            {/* Avatar */}
-                            <Avatar contact={contact} size="md" />
-
-                            {/* Text */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                    <span className="text-[16px] font-bold text-gray-900 truncate leading-none">
-                                        {contact.name}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex-1 min-w-0 flex items-center">
-                                        {lastReceived?.pictograms && lastReceived.pictograms.length > 0 ? (
-                                            <div className="flex gap-1 items-center flex-wrap">
-                                                {lastReceived.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
-                                                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
-                                                ))}
+                            return (
+                                <button
+                                    key={contact.id}
+                                    onClick={() => onSelectContact(contact)}
+                                    className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-[#FFD5BF] shadow-[0_1px_3px_rgba(200,95,39,0.14)] active:bg-[#FFF4ED] press-anim text-left"
+                                >
+                                    <Avatar contact={contact} size="md" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                            <span className="text-[16px] font-bold text-gray-900 truncate leading-none">{contact.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 min-w-0 flex items-center">
+                                                {lastReceived?.pictograms && lastReceived.pictograms.length > 0 ? (
+                                                    <div className="flex gap-1 items-center flex-wrap">
+                                                        {lastReceived.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
+                                                            <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
+                                                        ))}
+                                                    </div>
+                                                ) : lastReceived ? (
+                                                    <p className="text-[13px] text-gray-500 truncate font-medium">← {lastReceived.content}</p>
+                                                ) : lastMsg ? (
+                                                    <p className="text-[13px] text-gray-400 truncate font-medium">→ {lastMsg.content}</p>
+                                                ) : (
+                                                    <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
+                                                )}
                                             </div>
-                                        ) : lastReceived ? (
-                                            <p className="text-[13px] text-gray-500 truncate font-medium">
-                                                ← {lastReceived.content}
-                                            </p>
-                                        ) : lastMsg ? (
-                                            <p className="text-[13px] text-gray-400 truncate font-medium">
-                                                → {lastMsg.content}
-                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-end justify-between self-stretch py-0.5 min-w-[42px]">
+                                        {t ? (
+                                            <span className="text-[11px] leading-none" style={{ color: unread > 0 ? '#C85F27' : '#7B7B7B', fontWeight: unread > 0 ? 700 : 500 }}>{t}</span>
                                         ) : (
-                                            <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
+                                            <span className="text-[11px] text-transparent leading-none">00:00</span>
+                                        )}
+                                        {unread > 0 ? (
+                                            <div className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1 bg-[#FF8844]">{unread}</div>
+                                        ) : (
+                                            <span className="w-[22px] h-[22px]" aria-hidden="true" />
                                         )}
                                     </div>
+                                </button>
+                            );
+                        })}
+
+                        {/* ── Groups ────────────────────────────────────────────── */}
+                        {groups.length > 0 && (
+                            <>
+                                <div className="flex items-center gap-2 mt-3 mb-2 px-1">
+                                    <Users size={14} style={{ color: GROUP_COLOR }} className="flex-shrink-0" />
+                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: GROUP_COLOR }}>Grupos</span>
                                 </div>
-                            </div>
-
-                            <div className="flex flex-col items-end justify-between self-stretch py-0.5 min-w-[42px]">
-                                {timeStr ? (
-                                    <span
-                                        className="text-[11px] leading-none"
-                                        style={{ color: unread > 0 ? '#C85F27' : '#7B7B7B', fontWeight: unread > 0 ? 700 : 500 }}
-                                    >
-                                        {timeStr}
-                                    </span>
-                                ) : (
-                                    <span className="text-[11px] text-transparent leading-none">00:00</span>
-                                )}
-
-                                {unread > 0 ? (
-                                    <div className="flex-shrink-0 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-white text-[11px] font-black px-1 bg-[#FF8844]">
-                                        {unread}
-                                    </div>
-                                ) : (
-                                    <span className="w-[22px] h-[22px]" aria-hidden="true" />
-                                )}
-                            </div>
-                        </button>
-                    );
-                })}
+                                {groups.map((group) => {
+                                    const lastMsg = groupSummary[group.id];
+                                    const t = lastMsg ? timeStr(lastMsg.created_at) : '';
+                                    return (
+                                        <button
+                                            key={group.id}
+                                            onClick={() => onSelectGroup(group)}
+                                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border press-anim text-left active:bg-[#EEF1FF]"
+                                            style={{ borderColor: `${GROUP_BG}`, boxShadow: '0 1px 3px rgba(75,107,200,0.12)' }}
+                                        >
+                                            <GroupAvatar name={group.name} size="md" />
+                                            <div className="flex-1 min-w-0">
+                                                <span className="text-[16px] font-bold text-gray-900 truncate leading-none block mb-1">{group.name}</span>
+                                                <p className="text-[13px] text-gray-400 truncate font-medium">
+                                                    {lastMsg
+                                                        ? `${lastMsg.sender_name}: ${lastMsg.content || (lastMsg.pictograms?.length > 0 ? `${lastMsg.pictograms.length} pictograma(s)` : '')}`
+                                                        : <span className="italic">Grupo nuevo</span>
+                                                    }
+                                                </p>
+                                            </div>
+                                            {t && (
+                                                <span className="text-[11px] text-gray-400 flex-shrink-0">{t}</span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </>
+                        )}
+                    </>
+                )}
             </div>
         </div>
 
-        {/* Add Contact Modal */}
         {showAddContact && (
-            <ContactForm
-                onSave={handleAddContact}
-                onCancel={() => setShowAddContact(false)}
-            />
+            <ContactForm onSave={handleAddContact} onCancel={() => setShowAddContact(false)} />
         )}
-    </>
+        </>
     );
 }
 
 // =============================================================================
-// Screen 2 — Conversation with embedded AAC board
+// Screen 2a — Conversation with embedded AAC board (P2P)
 // =============================================================================
 
 function ConversationBoard({
@@ -497,32 +647,24 @@ function ConversationBoard({
     const [showThread, setShowThread] = useState(false);
     const [isTranslating, setIsTranslating] = useState(false);
 
-    // Profile & Chat layer
     const profile = useProfileStore((s) => s.profile);
     const setCurrentContact = useChatStore((s) => s.setCurrentContact);
     const setContactName = useChatStore((s) => s.setContactName);
     const unsubscribeFromMessages = useChatStore((s) => s.unsubscribeFromMessages);
 
-    // Init conversation on mount + request notification permission
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
             setContactName(contact.name);
             setCurrentContact(contact.contact_id, profile.id);
-            // Ask for notification permission lazily (after user interaction)
-            import('@/lib/notifications').then(({ requestNotificationPermission }) => {
-                requestNotificationPermission();
-            });
         }
         return () => unsubscribeFromMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profile?.id, contact.contact_id]);
 
-    // Board state
     const addWord = useBoardStore((s) => s.addWord);
     const sentence = useBoardStore((s) => s.sentence);
     const clearSentence = useBoardStore((s) => s.clearSentence);
 
-    // Unread count for the historial button badge
     const messages = useChatStore((s) => s.messages);
     const msgCount = useMemo(
         () => messages.filter(m => m.sender_id === contact.contact_id && !m.read).length,
@@ -533,20 +675,10 @@ function ConversationBoard({
 
     const handleSend = useCallback(async () => {
         if (sentence.length === 0 || !profile?.id || !contact.contact_id) return;
-        
         setIsTranslating(true);
         try {
-            // Generar frase simple concatenando las etiquetas (No usamos IA para AAC -> Texto)
             const content = sentence.map(p => p.label).join(' ');
-            
-            // Persistir en Supabase (sender_id = profile.id, receiver_id = contact.contact_id)
-            await sendMessage(
-                sentence, 
-                content, 
-                profile.id, 
-                contact.contact_id
-            );
-            
+            await sendMessage(sentence, content, profile.id, contact.contact_id);
             clearSentence();
         } catch (err) {
             console.error('[AAC Send Error]', err);
@@ -557,101 +689,150 @@ function ConversationBoard({
 
     return (
         <div className="relative flex flex-col w-full h-full overflow-hidden bg-[#FFF0E6]">
-
-            {/* TOP BAR / HEADER UNIFICADO (1 ÚNICA FRANJA) */}
             <header className="flex-shrink-0 flex flex-col bg-white border-b border-[#FFD5BF] z-10 shadow-sm">
-                
-                {/* 1. Fila principal consolidada: Nav + Avatar + Mensaje Recibido + Historial */}
                 <div className="flex items-center gap-3 h-[72px] px-3 bg-[#FF8844]">
-                    
-                    {/* Botón de volver */}
-                    <button
-                        onClick={onBack}
-                        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 transition-all text-white shadow-sm ml-1 border-2 border-white/30"
-                        aria-label="Volver a contactos"
-                    >
+                    <button onClick={onBack} className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 transition-all text-white shadow-sm ml-1 border-2 border-white/30">
                         <ArrowLeft size={26} strokeWidth={2.5} className="text-white" />
                     </button>
-
-                    {/* Avatar del contacto */}
                     <div className="ml-1 border-2 border-white/40 rounded-full shadow-sm bg-white/10 p-0.5 relative z-10 hidden sm:block">
                         <Avatar contact={contact} size="sm" />
                     </div>
-
-                    {/* Último mensaje recibido (Pictogramas inline) */}
                     <InlineReply contact={contact} />
-
-                    {/* Botón Historial sobre fondo naranja */}
-                    <button
-                        onClick={() => setShowThread(true)}
-                        className="h-12 px-5 md:px-6 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base transition-transform shadow-md bg-white text-[#FF8844] active:bg-[#FFF4ED] active:scale-95 ml-1 mr-1 border-b-4 border-[#FFD5BF]"
-                        aria-label="Cargar Historial"
-                    >
+                    <button onClick={() => setShowThread(true)} className="h-12 px-5 md:px-6 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base transition-transform shadow-md bg-white text-[#FF8844] active:bg-[#FFF4ED] active:scale-95 ml-1 mr-1 border-b-4 border-[#FFD5BF]">
                         <MessageSquare size={22} fill="currentColor" />
                         <span className="hidden sm:inline">Historial</span>
                         {msgCount > 0 && (
-                            <div className="bg-white text-[#C85F27] text-xs px-2 py-0.5 rounded-full ml-1">
-                                {msgCount}
-                            </div>
+                            <div className="bg-white text-[#C85F27] text-xs px-2 py-0.5 rounded-full ml-1">{msgCount}</div>
                         )}
                     </button>
                 </div>
-
-                {/* 2. Constructor de frase (SentenceBar) */}
                 <div className="bg-white border-t border-[#FFD5BF]/50">
                     <SentenceBar actionMode="messages" onSend={handleSend} isProcessing={isTranslating} />
                 </div>
             </header>
 
-            {/* TABLERO AAC MAIN AREA */}
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                {/* AACBoard — manages its own internal navigation */}
+            <main className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-hidden">
-                    <AACBoard
-                        onWordAdd={addWord}
-                        onNavigate={() => { /* external folder navigation — handled internally by AACBoard */ }}
-                    />
+                    <AACBoard onWordAdd={addWord} onNavigate={() => {}} />
                 </div>
             </main>
 
-            {/* HISTORIAL SLIDE-OVER STRICT FIXED OVERLAY */}
-            {showThread && (
-                <ThreadPanel contact={contact} onClose={() => setShowThread(false)} />
-            )}
+            {showThread && <ThreadPanel contact={contact} onClose={() => setShowThread(false)} />}
         </div>
     );
 }
 
 // =============================================================================
-// Root — switches between contact grid and conversation
+// Screen 2b — Group Conversation with embedded AAC board
+// =============================================================================
+
+function GroupConversationBoard({
+    group,
+    onBack,
+}: {
+    group: Group;
+    onBack: () => void;
+}) {
+    const [showHistorial, setShowHistorial] = useState(false);
+
+    const profile = useProfileStore((s) => s.profile);
+    const loadGroupMessages = useGroupStore((s) => s.loadGroupMessages);
+    const sendGroupMessage = useGroupStore((s) => s.sendGroupMessage);
+    const subscribeToGroup = useGroupStore((s) => s.subscribeToGroup);
+    const unsubscribeFromGroup = useGroupStore((s) => s.unsubscribeFromGroup);
+    const groupMessages = useGroupStore((s) => s.groupMessages);
+
+    useEffect(() => {
+        if (profile?.id) {
+            loadGroupMessages(group.id);
+            subscribeToGroup(group.id, profile.id);
+        }
+        return () => unsubscribeFromGroup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [group.id, profile?.id]);
+
+    const addWord = useBoardStore((s) => s.addWord);
+    const sentence = useBoardStore((s) => s.sentence);
+    const clearSentence = useBoardStore((s) => s.clearSentence);
+
+    const handleSend = useCallback(async () => {
+        if (sentence.length === 0 || !profile?.id) return;
+        const content = sentence.map(p => p.label).join(' ');
+        await sendGroupMessage(sentence, content, profile.id, profile.display_name ?? 'Yo', group.id);
+        clearSentence();
+    }, [sentence, profile, group.id, sendGroupMessage, clearSentence]);
+
+    return (
+        <div className="relative flex flex-col w-full h-full overflow-hidden bg-[#F0F2FF]">
+            <header className="flex-shrink-0 flex flex-col bg-white border-b z-10 shadow-sm" style={{ borderColor: `${GROUP_BG}` }}>
+                <div className="flex items-center gap-3 h-[72px] px-3" style={{ backgroundColor: GROUP_COLOR }}>
+                    <button onClick={onBack} className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 text-white border-2 border-white/30 ml-1">
+                        <ArrowLeft size={26} strokeWidth={2.5} />
+                    </button>
+                    <div className="ml-1 hidden sm:flex w-10 h-10 rounded-full items-center justify-center border-2 border-white/40 text-white font-black text-lg" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                        {group.name.charAt(0)}
+                    </div>
+                    <GroupInlineReply group={group} />
+                    <button onClick={() => setShowHistorial(true)} className="h-12 px-5 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base bg-white active:scale-95 shadow-md border-b-4 ml-1 mr-1"
+                        style={{ color: GROUP_COLOR, borderColor: GROUP_BG }}>
+                        <MessageSquare size={22} fill="currentColor" />
+                        <span className="hidden sm:inline">Historial</span>
+                    </button>
+                </div>
+                <div className="bg-white border-t" style={{ borderColor: GROUP_BG }}>
+                    <SentenceBar actionMode="messages" onSend={handleSend} isProcessing={false} />
+                </div>
+            </header>
+
+            <main className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-hidden">
+                    <AACBoard onWordAdd={addWord} onNavigate={() => {}} />
+                </div>
+            </main>
+
+            {showHistorial && <GroupHistorial group={group} onClose={() => setShowHistorial(false)} />}
+        </div>
+    );
+}
+
+// =============================================================================
+// Root — switches between contact grid, P2P conversation, and group conversation
 // =============================================================================
 
 export default function ChatPage() {
     const contacts = useContactStore((s) => s.contacts);
     const { loadContacts } = useContactStore();
     const profile = useProfileStore((s) => s.profile);
-    const { selectedContactId, setSelectedContactId, clearSelectedContact } = useChatNavStore();
+    const { selectedContactId, selectedGroupId, setSelectedContactId, setSelectedGroupId, clearSelectedContact } = useChatNavStore();
 
     const loadSummary = useChatStore((s) => s.loadSummary);
+    const { loadGroups, loadGroupSummary } = useGroupStore();
+    const groups = useGroupStore((s) => s.groups);
 
-    // Carga inicial de contactos + resumen de conversaciones
     useEffect(() => {
         if (profile?.id) {
             loadContacts(profile.id);
             loadSummary(profile.id);
+            loadGroups(profile.id);
+            loadGroupSummary(profile.id);
         }
-    }, [profile?.id, loadContacts, loadSummary]);
+    }, [profile?.id, loadContacts, loadSummary, loadGroups, loadGroupSummary]);
 
     const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
+    const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null;
 
-    if (!selectedContact) {
-        return <ContactGrid onSelect={(c) => setSelectedContactId(c.id)} />;
+    if (selectedContact) {
+        return <ConversationBoard contact={selectedContact} onBack={clearSelectedContact} />;
+    }
+
+    if (selectedGroup) {
+        return <GroupConversationBoard group={selectedGroup} onBack={clearSelectedContact} />;
     }
 
     return (
-        <ConversationBoard
-            contact={selectedContact}
-            onBack={clearSelectedContact}
+        <ContactGrid
+            onSelectContact={(c) => setSelectedContactId(c.id)}
+            onSelectGroup={(g) => setSelectedGroupId(g.id)}
         />
     );
 }

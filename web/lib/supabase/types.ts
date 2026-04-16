@@ -90,6 +90,57 @@ export interface Database {
                 };
                 Update: Partial<Database['public']['Tables']['push_subscriptions']['Insert']>;
             };
+            groups: {
+                Row: {
+                    id: string;
+                    name: string;
+                    created_by: string;
+                    avatar_url: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    name: string;
+                    created_by: string;
+                    avatar_url?: string | null;
+                    created_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['groups']['Insert']>;
+            };
+            group_members: {
+                Row: {
+                    id: string;
+                    group_id: string;
+                    user_id: string;
+                    joined_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    group_id: string;
+                    user_id: string;
+                    joined_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['group_members']['Insert']>;
+            };
+            group_messages: {
+                Row: {
+                    id: string;
+                    group_id: string;
+                    sender_id: string;
+                    content: string;
+                    pictograms: PictoNode[];
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    group_id: string;
+                    sender_id: string;
+                    content: string;
+                    pictograms?: PictoNode[];
+                    created_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['group_messages']['Insert']>;
+            };
         };
         Functions: {
             get_user_id_by_email: {
@@ -101,6 +152,9 @@ export interface Database {
 }
 
 // Convenience row types
-export type DbProfile   = Database['public']['Tables']['profiles']['Row'];
-export type DbMessage   = Database['public']['Tables']['messages']['Row'];
-export type DbContact   = Database['public']['Tables']['contacts']['Row'];
+export type DbProfile       = Database['public']['Tables']['profiles']['Row'];
+export type DbMessage       = Database['public']['Tables']['messages']['Row'];
+export type DbContact       = Database['public']['Tables']['contacts']['Row'];
+export type DbGroup         = Database['public']['Tables']['groups']['Row'];
+export type DbGroupMember   = Database['public']['Tables']['group_members']['Row'];
+export type DbGroupMessage  = Database['public']['Tables']['group_messages']['Row'];

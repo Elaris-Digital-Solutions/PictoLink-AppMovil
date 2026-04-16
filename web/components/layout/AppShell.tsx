@@ -66,11 +66,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // Request notification permission and register push subscription for
-            // background notifications (only once per session, idempotent).
+            // ── Push notifications setup ──────────────────────────────────────
+            // requestNotificationPermission() is idempotent:
+            //   • permission already 'granted' → returns true immediately, no dialog
+            //   • permission 'default' (first time) → shows the system dialog once
+            //   • permission 'denied' → returns false immediately, no dialog
+            // The browser stores the choice permanently — the dialog never re-appears.
+            //
+            // subscribeToPush() is also idempotent:
+            //   • Re-uses the existing PushSubscription if still valid (no new sub)
+            //   • Creates a new one only if it expired or was never created
+            //   • Upserts to the DB, so duplicate calls are safe
+            // This runs on every authenticated app open to refresh stale subscriptions.
             const granted = await requestNotificationPermission();
             if (granted) {
-                subscribeToPush(); // non-blocking
+                subscribeToPush(); // non-blocking — errors are caught internally
             }
 
             setSessionVerified(true);
