@@ -50,28 +50,63 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!hydrated) return;
 
+        // Hard timeout: if verification takes longer than 5 s (slow network or
+        // offline PWA launch), unblock so the app never stays stuck on the spinner.
+        // The route guard will use whatever localStorage has at that point.
+        const timeout = setTimeout(() => setSessionVerified(true), 5000);
+
         async function verifySession() {
-            if (!isOnboarded) {
-                // Not logged in locally → nothing to verify
-                setSessionVerified(true);
-                return;
-            }
             const supabase = createClient();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                // localStorage says logged in but Supabase has no matching session
-                // (new project, expired token, etc.) → force logout
+
+            // Always validate the JWT with Supabase Auth.
+            // • Online + valid session  → user object returned
+            // • Online + expired token  → Supabase auto-refreshes, user returned
+            // • Online + invalid token  → null user, we clear localStorage
+            // • Offline                 → network error, .catch() fires,
+            //                            localStorage is preserved (PWA offline use)
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                // No valid session — clear any stale local state and send to onboarding.
                 useProfileStore.setState({ profile: null, isOnboarded: false });
                 setSessionVerified(true);
                 return;
             }
 
-            // ── Push notifications setup (non-blocking) ───────────────────────
-            // Fire-and-forget so it NEVER holds up the loading gate.
-            //   • permission 'granted'  → returns immediately, no dialog
-            //   • permission 'default'  → shows dialog AFTER app is visible
-            //   • permission 'denied'   → returns immediately, no dialog
-            // subscribeToPush() is idempotent — re-uses existing subscription.
+            // ── Profile restoration ───────────────────────────────────────────
+            // If localStorage was cleared (reinstalled PWA, browser storage reset,
+            // etc.) but the auth cookie is still valid, restore the profile from
+            // the DB so the user stays logged in without going through onboarding.
+            if (!isOnboarded) {
+                const { data: dbProfile } = await (supabase as any)
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (dbProfile) {
+                    useProfileStore.setState({
+                        profile: {
+                            id:            user.id,
+                            display_name:  dbProfile.display_name,
+                            avatar_url:    dbProfile.avatar_url  ?? undefined,
+                            mode:          dbProfile.mode,
+                            color_theme:   dbProfile.color_theme  ?? 'blue',
+                            grid_columns:  dbProfile.grid_columns ?? 4,
+                            tts_enabled:   dbProfile.tts_enabled  ?? true,
+                            tts_rate:      dbProfile.tts_rate     ?? 1.0,
+                            tts_voice:     dbProfile.tts_voice    ?? undefined,
+                            created_at:    dbProfile.created_at,
+                            plan_type:     dbProfile.plan_type    ?? undefined,
+                        },
+                        isOnboarded: true,
+                    });
+                }
+                // If no profile in DB → user is mid-onboarding. Leave isOnboarded=false
+                // so the route guard sends them to /onboarding to finish setup.
+            }
+
+            // ── Push notifications (non-blocking, fire-and-forget) ────────────
             requestNotificationPermission()
                 .then(granted => { if (granted) subscribeToPush(); })
                 .catch(() => { /* non-fatal */ });
@@ -79,9 +114,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             setSessionVerified(true);
         }
 
-        // Failsafe: if verifySession() throws for any reason (network error,
-        // Supabase unreachable, etc.) unblock the spinner so the app loads.
+        // If verifySession() throws (network error, offline), fail open:
+        // don't touch localStorage, let the route guard use what's there.
         verifySession().catch(() => setSessionVerified(true));
+
+        return () => clearTimeout(timeout);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hydrated]);
@@ -89,21 +126,49 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // ── Route guard ─────────────────────────────────────────────────────────────
     useEffect(() => {
         if (!hydrated || !sessionVerified) return;
-        if (!pathname || pathname.startsWith('/onboarding')) return;
+        if (!pathname) return;
 
+        const isCaregiver      = mode === 'caregiver';
+        const onCaregiverRoute = pathname.startsWith('/cuidador');
+        const aacRoutes        = ['/chat', '/dashboard', '/settings'];
+        const onAacRoute       = aacRoutes.some(r => pathname.startsWith(r));
+        const onOnboarding     = pathname.startsWith('/onboarding');
+
+        // ── /onboarding handling ──────────────────────────────────────────────
+        if (onOnboarding) {
+            // Already set up → leave onboarding, go to the right screen.
+            // This covers: mid-session localStorage clear + profile restored above,
+            // or user manually navigating back to /onboarding after login.
+            if (isOnboarded) {
+                router.replace(isCaregiver ? '/cuidador' : '/chat');
+            }
+            // Not yet onboarded → stay on /onboarding to finish setup.
+            return;
+        }
+
+        // ── Not authenticated ─────────────────────────────────────────────────
         if (!isOnboarded) {
+            // Middleware handles this server-side; this is the client-side
+            // fallback (e.g. cookie cleared mid-session while app is open).
             router.replace('/onboarding');
             return;
         }
 
-        const onCaregiverRoute = pathname.startsWith('/cuidador');
-        const isCaregiver = mode === 'caregiver';
+        // ── Authenticated: route by mode ──────────────────────────────────────
 
-        if (!onCaregiverRoute && isCaregiver) {
+        // Root or unlisted path → home screen for this user type.
+        if (pathname === '/' || (!onCaregiverRoute && !onAacRoute)) {
+            router.replace(isCaregiver ? '/cuidador' : '/chat');
+            return;
+        }
+
+        // Caregiver on an AAC-only route → /cuidador.
+        if (onAacRoute && isCaregiver) {
             router.replace('/cuidador');
             return;
         }
 
+        // AAC user on a caregiver-only route → /chat.
         if (onCaregiverRoute && !isCaregiver) {
             router.replace('/chat');
         }

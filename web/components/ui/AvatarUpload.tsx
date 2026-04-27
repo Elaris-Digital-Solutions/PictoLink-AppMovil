@@ -15,7 +15,7 @@
 
 import { useRef, useState } from 'react';
 import { Camera, ImageIcon, Loader2, User, X } from 'lucide-react';
-import { uploadToCloudinary, getAvatarUrl } from '@/lib/cloudinary';
+import { compressImage, uploadToCloudinary, getAvatarUrl } from '@/lib/cloudinary';
 import { cn } from '@/lib/utils';
 
 interface AvatarUploadProps {
@@ -49,7 +49,10 @@ export default function AvatarUpload({
     setError(null);
     setUploading(true);
     try {
-      const url = await uploadToCloudinary(file);
+      // Compress client-side before upload:
+      // a 10 MB phone photo → ~120 KB JPEG (80× smaller, no visible quality loss at avatar sizes)
+      const compressed = await compressImage(file);
+      const url = await uploadToCloudinary(compressed);
       onUpload(url);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al subir la foto');

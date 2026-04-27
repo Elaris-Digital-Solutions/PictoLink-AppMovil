@@ -17,6 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'PictoLink — AAC Communication Platform',
   description: 'Augmentative and Alternative Communication via pictograms',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

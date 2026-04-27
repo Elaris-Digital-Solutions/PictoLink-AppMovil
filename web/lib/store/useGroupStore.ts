@@ -9,7 +9,7 @@
  * (AAC communicators + other caregivers). All members see the same thread.
  *
  * Responsibilities:
- *  • Load groups the current user belongs to
+ *  • Load groups the current user belongs to (+ member profiles for avatar collage)
  *  • Load + subscribe to messages for the currently open group
  *  • Send group messages (with push notifications to all other members)
  *  • Maintain a per-group summary (last message) for the group list preview
@@ -22,14 +22,24 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
+/** Minimal profile data needed to render the avatar collage */
+export interface MemberProfile {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+}
+
 export interface Group {
     id: string;
     name: string;
+    description: string | null;
     avatarUrl: string | null;
     createdBy: string;
     createdAt: string;
-    /** IDs of all members — used to target push notifications */
+    /** UUIDs of all members — used to target push notifications */
     memberIds: string[];
+    /** Full profile data for each member — used to render the avatar collage */
+    memberProfiles: MemberProfile[];
 }
 
 export interface GroupMessage {
@@ -116,7 +126,7 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
 
             const groupIds = memberRows.map((r: any) => r.group_id);
 
-            // 2. Fetch group details + all member IDs in one go
+            // 2. Fetch group details + member UUIDs
             const { data: groupData } = await sb
                 .from('groups')
                 .select('*, group_members(user_id)')
@@ -124,16 +134,43 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
 
             if (!groupData) { set({ isLoading: false }); return; }
 
-            const mapped: Group[] = (groupData as any[]).map((g) => ({
+            const mapped = (groupData as any[]).map((g) => ({
                 id: g.id,
                 name: g.name,
+                description: g.description ?? null,
                 avatarUrl: g.avatar_url ?? null,
                 createdBy: g.created_by,
                 createdAt: g.created_at,
-                memberIds: (g.group_members ?? []).map((m: any) => m.user_id),
+                memberIds: (g.group_members ?? []).map((m: any) => m.user_id) as string[],
             }));
 
-            set({ groups: mapped, isLoading: false });
+            // 3. Fetch profiles for all members in one query (for avatar collage)
+            const allMemberIds = [...new Set(mapped.flatMap(g => g.memberIds))];
+            let profileMap: Record<string, MemberProfile> = {};
+
+            if (allMemberIds.length > 0) {
+                const { data: profiles } = await sb
+                    .from('profiles')
+                    .select('id, display_name, avatar_url')
+                    .in('id', allMemberIds);
+
+                profileMap = Object.fromEntries(
+                    (profiles ?? []).map((p: any) => [
+                        p.id,
+                        { id: p.id, display_name: p.display_name ?? '?', avatar_url: p.avatar_url ?? null },
+                    ])
+                );
+            }
+
+            // 4. Attach member profiles to each group
+            const groups: Group[] = mapped.map(g => ({
+                ...g,
+                memberProfiles: g.memberIds
+                    .map(uid => profileMap[uid])
+                    .filter(Boolean) as MemberProfile[],
+            }));
+
+            set({ groups, isLoading: false });
         } catch (e: any) {
             console.error('[groups] loadGroups:', e?.message);
             set({ isLoading: false });
@@ -288,8 +325,7 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                     // Skip messages we already appended optimistically (our own sends)
                     if (get().groupMessages.some(m => m.id === raw.id)) return;
 
-                    // Fetch sender display name (needed because the realtime payload
-                    // does not include joined profile data)
+                    // Fetch sender display name (realtime payload doesn't include joins)
                     const { data: profile } = await sb
                         .from('profiles')
                         .select('display_name, avatar_url')

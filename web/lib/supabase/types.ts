@@ -94,6 +94,7 @@ export interface Database {
                 Row: {
                     id: string;
                     name: string;
+                    description: string | null;
                     created_by: string;
                     avatar_url: string | null;
                     created_at: string;
@@ -101,6 +102,7 @@ export interface Database {
                 Insert: {
                     id?: string;
                     name: string;
+                    description?: string | null;
                     created_by: string;
                     avatar_url?: string | null;
                     created_at?: string;
@@ -146,6 +148,22 @@ export interface Database {
             get_user_id_by_email: {
                 Args: { lookup_email: string };
                 Returns: string | null;
+            };
+            create_group_with_members: {
+                Args: { p_name: string; p_member_ids: string[] };
+                Returns: { id: string; name: string; avatar_url: string | null; created_by: string; created_at: string };
+            };
+            update_group_with_members: {
+                Args: { p_group_id: string; p_name: string; p_description: string | null; p_avatar_url: string | null; p_add_ids: string[]; p_remove_ids: string[] };
+                Returns: Record<string, unknown>;
+            };
+            leave_group: {
+                Args: { p_group_id: string };
+                Returns: void;
+            };
+            delete_group: {
+                Args: { p_group_id: string };
+                Returns: void;
             };
         };
     };
