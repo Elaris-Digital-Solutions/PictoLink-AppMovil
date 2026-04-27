@@ -126,13 +126,27 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
 
             const groupIds = memberRows.map((r: any) => r.group_id);
 
-            // 2. Fetch group details + member UUIDs
+            // 2. Fetch group details (no nested group_members select — RLS on
+            //    group_members only exposes the current user's own row, so nested
+            //    selects would silently return only one member per group).
             const { data: groupData } = await sb
                 .from('groups')
-                .select('*, group_members(user_id)')
+                .select('*')
                 .in('id', groupIds);
 
             if (!groupData) { set({ isLoading: false }); return; }
+
+            // 2b. Fetch ALL member IDs via SECURITY DEFINER function so we get
+            //     every member of every group (not just the current user's row).
+            const { data: allMemberRows } = await (sb as any)
+                .rpc('get_group_members_for_user');
+
+            // Build group_id → user_ids[] map from the RPC result
+            const memberIdsByGroup: Record<string, string[]> = {};
+            for (const row of (allMemberRows ?? []) as { group_id: string; user_id: string }[]) {
+                if (!memberIdsByGroup[row.group_id]) memberIdsByGroup[row.group_id] = [];
+                memberIdsByGroup[row.group_id].push(row.user_id);
+            }
 
             const mapped = (groupData as any[]).map((g) => ({
                 id: g.id,
@@ -141,7 +155,7 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                 avatarUrl: g.avatar_url ?? null,
                 createdBy: g.created_by,
                 createdAt: g.created_at,
-                memberIds: (g.group_members ?? []).map((m: any) => m.user_id) as string[],
+                memberIds: memberIdsByGroup[g.id] ?? [],
             }));
 
             // 3. Fetch profiles for all members in one query (for avatar collage)
