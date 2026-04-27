@@ -27,7 +27,7 @@ import { useContactStore, type Contact } from '@/lib/store/useContactStore';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { useChatNavStore } from '@/lib/store/useChatNavStore';
 import { useChatStore } from '@/lib/store/useChatStore';
-import { useGroupStore, type Group, type GroupMessage } from '@/lib/store/useGroupStore';
+import { useGroupStore, type Group, type GroupMessage, type MemberProfile } from '@/lib/store/useGroupStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 
@@ -76,17 +76,102 @@ function Avatar({ contact, size = 'md' }: { contact: Contact; size?: 'sm' | 'md'
 }
 
 // ─── Group Avatar ─────────────────────────────────────────────────────────────
+// Shows (in priority order):
+//   1. Custom uploaded photo (group.avatarUrl)
+//   2. Auto-collage from member profile photos (group.memberProfiles)
+//   3. Group initial letter on blue background
 
-function GroupAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
-    const px = size === 'sm' ? 40 : size === 'md' ? 60 : 96;
+function GroupCollageCell({ profile }: { profile: MemberProfile }) {
+    if (profile.avatar_url) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt={profile.display_name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        );
+    }
     return (
-        <div
-            className="rounded-full flex items-center justify-center flex-shrink-0 select-none"
-            style={{ width: px, height: px, fontSize: px * 0.38, backgroundColor: GROUP_BG }}
-        >
-            <span className="font-black" style={{ color: GROUP_COLOR }}>
-                {name.charAt(0).toUpperCase()}
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', backgroundColor: GROUP_BG }}>
+            <span style={{ fontWeight: 900, color: GROUP_COLOR, fontSize: 10 }}>
+                {profile.display_name.charAt(0).toUpperCase()}
             </span>
+        </div>
+    );
+}
+
+function GroupAvatar({
+    group,
+    size = 'md',
+}: {
+    group: Pick<Group, 'name' | 'avatarUrl' | 'memberProfiles'>;
+    size?: 'sm' | 'md' | 'lg';
+}) {
+    const px = size === 'sm' ? 40 : size === 'md' ? 60 : 96;
+    const base: React.CSSProperties = {
+        width: px, height: px, borderRadius: '50%',
+        overflow: 'hidden', flexShrink: 0, userSelect: 'none',
+    };
+
+    // 1. Custom uploaded photo
+    if (group.avatarUrl) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={group.avatarUrl} alt={group.name}
+                style={{ ...base, objectFit: 'cover', display: 'block' }} />
+        );
+    }
+
+    const shown = (group.memberProfiles ?? []).slice(0, 4);
+    const n = shown.length;
+
+    // 2. No members → initial letter
+    if (n === 0) {
+        return (
+            <div style={{ ...base, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', backgroundColor: GROUP_BG }}>
+                <span style={{ fontWeight: 900, color: GROUP_COLOR, fontSize: px * 0.38 }}>
+                    {group.name.charAt(0).toUpperCase()}
+                </span>
+            </div>
+        );
+    }
+
+    // 3. 1 member
+    if (n === 1) {
+        return (
+            <div style={base}><GroupCollageCell profile={shown[0]} /></div>
+        );
+    }
+
+    // 4. 2 members → vertical split
+    if (n === 2) {
+        return (
+            <div style={{ ...base, display: 'flex', gap: 1 }}>
+                <div style={{ flex: 1, overflow: 'hidden', height: '100%' }}><GroupCollageCell profile={shown[0]} /></div>
+                <div style={{ flex: 1, overflow: 'hidden', height: '100%' }}><GroupCollageCell profile={shown[1]} /></div>
+            </div>
+        );
+    }
+
+    // 5. 3 members → 2 top + 1 bottom full-width
+    if (n === 3) {
+        return (
+            <div style={{ ...base, display: 'grid', gap: 1,
+                gridTemplateAreas: '"a b" "c c"', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
+                <div style={{ gridArea: 'a', overflow: 'hidden' }}><GroupCollageCell profile={shown[0]} /></div>
+                <div style={{ gridArea: 'b', overflow: 'hidden' }}><GroupCollageCell profile={shown[1]} /></div>
+                <div style={{ gridArea: 'c', overflow: 'hidden' }}><GroupCollageCell profile={shown[2]} /></div>
+            </div>
+        );
+    }
+
+    // 6. 4+ members → 2×2 grid
+    return (
+        <div style={{ ...base, display: 'grid', gap: 1,
+            gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
+            {shown.map(p => (
+                <div key={p.id} style={{ overflow: 'hidden' }}><GroupCollageCell profile={p} /></div>
+            ))}
         </div>
     );
 }
@@ -394,10 +479,7 @@ function GroupHistorial({ group, onClose }: { group: Group; onClose: () => void 
             <div className="fixed top-0 right-0 h-full w-full sm:max-w-[400px] flex flex-col bg-white shadow-[0_0_40px_rgba(0,0,0,0.3)] z-50 animate-in slide-in-from-right">
                 {/* Header */}
                 <div className="flex-shrink-0 flex items-center gap-4 px-6 py-5 border-b-2 border-[#D0D8F0] bg-[#F7F8FF] shadow-sm">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: GROUP_BG }}>
-                        <span className="font-black text-xl" style={{ color: GROUP_COLOR }}>{group.name.charAt(0)}</span>
-                    </div>
+                    <GroupAvatar group={group} size="sm" />
                     <div className="flex-1 min-w-0">
                         <p className="text-xl font-black text-gray-900">{group.name}</p>
                     </div>
@@ -603,7 +685,7 @@ function ContactGrid({ onSelectContact, onSelectGroup }: {
                                             className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border press-anim text-left active:bg-[#EEF1FF]"
                                             style={{ borderColor: `${GROUP_BG}`, boxShadow: '0 1px 3px rgba(75,107,200,0.12)' }}
                                         >
-                                            <GroupAvatar name={group.name} size="md" />
+                                            <GroupAvatar group={group} size="md" />
                                             <div className="flex-1 min-w-0">
                                                 <span className="text-[16px] font-bold text-gray-900 truncate leading-none block mb-1">{group.name}</span>
                                                 <p className="text-[13px] text-gray-400 truncate font-medium">
@@ -769,8 +851,8 @@ function GroupConversationBoard({
                     <button onClick={onBack} className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 hover:bg-white/30 active:scale-95 text-white border-2 border-white/30 ml-1">
                         <ArrowLeft size={26} strokeWidth={2.5} />
                     </button>
-                    <div className="ml-1 hidden sm:flex w-10 h-10 rounded-full items-center justify-center border-2 border-white/40 text-white font-black text-lg" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                        {group.name.charAt(0)}
+                    <div className="ml-1 hidden sm:block border-2 border-white/40 rounded-full">
+                        <GroupAvatar group={group} size="sm" />
                     </div>
                     <GroupInlineReply group={group} />
                     <button onClick={() => setShowHistorial(true)} className="h-12 px-5 rounded-[1rem] flex items-center justify-center gap-2 font-black text-base bg-white active:scale-95 shadow-md border-b-4 ml-1 mr-1"

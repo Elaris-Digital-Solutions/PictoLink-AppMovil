@@ -121,10 +121,13 @@ function CollageCell({ profile }: { profile: MemberProfile }) {
 function GroupCollageAvatar({
     memberProfiles,
     name,
+    avatarUrl,
     size = 'md',
 }: {
     memberProfiles: MemberProfile[];
     name: string;
+    /** Custom uploaded group photo — shown instead of the auto-collage when set */
+    avatarUrl?: string | null;
     size?: 'sm' | 'md' | 'lg';
 }) {
     const px   = size === 'sm' ? 36 : size === 'md' ? 48 : 64;
@@ -138,6 +141,18 @@ function GroupCollageAvatar({
         flexShrink: 0,
         userSelect: 'none',
     };
+
+    // ── Custom uploaded photo takes priority over the auto-generated collage ──
+    if (avatarUrl) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={avatarUrl}
+                alt={name}
+                style={{ ...base, objectFit: 'cover', display: 'block' }}
+            />
+        );
+    }
 
     // ── 0 members → group initial ────────────────────────────────────────────
     if (n === 0) {
@@ -429,6 +444,7 @@ function UnifiedList({
                                 <GroupCollageAvatar
                                     memberProfiles={group.memberProfiles}
                                     name={group.name}
+                                    avatarUrl={group.avatarUrl}
                                     size="md"
                                 />
                                 <div className="flex-1 min-w-0">
@@ -613,6 +629,7 @@ function GroupSettingsModal({
                             <GroupCollageAvatar
                                 memberProfiles={group.memberProfiles}
                                 name={group.name}
+                                avatarUrl={group.avatarUrl}
                                 size="lg"
                             />
                         )}
@@ -1126,7 +1143,7 @@ function GroupThreadPanel({ group, onBack, onOpenSettings }: { group: Group; onB
                     onClick={onOpenSettings}
                     className="flex items-center gap-3 flex-1 min-w-0 text-left group"
                 >
-                    <GroupCollageAvatar memberProfiles={group.memberProfiles} name={group.name} size="sm" />
+                    <GroupCollageAvatar memberProfiles={group.memberProfiles} name={group.name} avatarUrl={group.avatarUrl} size="sm" />
                     <div className="flex-1 min-w-0">
                         <p className="text-base font-black text-gray-900 truncate group-hover:text-[#C85F27] transition-colors">
                             {group.name}
