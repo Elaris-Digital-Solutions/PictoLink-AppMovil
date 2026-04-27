@@ -899,6 +899,7 @@ function GroupCreateModal({ onSave, onCancel }: { onSave: (g: Group) => void; on
             onSave({
                 id: group.id,
                 name: group.name,
+                description: group.description ?? null,
                 avatarUrl: group.avatar_url ?? null,
                 createdBy: group.created_by,
                 createdAt: group.created_at,
