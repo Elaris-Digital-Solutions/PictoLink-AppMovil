@@ -123,6 +123,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hydrated]);
 
+    // ── Orientation lock ─────────────────────────────────────────────────────────
+    // Lock to landscape on AAC routes, unlock everywhere else (onboarding, caregiver).
+    // Uses the Screen Orientation API — only available in installed PWA on Android/Chrome.
+    // Wrapped in try/catch so it silently no-ops on desktop or unsupported browsers.
+    useEffect(() => {
+        if (!hydrated || !sessionVerified || !pathname) return;
+
+        const isAacRoute =
+            !pathname.startsWith('/onboarding') &&
+            !pathname.startsWith('/cuidador');
+
+        const orientation = (screen as any).orientation;
+        if (!orientation) return;
+
+        if (isAacRoute) {
+            orientation.lock?.('landscape').catch?.(() => {});
+        } else {
+            try { orientation.unlock?.(); } catch { /* no-op */ }
+        }
+    }, [pathname, hydrated, sessionVerified]);
+
     // ── Route guard ─────────────────────────────────────────────────────────────
     useEffect(() => {
         if (!hydrated || !sessionVerified) return;
