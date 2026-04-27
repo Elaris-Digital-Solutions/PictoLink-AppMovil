@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Augmentative and Alternative Communication via pictograms',
     start_url: '/',
     display: 'standalone',
-    orientation: 'landscape',
+    orientation: 'any',
     background_color: '#ffffff',
     theme_color: '#FF8844',
     icons: [
