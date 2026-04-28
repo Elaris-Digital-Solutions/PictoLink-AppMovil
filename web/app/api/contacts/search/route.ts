@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
         }
 
         // Buscar el UUID real del usuario por email usando la RPC SECURITY DEFINER
-        // (requiere ejecutar rpc_get_user_by_email.sql en Supabase primero)
         const { data: foundId, error: rpcError } = await (supabase as any)
             .rpc('get_user_id_by_email', { lookup_email: email.trim().toLowerCase() });
 
@@ -28,11 +27,24 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Error al buscar usuario' }, { status: 500 });
         }
 
-        if (!foundId) {
+        // Defensive normalization: PostgREST returns scalar UUID functions either
+        // as a bare string (most cases) or as an object like { get_user_id_by_email: '...' }
+        // depending on supabase-js version + function language (sql vs plpgsql).
+        // We accept both shapes so the contact search never silently returns a wrapped object.
+        let userId: string | null = null;
+        if (typeof foundId === 'string') {
+            userId = foundId;
+        } else if (foundId && typeof foundId === 'object') {
+            const obj = foundId as Record<string, unknown>;
+            userId = (typeof obj.id === 'string' ? obj.id : null)
+                  ?? (typeof obj.get_user_id_by_email === 'string' ? obj.get_user_id_by_email : null);
+        }
+
+        if (!userId) {
             return NextResponse.json({ error: 'No se encontró ningún usuario con ese correo' }, { status: 404 });
         }
 
-        if (foundId === user.id) {
+        if (userId === user.id) {
             return NextResponse.json({ error: 'No puedes añadirte a ti mismo como contacto' }, { status: 400 });
         }
 
@@ -40,12 +52,12 @@ export async function POST(req: NextRequest) {
         const { data: profileData } = await supabase
             .from('profiles')
             .select('display_name, avatar_url')
-            .eq('id', foundId as string)
+            .eq('id', userId)
             .single() as { data: { display_name: string; avatar_url: string | null } | null; error: unknown };
 
         return NextResponse.json({
             found: true,
-            contactId: foundId,
+            contactId: userId,
             displayName: profileData?.display_name ?? null,
             avatarUrl: profileData?.avatar_url ?? null,
             message: 'Usuario encontrado'

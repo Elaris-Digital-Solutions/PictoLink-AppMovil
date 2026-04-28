@@ -150,12 +150,28 @@ export interface Database {
                 Returns: string | null;
             };
             create_group_with_members: {
-                Args: { p_name: string; p_member_ids: string[] };
-                Returns: { id: string; name: string; avatar_url: string | null; created_by: string; created_at: string };
+                Args: {
+                    p_name: string;
+                    p_member_ids?: string[] | null;
+                    p_member_emails?: string[] | null;
+                };
+                Returns: { id: string; name: string; description: string | null; avatar_url: string | null; created_by: string; created_at: string };
             };
             update_group_with_members: {
-                Args: { p_group_id: string; p_name: string; p_description: string | null; p_avatar_url: string | null; p_add_ids: string[]; p_remove_ids: string[] };
+                Args: {
+                    p_group_id: string;
+                    p_name: string;
+                    p_description?: string | null;
+                    p_avatar_url?: string | null;
+                    p_add_ids?: string[] | null;
+                    p_add_emails?: string[] | null;
+                    p_remove_ids?: string[] | null;
+                };
                 Returns: Record<string, unknown>;
+            };
+            get_group_members_for_user: {
+                Args: Record<string, never>;
+                Returns: { group_id: string; user_id: string }[];
             };
             leave_group: {
                 Args: { p_group_id: string };

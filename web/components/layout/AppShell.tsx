@@ -124,19 +124,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [hydrated]);
 
     // ── Orientation lock ─────────────────────────────────────────────────────────
-    // Only AAC users (mode = 'communicator') on AAC routes get landscape lock.
-    // Everyone else — onboarding (mode unknown), caregivers (any route),
-    // root /, loading screens — runs free, following device orientation.
+    // Only AAC users (mode = 'communicator') on AAC routes are locked to landscape.
+    // Onboarding (mode unknown), caregivers, and root / all run free.
     //
-    // This explicit whitelist matters because the PWA's start_url is '/' and a
-    // blacklist ("not /onboarding, not /cuidador") would lock landscape on the
-    // initial frame before routing decides where the user belongs — that was
-    // the bug on Android: the orientation locked while the redirect was still
-    // happening, trapping caregivers in landscape.
-    //
-    // We also try unlock() aggressively on every mount/route change to recover
-    // from a stale Android Chrome cache that may have inherited the old
-    // manifest's orientation: 'landscape'.
+    // Whitelist matters: PWA start_url is '/' and a blacklist ("not /onboarding,
+    // not /cuidador") would lock landscape on the initial frame before routing
+    // decides where the user belongs — trapping caregivers in landscape.
     useEffect(() => {
         const orientation = (screen as any).orientation;
         if (!orientation) return;
@@ -217,24 +210,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         pathname?.startsWith('/onboarding') ||
         pathname?.startsWith('/cuidador');
 
-    // The "rotate your device" overlay only applies to AAC users on AAC routes.
-    // Caregivers and onboarding users follow device orientation freely.
-    const AAC_ROUTES = ['/chat', '/dashboard', '/settings'];
-    const onAacRoute = !!pathname && AAC_ROUTES.some(r => pathname.startsWith(r));
-    const showLandscapeGuard = mode === 'communicator' && onAacRoute;
-
     // Onboarding can scroll vertically (especially in landscape on small phones
     // where every step would overflow). AAC and caregiver views need
     // overflow-hidden because they have their own internal scroll regions.
     const onOnboarding = pathname?.startsWith('/onboarding');
     const mainOverflow = onOnboarding ? 'overflow-y-auto' : 'overflow-hidden';
 
+    // The "rotate your device" overlay only applies to AAC users on AAC routes —
+    // a visual fallback for browsers where screen.orientation.lock() doesn't work.
+    const AAC_ROUTES = ['/chat', '/dashboard', '/settings'];
+    const onAacRoute = !!pathname && AAC_ROUTES.some(r => pathname.startsWith(r));
+    const showLandscapeGuard = mode === 'communicator' && onAacRoute;
+
     return (
         <div className={`flex flex-col h-dvh w-full overflow-hidden bg-white safe-area-pt safe-area-px ${hideNav ? 'safe-area-pb' : ''}`}>
             {/* Page content — flex-1 so it fills everything above the nav */}
             <main className={`flex-1 ${mainOverflow} relative`}>
                 {children}
-                {/* Landscape guard: blocks portrait use only for AAC users on AAC routes */}
                 {showLandscapeGuard && <LandscapeGuard />}
             </main>
 
@@ -245,8 +237,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 // ─── LandscapeGuard ─────────────────────────────────────────────────────────────
-// Shows a full-screen blocking overlay when the device is in portrait mode.
-// Only active on communicator routes. Uses window resize to detect rotation.
+// Visual fallback for AAC users when the device is held in portrait.
+// Used in addition to screen.orientation.lock() — covers browsers/contexts
+// where the API is unavailable or fails silently.
 
 function LandscapeGuard() {
     const [isPortrait, setIsPortrait] = useState(false);
@@ -262,16 +255,8 @@ function LandscapeGuard() {
 
     return (
         <div className="fixed inset-0 z-[9999] bg-[#1a0a00] flex flex-col items-center justify-center text-white text-center p-8 select-none">
-            {/* Rotation icon */}
-            <div
-                className="text-7xl mb-6"
-                style={{ animation: 'spin 2s linear infinite' }}
-            >
-                📱
-            </div>
-            <h2 className="text-3xl font-black mb-3" style={{ color: '#FF8844' }}>
-                Gira tu dispositivo
-            </h2>
+            <div className="text-7xl mb-6" style={{ animation: 'spin 2s linear infinite' }}>📱</div>
+            <h2 className="text-3xl font-black mb-3" style={{ color: '#FF8844' }}>Gira tu dispositivo</h2>
             <p className="text-gray-300 text-lg leading-relaxed max-w-[280px]">
                 PictoLink está diseñado para usarse en <strong>modo horizontal</strong>
             </p>
@@ -283,3 +268,4 @@ function LandscapeGuard() {
         </div>
     );
 }
+
