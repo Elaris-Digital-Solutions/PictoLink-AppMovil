@@ -515,15 +515,11 @@ function GroupSettingsModal({
         try {
             const sb = getSupabase();
 
-            // Resolve new email addresses → UUIDs
-            const addIds: string[] = [];
-            for (const email of addEmails) {
-                const trimmed = email.trim().toLowerCase();
-                if (!trimmed) continue;
-                const { data: uid } = await (sb as any)
-                    .rpc('get_user_id_by_email', { lookup_email: trimmed });
-                if (uid && uid !== currentUserId) addIds.push(uid as string);
-            }
+            // Pass emails directly to the RPC — server-side resolution avoids
+            // the silent-failure round-trip through get_user_id_by_email.
+            const cleanEmails = addEmails
+                .map(e => e.trim().toLowerCase())
+                .filter(e => e.length > 0);
 
             const { error: rpcErr } = await (sb as any)
                 .rpc('update_group_with_members', {
@@ -531,7 +527,8 @@ function GroupSettingsModal({
                     p_name:        name.trim(),
                     p_description: description.trim() || null,
                     p_avatar_url:  avatarUrl,
-                    p_add_ids:     addIds,
+                    p_add_ids:     [],
+                    p_add_emails:  cleanEmails,
                     p_remove_ids:  removedIds,
                 });
 
@@ -888,21 +885,19 @@ function GroupCreateModal({ onSave, onCancel }: { onSave: (g: Group) => void; on
         try {
             const sb = getSupabase();
 
-            // ── Resolve email addresses → user IDs ──────────────────────────
-            const resolvedIds: string[] = [];
-            for (const email of emails) {
-                const trimmed = email.trim().toLowerCase();
-                if (!trimmed) continue;
-                const { data: uid, error: rpcErr } = await (sb as any)
-                    .rpc('get_user_id_by_email', { lookup_email: trimmed });
-                if (!rpcErr && uid && uid !== profile?.id) resolvedIds.push(uid as string);
-            }
+            // Pass emails directly to the RPC — server-side resolution.
+            // The previous client-side lookup via get_user_id_by_email returned
+            // null silently in some configurations and the email never made it.
+            const cleanEmails = emails
+                .map(e => e.trim().toLowerCase())
+                .filter(e => e.length > 0);
 
             // ── Create group + members via SECURITY DEFINER function ─────────
             const { data: group, error: createErr } = await (sb as any)
                 .rpc('create_group_with_members', {
-                    p_name:       name.trim(),
-                    p_member_ids: resolvedIds,
+                    p_name:          name.trim(),
+                    p_member_ids:    [],
+                    p_member_emails: cleanEmails,
                 });
 
             if (createErr || !group) {

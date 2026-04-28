@@ -152,7 +152,7 @@ export function OnboardingFlow() {
   // ── Step: Welcome ────────────────────────────────────────────────────────────
   if (step === 'welcome') {
     return (
-      <div className="flex flex-col h-dvh bg-white text-slate-900 px-6">
+      <div className="flex flex-col min-h-dvh bg-white text-slate-900 px-6">
         {/* Hero */}
         <div className="flex-1 flex flex-col items-center justify-center gap-8">
           <div className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl border-2 border-[#FFE2D0] bg-[#FFF5EF]">
@@ -249,7 +249,7 @@ export function OnboardingFlow() {
     };
 
     return (
-      <div className="flex flex-col h-dvh bg-white px-6">
+      <div className="flex flex-col min-h-dvh bg-white px-6">
         <div className="flex items-center gap-3 pt-4 pb-2">
           <button
             onClick={() => setStep('welcome')}
@@ -315,7 +315,7 @@ export function OnboardingFlow() {
   // ── Step: Name ──────────────────────────────────────────────────────────────
   if (step === 'name') {
     return (
-      <div className="flex flex-col h-dvh bg-white px-6">
+      <div className="flex flex-col min-h-dvh bg-white px-6">
         {/* Nav */}
         <div className="flex items-center gap-3 pt-4 pb-2">
           <button
@@ -382,7 +382,7 @@ export function OnboardingFlow() {
   // ── Step: User type ──────────────────────────────────────────────────────────
   if (step === 'user-type') {
     return (
-      <div className="flex flex-col h-dvh bg-white px-6">
+      <div className="flex flex-col min-h-dvh bg-white px-6">
         {/* Nav */}
         <div className="flex items-center gap-3 pt-4 pb-2">
           <button
@@ -448,7 +448,7 @@ export function OnboardingFlow() {
   // ── Step: Institution ────────────────────────────────────────────────────────
   if (step === 'institution') {
     return (
-      <div className="flex flex-col h-dvh bg-white px-6">
+      <div className="flex flex-col min-h-dvh bg-white px-6">
         {/* Nav */}
         <div className="flex items-center gap-3 pt-4 pb-2">
           <button

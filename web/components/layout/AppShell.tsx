@@ -124,25 +124,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [hydrated]);
 
     // ── Orientation lock ─────────────────────────────────────────────────────────
-    // Lock to landscape on AAC routes, unlock everywhere else (onboarding, caregiver).
-    // Uses the Screen Orientation API — only available in installed PWA on Android/Chrome.
-    // Wrapped in try/catch so it silently no-ops on desktop or unsupported browsers.
+    // Only AAC users (mode = 'communicator') on AAC routes get landscape lock.
+    // Everyone else — onboarding (mode unknown), caregivers (any route),
+    // root /, loading screens — runs free, following device orientation.
+    //
+    // This explicit whitelist matters because the PWA's start_url is '/' and a
+    // blacklist ("not /onboarding, not /cuidador") would lock landscape on the
+    // initial frame before routing decides where the user belongs — that was
+    // the bug on Android: the orientation locked while the redirect was still
+    // happening, trapping caregivers in landscape.
+    //
+    // We also try unlock() aggressively on every mount/route change to recover
+    // from a stale Android Chrome cache that may have inherited the old
+    // manifest's orientation: 'landscape'.
     useEffect(() => {
-        if (!hydrated || !sessionVerified || !pathname) return;
-
-        const isAacRoute =
-            !pathname.startsWith('/onboarding') &&
-            !pathname.startsWith('/cuidador');
-
         const orientation = (screen as any).orientation;
         if (!orientation) return;
 
-        if (isAacRoute) {
+        const AAC_ROUTES = ['/chat', '/dashboard', '/settings'];
+        const onAacRoute = !!pathname && AAC_ROUTES.some(r => pathname.startsWith(r));
+        const isAacUser = mode === 'communicator';
+        const shouldLock = isAacUser && onAacRoute;
+
+        if (shouldLock) {
             orientation.lock?.('landscape').catch?.(() => {});
         } else {
             try { orientation.unlock?.(); } catch { /* no-op */ }
         }
-    }, [pathname, hydrated, sessionVerified]);
+    }, [pathname, mode]);
 
     // ── Route guard ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -208,15 +217,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         pathname?.startsWith('/onboarding') ||
         pathname?.startsWith('/cuidador');
 
-    const isCommunicatorRoute = !hideNav;
+    // The "rotate your device" overlay only applies to AAC users on AAC routes.
+    // Caregivers and onboarding users follow device orientation freely.
+    const AAC_ROUTES = ['/chat', '/dashboard', '/settings'];
+    const onAacRoute = !!pathname && AAC_ROUTES.some(r => pathname.startsWith(r));
+    const showLandscapeGuard = mode === 'communicator' && onAacRoute;
+
+    // Onboarding can scroll vertically (especially in landscape on small phones
+    // where every step would overflow). AAC and caregiver views need
+    // overflow-hidden because they have their own internal scroll regions.
+    const onOnboarding = pathname?.startsWith('/onboarding');
+    const mainOverflow = onOnboarding ? 'overflow-y-auto' : 'overflow-hidden';
 
     return (
         <div className={`flex flex-col h-dvh w-full overflow-hidden bg-white safe-area-pt safe-area-px ${hideNav ? 'safe-area-pb' : ''}`}>
             {/* Page content — flex-1 so it fills everything above the nav */}
-            <main className="flex-1 overflow-hidden relative">
+            <main className={`flex-1 ${mainOverflow} relative`}>
                 {children}
-                {/* Landscape guard: blocks portrait use on communicator interface */}
-                {isCommunicatorRoute && <LandscapeGuard />}
+                {/* Landscape guard: blocks portrait use only for AAC users on AAC routes */}
+                {showLandscapeGuard && <LandscapeGuard />}
             </main>
 
             {/* Bottom navigation — AAC Communicator only */}
