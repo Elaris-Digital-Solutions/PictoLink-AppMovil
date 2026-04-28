@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: '/',
     name: 'PictoLink',
     short_name: 'PictoLink',
     description: 'Augmentative and Alternative Communication via pictograms',
