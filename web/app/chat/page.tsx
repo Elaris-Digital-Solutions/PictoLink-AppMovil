@@ -941,17 +941,33 @@ export default function ChatPage() {
     const { selectedContactId, selectedGroupId, setSelectedContactId, setSelectedGroupId, clearSelectedContact } = useChatNavStore();
 
     const loadSummary = useChatStore((s) => s.loadSummary);
-    const { loadGroups, loadGroupSummary } = useGroupStore();
+    const subscribeToInbox = useChatStore((s) => s.subscribeToInbox);
+    const unsubscribeFromInbox = useChatStore((s) => s.unsubscribeFromInbox);
+    const { loadGroups, loadGroupSummary, subscribeToInboxGroups, unsubscribeFromInboxGroups } = useGroupStore();
     const groups = useGroupStore((s) => s.groups);
 
     useEffect(() => {
-        if (profile?.id) {
-            loadContacts(profile.id);
-            loadSummary(profile.id);
-            loadGroups(profile.id);
-            loadGroupSummary(profile.id);
-        }
-    }, [profile?.id, loadContacts, loadSummary, loadGroups, loadGroupSummary]);
+        if (!profile?.id) return;
+        loadContacts(profile.id);
+        loadSummary(profile.id);
+        loadGroups(profile.id);
+        loadGroupSummary(profile.id);
+        // Live updates for the contact-selector previews (P2P + groups). Without
+        // these, the list goes stale: incoming messages don't appear until the
+        // user reloads the page or opens that specific chat.
+        subscribeToInbox(profile.id);
+        subscribeToInboxGroups(profile.id);
+
+        return () => {
+            unsubscribeFromInbox();
+            unsubscribeFromInboxGroups();
+        };
+    }, [
+        profile?.id,
+        loadContacts, loadSummary, loadGroups, loadGroupSummary,
+        subscribeToInbox, unsubscribeFromInbox,
+        subscribeToInboxGroups, unsubscribeFromInboxGroups,
+    ]);
 
     const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
     const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null;

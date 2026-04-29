@@ -77,6 +77,16 @@ interface ChatStore {
     /** Contact name for notifications — set before setCurrentContact */
     _contactName: string;
     setContactName: (name: string) => void;
+
+    // ── Global "inbox" subscription ───────────────────────────────────────────
+    /**
+     * Listens to every messages INSERT involving the given profileId.
+     * Keeps `summary` (and therefore the contact-list previews + unread badges)
+     * up to date even when no specific chat is open. Idempotent.
+     */
+    subscribeToInbox: (profileId: string) => void;
+    unsubscribeFromInbox: () => void;
+    _inboxChannel: RealtimeChannel | null;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -336,5 +346,45 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             clearInterval(_pollInterval);
         }
         set({ _channel: null, _pollInterval: null });
+    },
+
+    // ── Global inbox subscription ─────────────────────────────────────────────
+    // Stays alive for as long as the chat list page is mounted. Without this,
+    // the contact selector goes stale: incoming messages don't appear in the
+    // preview until the user reloads the page or opens that specific chat (which
+    // is when the per-chat subscription would belatedly pick them up).
+    //
+    // We rely on the existing appendMessage() pipeline — it already deduplicates
+    // by id and keeps `summary` in sync — so the global sub just routes every
+    // relevant INSERT through it. If a per-chat sub is also active, both will
+    // fire for the open chat's messages; the dedup makes that safe.
+
+    _inboxChannel: null,
+
+    subscribeToInbox: (profileId) => {
+        if (get()._inboxChannel) return; // idempotent — don't double-subscribe
+
+        const sb = getSupabase();
+        const channel = sb
+            .channel(`inbox:${profileId}`)
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'messages' },
+                (payload) => {
+                    const msg = payload.new as ChatMessage;
+                    if (msg.sender_id === profileId || msg.receiver_id === profileId) {
+                        get().appendMessage(msg);
+                    }
+                }
+            )
+            .subscribe();
+
+        set({ _inboxChannel: channel });
+    },
+
+    unsubscribeFromInbox: () => {
+        const { _inboxChannel } = get();
+        if (_inboxChannel) getSupabase().removeChannel(_inboxChannel);
+        set({ _inboxChannel: null });
     },
 }));

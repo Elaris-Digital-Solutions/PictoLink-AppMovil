@@ -84,6 +84,16 @@ interface GroupStore {
     unsubscribeFromGroup: () => void;
     _groupChannel: RealtimeChannel | null;
     _groupPollInterval: ReturnType<typeof setInterval> | null;
+
+    // ── Global "inbox" subscription for ALL of the user's groups ──────────────
+    /**
+     * Updates `groupSummary` whenever a new group_message INSERT arrives in any
+     * group the user belongs to — even when they're sitting on the chat selector
+     * with no specific group open. Idempotent.
+     */
+    subscribeToInboxGroups: (profileId: string) => void;
+    unsubscribeFromInboxGroups: () => void;
+    _inboxGroupChannel: RealtimeChannel | null;
 }
 
 // ─── Helper ────────────────────────────────────────────────────────────────────
@@ -395,5 +405,67 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
             currentGroupId: null,
             groupMessages: [],
         });
+    },
+
+    // ── Global inbox subscription for groups ──────────────────────────────────
+    // Keeps the chat-selector preview fresh for every group the user belongs to.
+    // Without this, sending a group message from another device wouldn't update
+    // the previews on this device until the user opens that group or reloads.
+
+    _inboxGroupChannel: null,
+
+    subscribeToInboxGroups: (profileId) => {
+        if (get()._inboxGroupChannel) return; // idempotent
+
+        const sb = getSupabase();
+        const channel = sb
+            .channel(`inbox_groups:${profileId}`)
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'group_messages' },
+                async (payload) => {
+                    const raw = payload.new as any;
+
+                    // Ignore messages for groups the user isn't a member of
+                    const myGroupIds = new Set(get().groups.map(g => g.id));
+                    if (!myGroupIds.has(raw.group_id)) return;
+
+                    // Skip if the active group sub already appended this row.
+                    // (Both subs fire for the open group; we only need to update
+                    // groupSummary if it's not already the latest.)
+                    if (get().groupSummary[raw.group_id]?.id === raw.id) return;
+
+                    // Realtime payload doesn't include joins → fetch sender name
+                    const { data: senderProfile } = await sb
+                        .from('profiles')
+                        .select('display_name, avatar_url')
+                        .eq('id', raw.sender_id)
+                        .maybeSingle();
+
+                    const msg: GroupMessage = {
+                        id: raw.id,
+                        group_id: raw.group_id,
+                        sender_id: raw.sender_id,
+                        sender_name: senderProfile?.display_name ?? 'Alguien',
+                        sender_avatar: (senderProfile as any)?.avatar_url ?? null,
+                        content: raw.content ?? '',
+                        pictograms: raw.pictograms ?? [],
+                        created_at: raw.created_at,
+                    };
+
+                    set(s => ({
+                        groupSummary: { ...s.groupSummary, [raw.group_id]: msg },
+                    }));
+                }
+            )
+            .subscribe();
+
+        set({ _inboxGroupChannel: channel });
+    },
+
+    unsubscribeFromInboxGroups: () => {
+        const { _inboxGroupChannel } = get();
+        if (_inboxGroupChannel) getSupabase().removeChannel(_inboxGroupChannel);
+        set({ _inboxGroupChannel: null });
     },
 }));

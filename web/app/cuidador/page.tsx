@@ -1249,10 +1249,12 @@ export default function CuidadorPage() {
     const { addContact, loadContacts, subscribeToContacts, unsubscribeFromContacts } = useContactStore();
 
     const groups = useGroupStore(s => s.groups);
-    const { loadGroups, loadGroupSummary } = useGroupStore();
+    const { loadGroups, loadGroupSummary, subscribeToInboxGroups, unsubscribeFromInboxGroups } = useGroupStore();
 
     const profile     = useProfileStore(s => s.profile);
-    const loadSummary = useChatStore(s => s.loadSummary);
+    const loadSummary           = useChatStore(s => s.loadSummary);
+    const subscribeToInbox      = useChatStore(s => s.subscribeToInbox);
+    const unsubscribeFromInbox  = useChatStore(s => s.unsubscribeFromInbox);
 
     const [selected,          setSelected]          = useState<Selection>(null);
     const [showAddContact,    setShowAddContact]    = useState(false);
@@ -1266,8 +1268,16 @@ export default function CuidadorPage() {
             loadGroups(profile.id);
             loadGroupSummary(profile.id);
             subscribeToContacts(profile.id);
+            // Live previews for the unified contact/group list — without these,
+            // new incoming messages don't appear in the sidebar until reload.
+            subscribeToInbox(profile.id);
+            subscribeToInboxGroups(profile.id);
         }
-        return () => unsubscribeFromContacts();
+        return () => {
+            unsubscribeFromContacts();
+            unsubscribeFromInbox();
+            unsubscribeFromInboxGroups();
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profile?.id]);
 
