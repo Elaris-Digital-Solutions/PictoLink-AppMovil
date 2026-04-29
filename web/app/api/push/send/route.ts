@@ -65,7 +65,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true, sent: 0 });
     }
 
-    const payload = JSON.stringify({ title, body: body ?? 'Nuevo mensaje', icon: '/icon-192.png' });
+    // Per-sender tag so multiple senders' notifications stack in the system tray
+    // instead of collapsing into one. Same sender → same tag → re-notify replaces
+    // the previous notification (which is what we want for rapid follow-ups).
+    const payload = JSON.stringify({
+        title,
+        body: body ?? 'Nuevo mensaje',
+        icon: '/icon-192.png',
+        tag: `pictolink-${user.id}`,
+    });
 
     const results = await Promise.allSettled(
         rows.map((row) => webpush.sendNotification(row.subscription as webpush.PushSubscription, payload))

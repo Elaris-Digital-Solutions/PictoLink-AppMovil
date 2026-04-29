@@ -12,6 +12,10 @@ const sw = self as any;
 sw.addEventListener('push', (event: any) => {
     let title = 'PictoLink';
     let body = 'Tienes un nuevo mensaje';
+    // Default tag is shared across all messages — overrideable via payload so
+    // the server can scope it per sender (so notifications from different
+    // people don't overwrite each other in the system tray).
+    let tag = 'pictolink-message';
     const icon = '/icon-192.png';
 
     if (event.data) {
@@ -19,6 +23,7 @@ sw.addEventListener('push', (event: any) => {
             const payload = event.data.json();
             title = payload.title ?? title;
             body  = payload.body  ?? body;
+            tag   = payload.tag   ?? tag;
         } catch {
             body = event.data.text();
         }
@@ -29,7 +34,7 @@ sw.addEventListener('push', (event: any) => {
             body,
             icon,
             badge: '/icon-192.png',
-            tag: 'pictolink-message',
+            tag,
             renotify: true,
         })
     );

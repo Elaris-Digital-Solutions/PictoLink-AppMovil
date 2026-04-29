@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { BottomNav } from './TopBar';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { createClient } from '@/lib/supabase/client';
-import { requestNotificationPermission, subscribeToPush } from '@/lib/notifications';
+import { subscribeToPush } from '@/lib/notifications';
 
 // ─── AppShell ───────────────────────────────────────────────────────────────────
 // Single-column layout: page content fills all space, universal bottom nav
@@ -109,10 +109,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 // so the route guard sends them to /onboarding to finish setup.
             }
 
-            // ── Push notifications (non-blocking, fire-and-forget) ────────────
-            requestNotificationPermission()
-                .then(granted => { if (granted) subscribeToPush(); })
-                .catch(() => { /* non-fatal */ });
+            // ── Push notifications ────────────────────────────────────────────
+            // If the user has ALREADY granted notification permission (e.g. they
+            // visited before), silently refresh the push subscription. We do NOT
+            // call Notification.requestPermission() here — that requires a user
+            // gesture (iOS Safari PWA refuses it otherwise) and is set up by the
+            // separate "first gesture" effect below.
+            if (typeof window !== 'undefined' &&
+                'Notification' in window &&
+                Notification.permission === 'granted') {
+                subscribeToPush().catch(() => { /* non-fatal */ });
+            }
 
             setSessionVerified(true);
         }
@@ -125,6 +132,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hydrated]);
+
+    // ── Notification permission (first user gesture) ─────────────────────────────
+    // Notification.requestPermission() must happen during a user-initiated event
+    // (required by iOS Safari PWA, recommended by Chrome/Firefox). Calling it from
+    // a useEffect after page load fails silently on iOS and makes other browsers
+    // less likely to surface the prompt. We arm a one-shot pointerdown listener
+    // and ask on the first tap/click — a natural user gesture.
+    useEffect(() => {
+        if (!sessionVerified) return;
+        if (typeof window === 'undefined' || !('Notification' in window)) return;
+        if (Notification.permission !== 'default') return; // already granted or denied — nothing to do
+
+        function ask() {
+            Notification.requestPermission()
+                .then(p => { if (p === 'granted') subscribeToPush().catch(() => {}); })
+                .catch(() => {});
+        }
+        document.addEventListener('pointerdown', ask, { once: true });
+        return () => document.removeEventListener('pointerdown', ask);
+    }, [sessionVerified]);
 
     // ── Auth state listener ───────────────────────────────────────────────────────
     // Supabase will fire SIGNED_OUT if the refresh token is truly invalid (e.g. the

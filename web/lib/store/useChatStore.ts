@@ -274,11 +274,13 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                 (msg.sender_id === s.currentContactId || msg.receiver_id === s.currentContactId)
             );
 
-            // In-app background notification (tab in background)
+            // In-app background notification (tab in background).
+            // Pass sender_id so notifications from different people stack
+            // separately instead of overwriting each other (per-sender tag).
             if (isIncoming) {
                 const body = msg.content
                     || (msg.pictograms?.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
-                notifyNewMessage(s._contactName || 'Contacto', body);
+                notifyNewMessage(s._contactName || 'Contacto', body, msg.sender_id);
             }
 
             // Auto-mark read if the user has this chat open
