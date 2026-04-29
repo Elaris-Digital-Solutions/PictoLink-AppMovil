@@ -31,8 +31,8 @@ const USER_TYPE_OPTIONS: {
   {
     id: 'companion',
     Icon: Heart,
-    title: 'Soy cuidador, familiar o terapeuta',
-    subtitle: 'Apoyo a una persona usuaria de AAC',
+    title: 'Soy familiar, amigo o terapeuta',
+    subtitle: 'Soy a una persona usuaria de texto natural',
   },
   {
     id: 'institution',
