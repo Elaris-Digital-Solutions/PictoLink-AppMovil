@@ -27,9 +27,10 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  // Browser tab + bookmark icons are handled automatically by Next.js's file
+  // convention (app/icon.png → emits <link rel="icon" />). We only need to
+  // declare the Apple touch icons explicitly for iOS home screen.
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
     apple: [
       { url: '/icon-192.png' },
       { url: '/icon-512.png', sizes: '512x512' },
