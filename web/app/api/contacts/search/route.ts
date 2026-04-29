@@ -48,12 +48,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No puedes añadirte a ti mismo como contacto' }, { status: 400 });
         }
 
-        // Fetch the contact's public profile fields (avatar_url, display_name)
+        // Fetch the contact's public profile fields (avatar_url, display_name).
+        // maybeSingle() returns null instead of 406 if the row doesn't exist.
         const { data: profileData } = await supabase
             .from('profiles')
             .select('display_name, avatar_url')
             .eq('id', userId)
-            .single() as { data: { display_name: string; avatar_url: string | null } | null; error: unknown };
+            .maybeSingle() as { data: { display_name: string; avatar_url: string | null } | null; error: unknown };
 
         return NextResponse.json({
             found: true,

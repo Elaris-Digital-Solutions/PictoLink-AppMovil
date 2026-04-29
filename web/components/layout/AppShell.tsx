@@ -78,11 +78,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             // etc.) but the auth cookie is still valid, restore the profile from
             // the DB so the user stays logged in without going through onboarding.
             if (!isOnboarded) {
+                // maybeSingle() returns null on 0 rows with status 200, instead of
+                // .single()'s 406 "Not Acceptable". A missing profile row is expected
+                // when the auth user exists but onboarding wasn't finished.
                 const { data: dbProfile } = await (supabase as any)
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (dbProfile) {
                     useProfileStore.setState({

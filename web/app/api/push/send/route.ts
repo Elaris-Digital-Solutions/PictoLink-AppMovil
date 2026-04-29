@@ -35,12 +35,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Missing recipientId' }, { status: 400 });
     }
 
-    // Look up the sender's display name to show in the notification title
+    // Look up the sender's display name to show in the notification title.
+    // maybeSingle() avoids a 406 if the auth user has no profile row yet —
+    // we already fall back to 'PictoLink' below.
     const { data: senderProfile } = await supabase
         .from('profiles')
         .select('display_name')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
     const senderName = senderProfile?.display_name ?? 'PictoLink';
     const title = `PictoLink — ${senderName}`;

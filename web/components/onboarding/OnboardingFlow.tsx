@@ -215,11 +215,13 @@ export function OnboardingFlow() {
         if (error) {
           setAuthError(error.message);
         } else if (data.user) {
+          // maybeSingle() avoids a noisy 406 when the user just signed up and the
+          // profile row hasn't been created yet (the next onboarding step creates it).
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
-            .single();
+            .maybeSingle();
 
           if (profile) {
             setProfile(profile);

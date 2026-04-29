@@ -339,12 +339,13 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                     // Skip messages we already appended optimistically (our own sends)
                     if (get().groupMessages.some(m => m.id === raw.id)) return;
 
-                    // Fetch sender display name (realtime payload doesn't include joins)
+                    // Fetch sender display name (realtime payload doesn't include joins).
+                    // maybeSingle() avoids 406 noise if the sender's profile was deleted.
                     const { data: profile } = await sb
                         .from('profiles')
                         .select('display_name, avatar_url')
                         .eq('id', raw.sender_id)
-                        .single();
+                        .maybeSingle();
 
                     const msg: GroupMessage = {
                         id: raw.id,
