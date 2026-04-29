@@ -44,7 +44,8 @@
       "Bash(curl -s -X POST https://api.supabase.com/v1/projects/xxbvzvoglnxrgcwhkktc/database/query -H 'Authorization: Bearer sbp_253f2e7def2e405ed96322483199b5aa6e70aafa' -H 'Content-Type: application/json' -d '{\"query\":\"SELECT g.name, p.display_name FROM groups g JOIN group_members gm ON gm.group_id=g.id JOIN profiles p ON p.id=gm.user_id ORDER BY g.name, p.display_name;\"}')",
       "Bash(curl -s https://api.supabase.com/v1/projects/xxbvzvoglnxrgcwhkktc/api-keys -H 'Authorization: Bearer sbp_253f2e7def2e405ed96322483199b5aa6e70aafa')",
       "Bash(curl -s -X POST https://api.supabase.com/v1/projects/xxbvzvoglnxrgcwhkktc/database/query -H 'Authorization: Bearer sbp_253f2e7def2e405ed96322483199b5aa6e70aafa' -H 'Content-Type: application/json' -d '{\"query\": \"SELECT routine_name, grantee, privilege_type FROM information_schema.routine_privileges WHERE routine_name IN \\('\\\\''get_user_id_by_email'\\\\'', '\\\\''create_group_with_members'\\\\'', '\\\\''update_group_with_members'\\\\''\\) AND routine_schema = '\\\\''public'\\\\'' ORDER BY routine_name, grantee;\"}')",
-      "Bash(node scripts/generate-icons.mjs)"
+      "Bash(node scripts/generate-icons.mjs)",
+      "Bash(curl -s -X POST \"https://api.supabase.com/v1/projects/xxbvzvoglnxrgcwhkktc/database/query\" -H \"Authorization: Bearer sbp_2e4097393af9f4f8dcc78955dca0d6ede68b55c1\" -H \"Content-Type: application/json\" -d '{\"query\":\"SELECT conname, pg_get_constraintdef\\(oid\\) AS def FROM pg_constraint WHERE conrelid = '\"'\"'public.push_subscriptions'\"'\"'::regclass;\"}')"
     ]
   }
 }
