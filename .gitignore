@@ -106,3 +106,4 @@ yarn-debug.log*
 pnpm-debug.log*
 
 
+*.stackdump

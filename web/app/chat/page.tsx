@@ -20,7 +20,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
     ArrowLeft, MessageCircle, MessageSquare,
-    X, Send, Home, ChevronRight, Volume2, UserRound, Users
+    X, Send, Home, ChevronRight, Volume2, UserRound
 } from 'lucide-react';
 
 import { useContactStore, type Contact } from '@/lib/store/useContactStore';
@@ -574,6 +574,29 @@ function ContactGrid({ onSelectContact, onSelectGroup }: {
     const groupSummary = useGroupStore((s) => s.groupSummary);
     const [showAddContact, setShowAddContact] = useState(false);
 
+    const unifiedList = useMemo(() => {
+        type Item =
+            | { kind: 'contact'; data: Contact; ts: number }
+            | { kind: 'group'; data: Group; ts: number };
+        const items: Item[] = [
+            ...contacts.map(c => ({
+                kind: 'contact' as const,
+                data: c,
+                ts: summary[c.contact_id]?.lastMessage
+                    ? new Date(summary[c.contact_id].lastMessage!.created_at).getTime()
+                    : 0,
+            })),
+            ...groups.map(g => ({
+                kind: 'group' as const,
+                data: g,
+                ts: groupSummary[g.id]
+                    ? new Date(groupSummary[g.id]!.created_at).getTime()
+                    : 0,
+            })),
+        ];
+        return items.sort((a, b) => b.ts - a.ts);
+    }, [contacts, groups, summary, groupSummary]);
+
     async function handleAddContact(data: Omit<Contact, 'id'>) {
         if (!profile?.id) return;
         await addContact(data, profile.id);
@@ -605,27 +628,26 @@ function ContactGrid({ onSelectContact, onSelectGroup }: {
                             </div>
                         ))}
                     </div>
+                ) : unifiedList.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-3 py-10 text-gray-400">
+                        <UserRound size={48} className="opacity-20" />
+                        <p className="text-sm font-semibold">No tienes contactos aún</p>
+                        <button onClick={() => setShowAddContact(true)} className="text-sm font-bold text-[#FF8844] underline">
+                            Añadir el primero
+                        </button>
+                    </div>
                 ) : (
-                    <>
-                        {/* ── Contacts ──────────────────────────────────────────── */}
-                        {contacts.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center gap-3 py-10 text-gray-400">
-                                <UserRound size={48} className="opacity-20" />
-                                <p className="text-sm font-semibold">No tienes contactos aún</p>
-                                <button onClick={() => setShowAddContact(true)} className="text-sm font-bold text-[#FF8844] underline">
-                                    Añadir el primero
-                                </button>
-                            </div>
-                        ) : contacts.map((contact) => {
+                    unifiedList.map((item) => {
+                        if (item.kind === 'contact') {
+                            const contact = item.data;
                             const s = summary[contact.contact_id];
                             const lastMsg = s?.lastMessage;
                             const unread = s?.unreadCount ?? 0;
                             const t = lastMsg ? timeStr(lastMsg.created_at) : '';
                             const lastReceived = lastMsg && lastMsg.sender_id !== profile?.id ? lastMsg : null;
-
                             return (
                                 <button
-                                    key={contact.id}
+                                    key={`c-${contact.id}`}
                                     onClick={() => onSelectContact(contact)}
                                     className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border border-[#FFD5BF] shadow-[0_1px_3px_rgba(200,95,39,0.14)] active:bg-[#FFF4ED] press-anim text-left"
                                 >
@@ -634,22 +656,26 @@ function ContactGrid({ onSelectContact, onSelectGroup }: {
                                         <div className="flex items-center justify-between gap-2 mb-1">
                                             <span className="text-[16px] font-bold text-gray-900 truncate leading-none">{contact.name}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 min-w-0 flex items-center">
-                                                {lastReceived?.pictograms && lastReceived.pictograms.length > 0 ? (
-                                                    <div className="flex gap-1 items-center flex-wrap">
-                                                        {lastReceived.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
-                                                            <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
-                                                        ))}
-                                                    </div>
-                                                ) : lastReceived ? (
-                                                    <p className="text-[13px] text-gray-500 truncate font-medium">← {lastReceived.content}</p>
-                                                ) : lastMsg ? (
-                                                    <p className="text-[13px] text-gray-400 truncate font-medium">→ {lastMsg.content}</p>
-                                                ) : (
-                                                    <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
-                                                )}
-                                            </div>
+                                        <div className="flex-1 min-w-0 flex items-center">
+                                            {lastReceived?.pictograms && lastReceived.pictograms.length > 0 ? (
+                                                <div className="flex gap-1 items-center flex-wrap">
+                                                    {lastReceived.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
+                                                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
+                                                    ))}
+                                                </div>
+                                            ) : lastMsg?.pictograms && lastMsg.pictograms.length > 0 ? (
+                                                <div className="flex gap-1 items-center opacity-60">
+                                                    {lastMsg.pictograms.slice(0, 4).map((p: PictoNode, i: number) => (
+                                                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
+                                                    ))}
+                                                </div>
+                                            ) : lastReceived ? (
+                                                <p className="text-[13px] text-gray-500 truncate font-medium">← {lastReceived.content}</p>
+                                            ) : lastMsg ? (
+                                                <p className="text-[13px] text-gray-400 truncate font-medium">→ {lastMsg.content}</p>
+                                            ) : (
+                                                <p className="text-[13px] text-gray-400 italic">Inicia la conversación</p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end justify-between self-stretch py-0.5 min-w-[42px]">
@@ -666,44 +692,45 @@ function ContactGrid({ onSelectContact, onSelectGroup }: {
                                     </div>
                                 </button>
                             );
-                        })}
+                        }
 
-                        {/* ── Groups ────────────────────────────────────────────── */}
-                        {groups.length > 0 && (
-                            <>
-                                <div className="flex items-center gap-2 mt-3 mb-2 px-1">
-                                    <Users size={14} style={{ color: GROUP_COLOR }} className="flex-shrink-0" />
-                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: GROUP_COLOR }}>Grupos</span>
+                        // Group item
+                        const group = item.data;
+                        const lastMsg = groupSummary[group.id];
+                        const t = lastMsg ? timeStr(lastMsg.created_at) : '';
+                        return (
+                            <button
+                                key={`g-${group.id}`}
+                                onClick={() => onSelectGroup(group)}
+                                className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border press-anim text-left active:bg-[#EEF1FF]"
+                                style={{ borderColor: GROUP_BG, boxShadow: '0 1px 3px rgba(75,107,200,0.12)' }}
+                            >
+                                <GroupAvatar group={group} size="md" />
+                                <div className="flex-1 min-w-0">
+                                    <span className="text-[16px] font-bold text-gray-900 truncate leading-none block mb-1">{group.name}</span>
+                                    <div className="flex-1 min-w-0 flex items-center gap-1">
+                                        {lastMsg?.pictograms && lastMsg.pictograms.length > 0 ? (
+                                            <>
+                                                <span className="text-[13px] text-gray-500 font-medium flex-shrink-0">{lastMsg.sender_name}:</span>
+                                                {lastMsg.pictograms.slice(0, 3).map((p: PictoNode, i: number) => (
+                                                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="md" />
+                                                ))}
+                                            </>
+                                        ) : lastMsg ? (
+                                            <p className="text-[13px] text-gray-400 truncate font-medium">
+                                                {lastMsg.sender_name}: {lastMsg.content}
+                                            </p>
+                                        ) : (
+                                            <p className="text-[13px] text-gray-400 italic">Grupo nuevo</p>
+                                        )}
+                                    </div>
                                 </div>
-                                {groups.map((group) => {
-                                    const lastMsg = groupSummary[group.id];
-                                    const t = lastMsg ? timeStr(lastMsg.created_at) : '';
-                                    return (
-                                        <button
-                                            key={group.id}
-                                            onClick={() => onSelectGroup(group)}
-                                            className="w-full flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-white border press-anim text-left active:bg-[#EEF1FF]"
-                                            style={{ borderColor: `${GROUP_BG}`, boxShadow: '0 1px 3px rgba(75,107,200,0.12)' }}
-                                        >
-                                            <GroupAvatar group={group} size="md" />
-                                            <div className="flex-1 min-w-0">
-                                                <span className="text-[16px] font-bold text-gray-900 truncate leading-none block mb-1">{group.name}</span>
-                                                <p className="text-[13px] text-gray-400 truncate font-medium">
-                                                    {lastMsg
-                                                        ? `${lastMsg.sender_name}: ${lastMsg.content || (lastMsg.pictograms?.length > 0 ? `${lastMsg.pictograms.length} pictograma(s)` : '')}`
-                                                        : <span className="italic">Grupo nuevo</span>
-                                                    }
-                                                </p>
-                                            </div>
-                                            {t && (
-                                                <span className="text-[11px] text-gray-400 flex-shrink-0">{t}</span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </>
-                        )}
-                    </>
+                                {t && (
+                                    <span className="text-[11px] text-gray-400 flex-shrink-0">{t}</span>
+                                )}
+                            </button>
+                        );
+                    })
                 )}
             </div>
         </div>

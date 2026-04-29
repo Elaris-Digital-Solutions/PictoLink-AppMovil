@@ -44,12 +44,25 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
             .eq('user_id', userId);
 
         if (!error && data) {
+            // Fetch fresh avatars from profiles (contact.avatar_url may be stale or empty)
+            const contactIds = data.map((row: any) => row.contact_id);
+            let profileAvatars: Record<string, string | null> = {};
+            if (contactIds.length > 0) {
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, avatar_url')
+                    .in('id', contactIds);
+                profileAvatars = Object.fromEntries(
+                    (profiles ?? []).map((p: any) => [p.id, p.avatar_url ?? null])
+                );
+            }
+
             const mapped: Contact[] = data.map((row: any) => ({
                 id: row.id,
                 contact_id: row.contact_id,
                 name: row.custom_name || 'Sin nombre',
                 role: row.role,
-                avatarUrl: row.avatar_url ?? undefined,
+                avatarUrl: profileAvatars[row.contact_id] ?? row.avatar_url ?? undefined,
             }));
             set({ contacts: mapped, isLoading: false });
         } else {
@@ -142,18 +155,10 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
                 },
                 (payload) => {
                     const row = payload.new as any;
-                    const newContact: Contact = {
-                        id: row.id,
-                        contact_id: row.contact_id,
-                        name: row.custom_name || 'Nuevo contacto',
-                        role: row.role || 'usuario',
-                        avatarUrl: row.avatar_url ?? undefined,
-                    };
-                    set(s => {
-                        // Skip if already in the list (e.g. from an optimistic add)
-                        if (s.contacts.some(c => c.contact_id === newContact.contact_id)) return s;
-                        return { contacts: [...s.contacts, newContact] };
-                    });
+                    // Skip if already in the list (e.g. from an optimistic add)
+                    if (get().contacts.some(c => c.contact_id === row.contact_id)) return;
+                    // Reload all contacts to get fresh profile avatars
+                    get().loadContacts(userId);
                 }
             )
             .subscribe();
