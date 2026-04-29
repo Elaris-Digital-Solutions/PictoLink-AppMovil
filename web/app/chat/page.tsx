@@ -260,9 +260,20 @@ function InlineReply({ contact }: { contact: Contact }) {
         return received.length > 0 ? received[received.length - 1] : null;
     }, [messages, contact.contact_id, profile?.id]);
 
+    // initializedRef prevents speaking the last pre-existing message when the
+    // conversation is first opened. TTS should only fire for genuinely NEW messages
+    // that arrive after the component is mounted and the history has loaded.
+    const initializedRef = useRef(false);
     const prevIdRef = useRef<string | null>(null);
     useEffect(() => {
-        if (lastReply && lastReply.id !== prevIdRef.current) {
+        if (!lastReply) return;
+        if (!initializedRef.current) {
+            // Silence the initial history load — just record the current last-message ID
+            initializedRef.current = true;
+            prevIdRef.current = lastReply.id;
+            return;
+        }
+        if (lastReply.id !== prevIdRef.current) {
             prevIdRef.current = lastReply.id;
             speak(lastReply.content);
         }
@@ -300,9 +311,17 @@ function GroupInlineReply({ group }: { group: Group }) {
         return received.length > 0 ? received[received.length - 1] : null;
     }, [groupMessages, profile?.id]);
 
+    // Same initialization guard as InlineReply — suppress TTS for pre-existing messages
+    const initializedRef = useRef(false);
     const prevIdRef = useRef<string | null>(null);
     useEffect(() => {
-        if (lastReply && lastReply.id !== prevIdRef.current) {
+        if (!lastReply) return;
+        if (!initializedRef.current) {
+            initializedRef.current = true;
+            prevIdRef.current = lastReply.id;
+            return;
+        }
+        if (lastReply.id !== prevIdRef.current) {
             prevIdRef.current = lastReply.id;
             speak(lastReply.content);
         }
@@ -761,14 +780,21 @@ function ConversationBoard({
     const setContactName = useChatStore((s) => s.setContactName);
     const unsubscribeFromMessages = useChatStore((s) => s.unsubscribeFromMessages);
 
+    // Open / switch conversation — runs when profile or contact changes
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
-            setContactName(contact.name);
             setCurrentContact(contact.contact_id, profile.id);
         }
         return () => unsubscribeFromMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profile?.id, contact.contact_id]);
+
+    // Keep notification name in sync independently so that if a caregiver renames
+    // the contact while this conversation is open, push notifications get the new
+    // name without re-running the whole subscription setup.
+    useEffect(() => {
+        setContactName(contact.name);
+    }, [contact.name, setContactName]);
 
     const addWord = useBoardStore((s) => s.addWord);
     const sentence = useBoardStore((s) => s.sentence);

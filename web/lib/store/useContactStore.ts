@@ -72,60 +72,37 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
     },
 
     addContact: async (data, userId) => {
+        // Use the Supabase client directly — it handles token refresh automatically,
+        // eliminating the stale-token risk of the previous raw-fetch approach.
+        // No optimistic append: loadContacts returns fully-enriched rows (with profile
+        // avatars), so we skip the intermediate add and rely on one authoritative update.
         const payload = {
             user_id: userId,
             contact_id: data.contact_id,
-            custom_name: data.name,
+            custom_name: data.name || 'Sin nombre',
             role: data.role,
             avatar_url: data.avatarUrl ?? null,
         };
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
         try {
-            const session = await getSupabase().auth.getSession();
-            const token = session.data.session?.access_token;
+            const { error } = await getSupabase()
+                .from('contacts')
+                .insert(payload);
 
-            const res = await fetch(`${supabaseUrl}/rest/v1/contacts`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': supabaseKey || '',
-                    'Authorization': `Bearer ${token}`,
-                    'Prefer': 'return=representation',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.ok) {
-                const results = await res.json();
-                const inserted = results[0];
-                if (inserted) {
-                    const newContact: Contact = {
-                        id: inserted.id,
-                        contact_id: inserted.contact_id,
-                        name: inserted.custom_name,
-                        role: inserted.role,
-                        avatarUrl: inserted.avatar_url ?? undefined,
-                    };
-                    set(s => ({ contacts: [...s.contacts, newContact] }));
-                }
-                await get().loadContacts(userId);
-            } else {
-                const errText = await res.text();
-                let errObj: any = {};
-                try { errObj = JSON.parse(errText); } catch { /* ignore */ }
-
-                if (errObj.code === '23505') {
+            if (error) {
+                if (error.code === '23505') {
+                    // Unique constraint violation — contact already exists; just reload
                     console.warn('[addContact] Contacto ya existe, recargando...');
-                    await get().loadContacts(userId);
                 } else {
-                    console.error('[addContact] Error Supabase:', errText);
+                    console.error('[addContact] Error Supabase:', error.message);
+                    return;
                 }
             }
+
+            // Always reload to get fresh data (avatars, canonical names, etc.)
+            await get().loadContacts(userId);
         } catch (err: any) {
-            console.error('[addContact Fetch Error]', err);
+            console.error('[addContact Error]', err);
         }
     },
 

@@ -45,10 +45,12 @@ export async function POST(req: NextRequest) {
     const senderName = senderProfile?.display_name ?? 'PictoLink';
     const title = `PictoLink — ${senderName}`;
 
-    // Fetch all push subscriptions for the recipient
+    // Fetch all push subscriptions for the recipient.
+    // We select both `subscription` (for sending) and `endpoint` (for identifying
+    // expired entries that need to be pruned from the DB).
     const { data: rows, error } = await supabase
         .from('push_subscriptions')
-        .select('subscription')
+        .select('endpoint, subscription')
         .eq('user_id', recipientId);
 
     if (error) {
@@ -72,6 +74,28 @@ export async function POST(req: NextRequest) {
 
     if (failed > 0) {
         console.warn(`[push/send] ${failed} notification(s) failed to send`);
+    }
+
+    // Prune subscriptions that have been explicitly invalidated by the push service
+    // (HTTP 410 Gone). These occur when a device is reset or the browser uninstalls the
+    // PWA. Leaving them in the DB means every future send hits dead endpoints.
+    const expiredEndpoints = rows
+        .filter((_, i) => {
+            const r = results[i];
+            return r.status === 'rejected' && (r.reason as any)?.statusCode === 410;
+        })
+        .map(r => r.endpoint);
+
+    if (expiredEndpoints.length > 0) {
+        const { error: pruneError } = await supabase
+            .from('push_subscriptions')
+            .delete()
+            .in('endpoint', expiredEndpoints);
+        if (pruneError) {
+            console.warn('[push/send] could not prune expired endpoints:', pruneError.message);
+        } else {
+            console.log(`[push/send] pruned ${expiredEndpoints.length} expired endpoint(s)`);
+        }
     }
 
     return NextResponse.json({ ok: true, sent, failed });

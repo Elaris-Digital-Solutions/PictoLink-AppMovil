@@ -123,6 +123,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hydrated]);
 
+    // ── Auth state listener ───────────────────────────────────────────────────────
+    // Supabase will fire SIGNED_OUT if the refresh token is truly invalid (e.g. the
+    // user's session was revoked server-side, or the device was offline so long that
+    // the token cannot be refreshed). When this happens we clear local state so the
+    // route guard can redirect to /onboarding — otherwise the app gets stuck in an
+    // unauthenticated-but-"logged-in" zombie state where every API call silently 401s.
+    useEffect(() => {
+        if (!hydrated) return;
+        const supabase = createClient();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') {
+                useProfileStore.setState({ profile: null, isOnboarded: false });
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, [hydrated]);
+
     // ── Orientation lock ─────────────────────────────────────────────────────────
     // Only AAC users (mode = 'communicator') on AAC routes are locked to landscape.
     // Onboarding (mode unknown), caregivers, and root / all run free.

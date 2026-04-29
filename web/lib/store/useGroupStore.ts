@@ -367,8 +367,19 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
             )
             .subscribe();
 
-        // Polling fallback — covers environments where realtime is blocked
-        const interval = setInterval(() => get().loadGroupMessages(groupId), 5000);
+        // Polling fallback — covers environments where realtime is blocked.
+        // Uses a silent fetch that does NOT touch isLoadingMessages to avoid UI flickering.
+        const interval = setInterval(async () => {
+            const currentGroupId = get().currentGroupId;
+            if (currentGroupId !== groupId) return; // guard: stale interval
+            const { data } = await getSupabase()
+                .from('group_messages')
+                .select('*, sender:profiles!sender_id(display_name, avatar_url)')
+                .eq('group_id', groupId)
+                .order('created_at', { ascending: true })
+                .limit(100);
+            if (data) set({ groupMessages: data.map(rawToGroupMessage) });
+        }, 5000);
 
         set({ _groupChannel: channel, _groupPollInterval: interval });
     },
