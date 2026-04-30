@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { recipientId, body } = await req.json();
+    const { recipientId, body, groupId } = await req.json();
     if (!recipientId) {
         return NextResponse.json({ error: 'Missing recipientId' }, { status: 400 });
     }
@@ -65,14 +65,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true, sent: 0 });
     }
 
-    // Per-sender tag so multiple senders' notifications stack in the system tray
-    // instead of collapsing into one. Same sender → same tag → re-notify replaces
-    // the previous notification (which is what we want for rapid follow-ups).
+    // Tag scope: groups stack together regardless of sender (so 5 quick replies in
+    // group X don't pile up — re-notify replaces the last one). P2P uses the
+    // sender's id (so messages from different people stack as separate items).
+    // These strings must match the ones constructed by `notifyNewMessage` in the
+    // client, otherwise both paths would create duplicate notifications.
+    const tag = groupId
+        ? `pictolink-group-${groupId}`
+        : `pictolink-p2p-${user.id}`;
+
     const payload = JSON.stringify({
         title,
         body: body ?? 'Nuevo mensaje',
         icon: '/icon-192.png',
-        tag: `pictolink-${user.id}`,
+        tag,
     });
 
     const results = await Promise.allSettled(

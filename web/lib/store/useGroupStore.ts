@@ -19,6 +19,8 @@ import { create } from 'zustand';
 import { getSupabase } from '@/lib/supabase/client';
 import type { PictoNode } from '@/types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { notifyNewMessage } from '@/lib/notifications';
+import { useProfileStore } from '@/lib/store/useProfileStore';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -317,6 +319,7 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                     body: JSON.stringify({
                         recipientId: memberId,
                         body: `${senderName}: ${pushBody}`,
+                        groupId, // scopes the push tag to this group (see /api/push/send)
                     }),
                 }).catch(() => { /* non-fatal */ });
             });
@@ -456,6 +459,27 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                     set(s => ({
                         groupSummary: { ...s.groupSummary, [raw.group_id]: msg },
                     }));
+
+                    // ── In-app notification ─────────────────────────────────────
+                    // Fire only when:
+                    //   • the message is NOT from the current user (multi-device case:
+                    //     sending from phone shouldn't notify your own tablet), AND
+                    //   • the user isn't already inside this group's chat (TTS + the
+                    //     in-chat header handle that case)
+                    // notifyNewMessage itself also skips when the tab is visible —
+                    // that's the right behavior for a system-tray notification.
+                    const myProfileId = useProfileStore.getState().profile?.id;
+                    const isOwnMessage = raw.sender_id === myProfileId;
+                    const isInActiveGroup = get().currentGroupId === raw.group_id;
+                    if (!isOwnMessage && !isInActiveGroup) {
+                        const groupName = get().groups.find(g => g.id === raw.group_id)?.name ?? 'Grupo';
+                        const preview = msg.content
+                            || (msg.pictograms.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
+                        // Tag scoped per group so different groups stack independently,
+                        // and matches the push tag set by /api/push/send so the in-app
+                        // and push notifications dedupe instead of double-showing.
+                        notifyNewMessage(groupName, `${msg.sender_name}: ${preview}`, `pictolink-group-${raw.group_id}`);
+                    }
                 }
             )
             .subscribe();

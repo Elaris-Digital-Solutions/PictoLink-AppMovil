@@ -17,17 +17,25 @@ export async function requestNotificationPermission(): Promise<boolean> {
     return result === 'granted';
 }
 
-export async function notifyNewMessage(senderName: string, body: string, senderId?: string) {
+/**
+ * Show an in-app system notification when a new message arrives while the
+ * tab is hidden. The third arg is the FULL tag string — callers construct
+ * scope-appropriate tags so they match what the SW push handler uses
+ * (otherwise the same message would show as two notifications).
+ *
+ * Tag conventions:
+ *   • P2P    → `pictolink-p2p-${senderId}`
+ *   • Group  → `pictolink-group-${groupId}`
+ *   • Other  → omit (defaults to a generic tag — collapses everything)
+ */
+export async function notifyNewMessage(senderName: string, body: string, tag?: string) {
     if (typeof window === 'undefined') return;
     if (!('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
     // Don't notify if the user is actively looking at the app
     if (document.visibilityState === 'visible') return;
 
-    // Tag scoped per sender → notifications from different people stack instead
-    // of overwriting each other. `renotify: true` still re-vibrates when the same
-    // sender messages again, which is what we want.
-    const tag = senderId ? `pictolink-${senderId}` : 'pictolink-message';
+    const finalTag = tag ?? 'pictolink-message';
 
     // Prefer ServiceWorkerRegistration.showNotification(): works on both desktop
     // and mobile. The legacy `new Notification(...)` constructor throws a
@@ -40,7 +48,7 @@ export async function notifyNewMessage(senderName: string, body: string, senderI
                 body,
                 icon: '/icon-192.png',
                 badge: '/icon-192.png',
-                tag,
+                tag: finalTag,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 renotify: true,
             } as any);

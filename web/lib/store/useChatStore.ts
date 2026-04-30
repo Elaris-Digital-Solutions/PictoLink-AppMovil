@@ -275,12 +275,14 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             );
 
             // In-app background notification (tab in background).
-            // Pass sender_id so notifications from different people stack
-            // separately instead of overwriting each other (per-sender tag).
+            // Tag scoped per sender so notifications from different people stack
+            // separately. The same string is used by /api/push/send → matching
+            // tags mean the SW push and the in-app notification dedupe instead
+            // of double-showing when both paths fire.
             if (isIncoming) {
                 const body = msg.content
                     || (msg.pictograms?.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
-                notifyNewMessage(s._contactName || 'Contacto', body, msg.sender_id);
+                notifyNewMessage(s._contactName || 'Contacto', body, `pictolink-p2p-${msg.sender_id}`);
             }
 
             // Auto-mark read if the user has this chat open
