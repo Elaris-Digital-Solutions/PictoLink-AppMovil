@@ -61,11 +61,11 @@ export const AAC_PAGES = {
         { id: 'r1-36', pos: 36, label: "Comida", type: "folder", folderTarget: "comida", pictogramId: 4610 },
         { id: 'r1-37', pos: 37, label: "Lugares", type: "folder", folderTarget: "lugares", pictogramId: 9819 },
         { id: 'r1-38', pos: 38, label: "Acciones", type: "folder", folderTarget: "acciones", pictogramId: 7297 },
-        { id: 'r1-39', pos: 39, label: "Describir", type: "folder", folderTarget: "describir", pictogramId: 11713 },
+        { id: 'r1-39', pos: 39, label: "Palabras para describir", type: "folder", folderTarget: "describir", pictogramId: 11713 },
         { id: 'r1-40', pos: 40, label: "Estados", type: "folder", folderTarget: "estados", pictogramId: 39091 },
-        { id: 'r1-41', pos: 41, label: "Conversación", type: "folder", folderTarget: "conversacion", pictogramId: 23402 },
-        { id: 'r1-42', pos: 42, label: "Ayuda", type: "folder", folderTarget: "ayuda", pictogramId: 12252 }, // Necesidades/Ayuda
-        { id: 'r1-43', pos: 43, label: "Preguntas", type: "folder", folderTarget: "preguntas", pictogramId: 7217 },
+        { id: 'r1-41', pos: 41, label: "Plática", type: "folder", folderTarget: "conversacion", pictogramId: 23402 },
+        { id: 'r1-42', pos: 42, label: "Ayuda", type: "folder", folderTarget: "ayuda", pictogramId: 12252 },
+        { id: 'r1-43', pos: 43, label: "Presentación", type: "folder", folderTarget: "quien_eres", pictogramId: 6218 },
         { id: 'r1-44', pos: 44, label: "Másd", type: "navigation", action: "navigate", folderTarget: "root_2" },
     ] as GridCell[],
 
@@ -84,8 +84,10 @@ export const AAC_PAGES = {
         // Row 2
         { id: 'r2-9', pos: 9, label: "Mes CAA", type: "folder", folderTarget: "mes_caa", pictogramId: 7161 }, // Placeholder
 
+        { id: 'r2-43', pos: 43, label: "Preguntas", type: "folder", folderTarget: "preguntas", pictogramId: 7217 },
+
         // Navigation Back Button at the end (Pos 44)
-        { id: 'r2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 } // Flecha atras
+        { id: 'r2-44', pos: 44, label: "Atrás", type: "navigation", action: "back", folderTarget: "root", pictogramId: 37086 }
     ] as GridCell[],
 
     'personas': [

@@ -1,11 +1,15 @@
 'use client';
 
 import { memo } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import { useSpeechSynthesis } from '@/hooks/useSpeech';
 import { AACButton } from './AACButton';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { AAC_PAGES, GridCell } from '@/data/aac-grid-layout';
 import type { PictoNode } from '@/types';
+
+const formatPageLabel = (pageId: string): string =>
+    pageId.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 // Maps Fitzgerald Key type → hex color for SentenceBar chips
 const TYPE_HEX_COLORS: Record<string, string> = {
@@ -84,21 +88,46 @@ export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoa
 
     const currentCells = getPageContent(currentPageId);
 
+    const pageLabel = categoryPath.length === 0
+        ? 'Inicio'
+        : formatPageLabel(currentPageId);
+
     return (
-        <div className="w-full h-full p-1 bg-black/5 select-none overflow-hidden">
-            <div className="grid grid-cols-9 grid-rows-5 gap-1 w-full h-full">
-                {currentCells.map((cell) => (
-                    cell.label ? (
-                        <AACButton
-                            key={cell.id}
-                            cell={cell as GridCell}
-                            onClick={handleCellClick}
-                            className="text-xs md:text-sm lg:text-base transition-transform active:scale-95"
-                        />
-                    ) : (
-                        <div key={cell.id} className="bg-white/30 rounded-xl border border-dashed border-black/10" />
-                    )
-                ))}
+        <div className="w-full h-full flex flex-col select-none overflow-hidden">
+            {/* Barra de navegación negra */}
+            <div className="flex-shrink-0 flex items-center h-9 bg-black px-1 gap-1">
+                {categoryPath.length > 0 ? (
+                    <button
+                        onClick={goBack}
+                        className="flex items-center justify-center w-9 h-9 text-white active:opacity-60 flex-shrink-0"
+                        aria-label="Volver"
+                    >
+                        <ChevronLeft size={22} strokeWidth={2.5} />
+                    </button>
+                ) : (
+                    <div className="w-9 flex-shrink-0" />
+                )}
+                <span className="flex-1 text-center text-white text-sm font-bold tracking-wide uppercase truncate pr-9">
+                    {pageLabel}
+                </span>
+            </div>
+
+            {/* Grid de pictogramas */}
+            <div className="flex-1 min-h-0 p-1 bg-black/5">
+                <div className="grid grid-cols-9 grid-rows-5 gap-1 w-full h-full">
+                    {currentCells.map((cell) => (
+                        cell.label ? (
+                            <AACButton
+                                key={cell.id}
+                                cell={cell as GridCell}
+                                onClick={handleCellClick}
+                                className="text-xs md:text-sm lg:text-base transition-transform active:scale-95"
+                            />
+                        ) : (
+                            <div key={cell.id} className="bg-white/30 rounded-xl border border-dashed border-black/10" />
+                        )
+                    ))}
+                </div>
             </div>
         </div>
     );
