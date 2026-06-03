@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Heart, Building2, ExternalLink, ArrowLeft, Loader2 } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
+import { trackEvent } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile, UserType } from '@/types';
 import logoPng from '@/assets/favicon.png';
@@ -144,6 +145,7 @@ export function OnboardingFlow() {
     }
 
     setProfile(profile);
+    trackEvent('onboarding_completed', { role: type });
     completeOnboarding();
 
     const dest = type === 'communicator' ? '/chat' : '/cuidador';

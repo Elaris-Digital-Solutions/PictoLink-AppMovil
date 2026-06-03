@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PictoNode } from '@/types';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { translateText } from '@/lib/utils/translate';
+import { trackEvent } from '@/lib/analytics';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ export function useSpeech(): UseSpeechReturn {
 
     const speak = useCallback(
         (input: PictoNode[] | string) => {
+            trackEvent('voice_tts_used');
             if (!isSupported) return;
 
             const spanishText =

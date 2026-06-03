@@ -1,12 +1,13 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useSpeech } from '@/lib/hooks/useSpeech';
 import { AACButton } from './AACButton';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { AAC_PAGES, GridCell } from '@/data/aac-grid-layout';
 import type { PictoNode } from '@/types';
+import { trackEvent } from '@/lib/analytics';
 
 const formatPageLabel = (pageId: string): string =>
     pageId.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -31,6 +32,10 @@ interface AACBoardProps {
 
 export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoardProps) {
     const { speak } = useSpeech();
+
+    useEffect(() => {
+        trackEvent('aacboard_opened');
+    }, []);
 
     // Global Navigation State
     const categoryPath = useBoardStore((s) => s.categoryPath);
@@ -64,6 +69,7 @@ export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoa
 
         if (isSpeakAction) {
             speak(cell.label);
+            trackEvent('aacboard_pictogram_used', { pictogram_id: cell.pictogramId ?? cell.id });
             if (onWordAdd) {
                 onWordAdd({
                     id: cell.id,

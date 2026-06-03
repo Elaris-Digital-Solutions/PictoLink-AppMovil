@@ -32,6 +32,9 @@ dist-ssr
 # embed API tokens in stored command strings. Never commit.
 .claude/settings.local.json
 
+# MCP configuration — may contain access tokens or project refs. Never commit.
+.mcp.json
+
 # Node / package manager
 .pnp.cjs
 .pnp.loader.mjs

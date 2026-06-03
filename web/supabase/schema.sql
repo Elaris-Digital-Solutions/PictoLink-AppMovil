@@ -96,6 +96,17 @@ create table if not exists public.push_subscriptions (
     unique (user_id, endpoint)
 );
 
+-- ─── analytics_events ────────────────────────────────────────────────────────
+-- Pilot usage events for freemium model validation.
+-- Users can only INSERT their own rows. Dashboard reads via service_role.
+create table if not exists public.analytics_events (
+    id          uuid primary key default gen_random_uuid(),
+    user_id     uuid not null references auth.users(id) on delete cascade,
+    event_type  text not null,
+    metadata    jsonb not null default '{}',
+    created_at  timestamptz not null default now()
+);
+
 -- =============================================================================
 -- INDEXES
 -- =============================================================================
@@ -110,6 +121,12 @@ create index if not exists idx_messages_receiver_read
 -- group_messages — covers the group thread query and inbox summary
 create index if not exists idx_group_messages_group_time
     on public.group_messages (group_id, created_at desc);
+
+create index if not exists idx_analytics_events_user_time
+    on public.analytics_events (user_id, created_at desc);
+
+create index if not exists idx_analytics_events_type_time
+    on public.analytics_events (event_type, created_at desc);
 
 -- =============================================================================
 -- REALTIME
@@ -141,6 +158,7 @@ alter table public.groups            enable row level security;
 alter table public.group_members     enable row level security;
 alter table public.group_messages    enable row level security;
 alter table public.push_subscriptions enable row level security;
+alter table public.analytics_events enable row level security;
 
 -- profiles
 create policy profiles_select on public.profiles for select to authenticated using (true);
@@ -180,6 +198,12 @@ create policy "members can send messages" on public.group_messages for insert
         group_id in (select group_id from public.group_members where user_id = auth.uid())
         and sender_id = auth.uid()
     );
+
+-- analytics_events
+create policy analytics_insert on public.analytics_events
+    for insert to authenticated
+    with check (user_id = auth.uid());
+-- No SELECT policy — only service_role (dashboard) reads this table.
 
 -- push_subscriptions
 -- SELECT is intentionally restricted to own rows. The /api/push/send Route Handler

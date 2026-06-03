@@ -6,6 +6,7 @@ import { StoreHydrator } from '@/components/StoreHydrator';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { PWARegistry } from '@/components/layout/PWARegistry';
+import { SessionTracker } from '@/components/layout/SessionTracker';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <PWARegistry />
         <StoreHydrator />
+        <SessionTracker />
         <AppShell>{children}</AppShell>
         <Analytics />
         <SpeedInsights />
