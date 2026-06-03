@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { ChevronLeft } from 'lucide-react';
-import { useSpeechSynthesis } from '@/hooks/useSpeech';
+import { useSpeech } from '@/lib/hooks/useSpeech';
 import { AACButton } from './AACButton';
 import { useBoardStore } from '@/lib/store/useBoardStore';
 import { AAC_PAGES, GridCell } from '@/data/aac-grid-layout';
@@ -30,27 +30,27 @@ interface AACBoardProps {
 }
 
 export const AACBoard = memo(function AACBoard({ onWordAdd, onNavigate }: AACBoardProps) {
-    const { speak } = useSpeechSynthesis();
-    
+    const { speak } = useSpeech();
+
     // Global Navigation State
     const categoryPath = useBoardStore((s) => s.categoryPath);
     const enterFolder = useBoardStore((s) => s.enterFolder);
     const goBack = useBoardStore((s) => s.goBack);
 
     // Derivar el ID de la página actual del stack de navegación
-    const currentPageId = (categoryPath.length === 0 
-        ? 'root' 
+    const currentPageId = (categoryPath.length === 0
+        ? 'root'
         : categoryPath[categoryPath.length - 1]) as keyof typeof AAC_PAGES;
 
     const getPageContent = (pageId: keyof typeof AAC_PAGES) => {
         const items = AAC_PAGES[pageId] || [];
         const fullGrid = new Array(45).fill(null).map((_, index) => {
             const existing = items.find(i => i.pos === index);
-            return existing || { 
-                id: `empty-${pageId}-${index}`, 
-                pos: index, 
-                label: "", 
-                type: "noun" as const 
+            return existing || {
+                id: `empty-${pageId}-${index}`,
+                pos: index,
+                label: "",
+                type: "noun" as const,
             };
         });
         return fullGrid;

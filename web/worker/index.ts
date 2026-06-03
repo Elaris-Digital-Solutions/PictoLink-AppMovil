@@ -16,6 +16,9 @@ sw.addEventListener('push', (event: any) => {
     // the server can scope it per sender / per group (so notifications from
     // different conversations don't overwrite each other in the system tray).
     let tag = 'pictolink-message';
+    // Route to focus / open when the notification is clicked. The server sets
+    // this per-recipient (/cuidador for caregivers, /chat for communicators).
+    let url = '/chat';
     const icon = '/icon-192.png';
 
     if (event.data) {
@@ -24,6 +27,7 @@ sw.addEventListener('push', (event: any) => {
             title = payload.title ?? title;
             body  = payload.body  ?? body;
             tag   = payload.tag   ?? tag;
+            url   = payload.url   ?? url;
         } catch {
             body = event.data.text();
         }
@@ -45,6 +49,8 @@ sw.addEventListener('push', (event: any) => {
                     badge: '/icon-192.png',
                     tag,
                     renotify: true,
+                    // Carried through to the notificationclick handler below.
+                    data: { url },
                 });
             })
     );
@@ -52,14 +58,22 @@ sw.addEventListener('push', (event: any) => {
 
 sw.addEventListener('notificationclick', (event: any) => {
     event.notification.close();
+    const targetUrl = event.notification.data?.url ?? '/chat';
     event.waitUntil(
         sw.clients
             .matchAll({ type: 'window', includeUncontrolled: true })
             .then((clients: any[]) => {
+                // Reuse an existing window if one is open: navigate it to the
+                // target route (if supported) and focus it.
                 for (const client of clients) {
-                    if ('focus' in client) return client.focus();
+                    if ('focus' in client) {
+                        if ('navigate' in client) {
+                            try { client.navigate(targetUrl); } catch { /* cross-origin / unsupported */ }
+                        }
+                        return client.focus();
+                    }
                 }
-                return sw.clients.openWindow('/chat');
+                return sw.clients.openWindow(targetUrl);
             })
     );
 });

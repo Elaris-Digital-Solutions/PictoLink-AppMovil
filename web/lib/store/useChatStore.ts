@@ -17,6 +17,7 @@ import { getSupabase } from '@/lib/supabase/client';
 import type { PictoNode } from '@/types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { notifyNewMessage } from '@/lib/notifications';
+import { useContactStore } from '@/lib/store/useContactStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -282,7 +283,15 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             if (isIncoming) {
                 const body = msg.content
                     || (msg.pictograms?.length > 0 ? `${msg.pictograms.length} pictograma(s)` : 'Nuevo mensaje');
-                notifyNewMessage(s._contactName || 'Contacto', body, `pictolink-p2p-${msg.sender_id}`);
+                // Resolve the sender's name from the contact list rather than the
+                // currently-open chat's _contactName. When a message arrives while
+                // sitting on the contact grid (or from a different contact than the
+                // open chat), _contactName would be stale or empty → wrong title.
+                const senderName =
+                    useContactStore.getState().contacts.find(c => c.contact_id === msg.sender_id)?.name
+                    || s._contactName
+                    || 'Contacto';
+                notifyNewMessage(senderName, body, `pictolink-p2p-${msg.sender_id}`);
             }
 
             // Auto-mark read if the user has this chat open

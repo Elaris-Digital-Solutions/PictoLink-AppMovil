@@ -17,6 +17,7 @@ interface ContactStore {
     isLoading: boolean;
     loadContacts: (userId: string) => Promise<void>;
     addContact: (data: Omit<Contact, 'id'>, userId: string) => Promise<void>;
+    updateContact: (id: string, data: Partial<Omit<Contact, 'id' | 'contact_id'>>) => Promise<void>;
     removeContact: (id: string) => Promise<void>;
 
     /**
@@ -106,6 +107,28 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
         }
     },
 
+    updateContact: async (id, data) => {
+        // Atomic in-place update (replaces the old delete+re-insert pattern, which
+        // could permanently lose a contact if the re-insert failed mid-way).
+        const payload: Record<string, any> = {};
+        if (data.name !== undefined) payload.custom_name = data.name || 'Sin nombre';
+        if (data.role !== undefined) payload.role = data.role;
+        if (data.avatarUrl !== undefined) payload.avatar_url = data.avatarUrl ?? null;
+
+        // Snapshot for rollback, then optimistic local patch
+        const prev = get().contacts.find(c => c.id === id);
+        set(s => ({
+            contacts: s.contacts.map(c => c.id === id ? { ...c, ...data } : c),
+        }));
+
+        const { error } = await getSupabase().from('contacts').update(payload).eq('id', id);
+        if (error) {
+            console.error('[updateContact Error]', error.message);
+            // Roll back the optimistic patch
+            if (prev) set(s => ({ contacts: s.contacts.map(c => c.id === id ? prev : c) }));
+        }
+    },
+
     removeContact: async (id) => {
         const supabase = getSupabase();
         const { error } = await supabase.from('contacts').delete().eq('id', id);
@@ -136,6 +159,47 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
                     if (get().contacts.some(c => c.contact_id === row.contact_id)) return;
                     // Reload all contacts to get fresh profile avatars
                     get().loadContacts(userId);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    // A contact was renamed or its avatar/role changed (e.g. from
+                    // another device). Patch the matching row in place so the change
+                    // shows without a full reload.
+                    const row = payload.new as any;
+                    set(s => ({
+                        contacts: s.contacts.map(c =>
+                            c.id === row.id
+                                ? {
+                                    ...c,
+                                    name: row.custom_name || 'Sin nombre',
+                                    role: row.role,
+                                    avatarUrl: row.avatar_url ?? c.avatarUrl,
+                                }
+                                : c
+                        ),
+                    }));
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    // A contact was removed (e.g. from another device) — drop it locally.
+                    const row = payload.old as any;
+                    set(s => ({ contacts: s.contacts.filter(c => c.id !== row.id) }));
                 }
             )
             .subscribe();

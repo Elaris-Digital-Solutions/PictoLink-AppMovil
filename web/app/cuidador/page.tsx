@@ -981,7 +981,7 @@ function Bubble({ entry, contact, isSent }: { entry: ChatMessage; contact: Conta
                     <div className={cn('flex flex-wrap gap-1 p-2 rounded-2xl border max-w-[280px]',
                         isSent ? 'bg-[#FFF0E8] border-[#FFD5BF] rounded-br-sm' : 'bg-white border-slate-200 rounded-bl-sm')}>
                         {entry.pictograms.map((p, i) => (
-                            <div key={i} className="flex flex-col items-center gap-0.5">
+                            <div key={`${p.id}-${i}`} className="flex flex-col items-center gap-0.5">
                                 <div className="w-12 h-12 rounded-xl border-2 flex items-center justify-center text-xl"
                                     style={{ borderColor: p.color ?? '#e2e8f0', backgroundColor: `${p.color ?? '#6b7280'}18` }}>
                                     {p.arasaacId
@@ -1107,7 +1107,10 @@ function GroupThreadPanel({ group, onBack, onOpenSettings }: { group: Group; onB
     const bottomRef                     = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (profile?.id) { loadGroupMessages(group.id); subscribeToGroup(group.id, profile.id); }
+        if (profile?.id) {
+            subscribeToGroup(group.id, profile.id);
+            loadGroupMessages(group.id);
+        }
         return () => unsubscribeFromGroup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [group.id, profile?.id]);
@@ -1179,7 +1182,7 @@ function GroupThreadPanel({ group, onBack, onOpenSettings }: { group: Group; onB
                                     <div className={cn('flex flex-wrap gap-1 p-2 rounded-2xl border max-w-[280px]',
                                         isSent ? 'bg-[#FFF0E8] border-[#FFD5BF]' : 'bg-white border-slate-200')}>
                                         {msg.pictograms.map((p, i) => (
-                                            <div key={i} className="flex flex-col items-center gap-0.5">
+                                            <div key={`${p.id}-${i}`} className="flex flex-col items-center gap-0.5">
                                                 <div className="w-12 h-12 rounded-xl border-2 flex items-center justify-center"
                                                     style={{ borderColor: p.color ?? '#e2e8f0', backgroundColor: `${p.color ?? '#6b7280'}18` }}>
                                                     {p.arasaacId
@@ -1249,7 +1252,11 @@ export default function CuidadorPage() {
     const { addContact, loadContacts, subscribeToContacts, unsubscribeFromContacts } = useContactStore();
 
     const groups = useGroupStore(s => s.groups);
-    const { loadGroups, loadGroupSummary, subscribeToInboxGroups, unsubscribeFromInboxGroups } = useGroupStore();
+    const {
+        loadGroups, loadGroupSummary,
+        subscribeToInboxGroups, unsubscribeFromInboxGroups,
+        subscribeToGroupMembership, unsubscribeFromGroupMembership,
+    } = useGroupStore();
 
     const profile     = useProfileStore(s => s.profile);
     const loadSummary           = useChatStore(s => s.loadSummary);
@@ -1272,11 +1279,14 @@ export default function CuidadorPage() {
             // new incoming messages don't appear in the sidebar until reload.
             subscribeToInbox(profile.id);
             subscribeToInboxGroups(profile.id);
+            // Live group list: appear/disappear when added to or removed from a group.
+            subscribeToGroupMembership(profile.id);
         }
         return () => {
             unsubscribeFromContacts();
             unsubscribeFromInbox();
             unsubscribeFromInboxGroups();
+            unsubscribeFromGroupMembership();
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profile?.id]);

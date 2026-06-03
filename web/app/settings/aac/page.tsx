@@ -18,6 +18,7 @@ import { langName } from '@/lib/utils/translate';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import AvatarUpload from '@/components/ui/AvatarUpload';
+import { deleteFromCloudinary } from '@/lib/cloudinary';
 
 const BRAND = '#FF8844';
 const BRAND_DARK = '#C85F27';
@@ -83,10 +84,15 @@ export default function AACSettingsPage() {
     const isNonSpanish = selectedVoiceObj && !selectedVoiceObj.lang.startsWith('es');
 
     async function handleAvatarUpload(url: string) {
+        const oldUrl = profile?.avatar_url;
         updateProfile({ avatar_url: url });
         // Persist to Supabase so contacts see the new photo
         const supabase = createClient();
         await supabase.from('profiles').update({ avatar_url: url }).eq('id', profile!.id);
+        // Destroy the previous Cloudinary image (fire-and-forget) to avoid storage leak
+        if (oldUrl && oldUrl !== url) {
+            deleteFromCloudinary(oldUrl).catch(() => {});
+        }
     }
 
     async function handleSignOut() {

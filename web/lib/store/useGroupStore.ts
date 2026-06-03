@@ -96,6 +96,16 @@ interface GroupStore {
     subscribeToInboxGroups: (profileId: string) => void;
     unsubscribeFromInboxGroups: () => void;
     _inboxGroupChannel: RealtimeChannel | null;
+
+    // ── Membership subscription ───────────────────────────────────────────────
+    /**
+     * Reloads the group list when the user is added to (INSERT) or removed from
+     * (DELETE) a group while the app is open — so new groups appear and removed
+     * ones disappear without a manual reload. Idempotent.
+     */
+    subscribeToGroupMembership: (profileId: string) => void;
+    unsubscribeFromGroupMembership: () => void;
+    _membershipChannel: RealtimeChannel | null;
 }
 
 // ─── Helper ────────────────────────────────────────────────────────────────────
@@ -247,7 +257,9 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
     isLoadingMessages: false,
 
     loadGroupMessages: async (groupId) => {
-        set({ isLoadingMessages: true, currentGroupId: groupId });
+        // Clear previous group's messages immediately so there's no flash of
+        // stale content while the new group's messages are loading.
+        set({ isLoadingMessages: true, currentGroupId: groupId, groupMessages: [] });
         try {
             const sb = getSupabase();
             const { data, error } = await sb
@@ -258,7 +270,19 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
                 .limit(100);
 
             if (error) throw error;
-            set({ groupMessages: (data ?? []).map(rawToGroupMessage), isLoadingMessages: false });
+
+            // Merge with any messages the realtime subscription appended while
+            // the query was in-flight (subscribe-first pattern). Dedup by id,
+            // then re-sort chronologically.
+            set(s => {
+                const fromDb = (data ?? []).map(rawToGroupMessage);
+                const dbIds = new Set(fromDb.map(m => m.id));
+                const rtOnly = s.groupMessages.filter(m => !dbIds.has(m.id));
+                const merged = [...fromDb, ...rtOnly].sort(
+                    (a, b) => a.created_at.localeCompare(b.created_at)
+                );
+                return { groupMessages: merged, isLoadingMessages: false };
+            });
         } catch (e: any) {
             console.error('[groups] loadGroupMessages:', e?.message);
             set({ isLoadingMessages: false });
@@ -491,5 +515,56 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
         const { _inboxGroupChannel } = get();
         if (_inboxGroupChannel) getSupabase().removeChannel(_inboxGroupChannel);
         set({ _inboxGroupChannel: null });
+    },
+
+    // ── Membership subscription ───────────────────────────────────────────────
+    // Fires when a group_members row for THIS user is inserted (added to a group)
+    // or deleted (removed / left). RLS only exposes the user's own rows, so the
+    // filter on user_id is just a fast-path; we still reload the full group list
+    // to pick up member profiles, names and avatars.
+
+    _membershipChannel: null,
+
+    subscribeToGroupMembership: (profileId) => {
+        if (get()._membershipChannel) return; // idempotent
+
+        const sb = getSupabase();
+        const channel = sb
+            .channel(`group_membership:${profileId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'group_members',
+                    filter: `user_id=eq.${profileId}`,
+                },
+                () => {
+                    get().loadGroups(profileId);
+                    get().loadGroupSummary(profileId);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'group_members',
+                    filter: `user_id=eq.${profileId}`,
+                },
+                () => {
+                    get().loadGroups(profileId);
+                    get().loadGroupSummary(profileId);
+                }
+            )
+            .subscribe();
+
+        set({ _membershipChannel: channel });
+    },
+
+    unsubscribeFromGroupMembership: () => {
+        const { _membershipChannel } = get();
+        if (_membershipChannel) getSupabase().removeChannel(_membershipChannel);
+        set({ _membershipChannel: null });
     },
 }));

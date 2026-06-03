@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import webpush from 'web-push';
 
@@ -7,6 +8,13 @@ webpush.setVapidDetails(
     'mailto:pictolink@example.com',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
+);
+
+// Service-role client — bypasses RLS to read any user's push subscriptions and
+// prune expired endpoints. Never returned to the client.
+const serviceSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: NextRequest) {
@@ -35,9 +43,33 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Missing recipientId' }, { status: 400 });
     }
 
+    // Verify the caller is authorized to send this notification:
+    //   - Group message: caller must be a member of the group
+    //   - P2P message: recipientId must be a contact of the caller
+    // This prevents push spam to arbitrary users.
+    if (groupId) {
+        const { data: membership } = await supabase
+            .from('group_members')
+            .select('user_id')
+            .eq('group_id', groupId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+        if (!membership) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+    } else {
+        const { data: contactRow } = await supabase
+            .from('contacts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('contact_id', recipientId)
+            .maybeSingle();
+        if (!contactRow) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+    }
+
     // Look up the sender's display name to show in the notification title.
-    // maybeSingle() avoids a 406 if the auth user has no profile row yet —
-    // we already fall back to 'PictoLink' below.
     const { data: senderProfile } = await supabase
         .from('profiles')
         .select('display_name')
@@ -47,10 +79,20 @@ export async function POST(req: NextRequest) {
     const senderName = senderProfile?.display_name ?? 'PictoLink';
     const title = `PictoLink — ${senderName}`;
 
-    // Fetch all push subscriptions for the recipient.
-    // We select both `subscription` (for sending) and `endpoint` (for identifying
-    // expired entries that need to be pruned from the DB).
-    const { data: rows, error } = await supabase
+    // Resolve the recipient's home route so a notification click lands them on
+    // the right interface (caregivers → /cuidador, communicators → /chat).
+    // Uses the service-role client so RLS doesn't hide the recipient's profile.
+    const { data: recipientProfile } = await serviceSupabase
+        .from('profiles')
+        .select('mode')
+        .eq('id', recipientId)
+        .maybeSingle();
+    const clickUrl = recipientProfile?.mode === 'caregiver' ? '/cuidador' : '/chat';
+
+    // Fetch all push subscriptions for the recipient using the service-role client
+    // so RLS does not block reading another user's rows (the anon client with the
+    // sender's session would return 0 rows due to the push_select policy).
+    const { data: rows, error } = await serviceSupabase
         .from('push_subscriptions')
         .select('endpoint, subscription')
         .eq('user_id', recipientId);
@@ -61,15 +103,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!rows || rows.length === 0) {
-        // Recipient hasn't subscribed to push — that's fine, no notification sent
         return NextResponse.json({ ok: true, sent: 0 });
     }
 
-    // Tag scope: groups stack together regardless of sender (so 5 quick replies in
-    // group X don't pile up — re-notify replaces the last one). P2P uses the
-    // sender's id (so messages from different people stack as separate items).
-    // These strings must match the ones constructed by `notifyNewMessage` in the
-    // client, otherwise both paths would create duplicate notifications.
     const tag = groupId
         ? `pictolink-group-${groupId}`
         : `pictolink-p2p-${user.id}`;
@@ -79,6 +115,7 @@ export async function POST(req: NextRequest) {
         body: body ?? 'Nuevo mensaje',
         icon: '/icon-192.png',
         tag,
+        url: clickUrl,
     });
 
     const results = await Promise.allSettled(
@@ -93,8 +130,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Prune subscriptions that have been explicitly invalidated by the push service
-    // (HTTP 410 Gone). These occur when a device is reset or the browser uninstalls the
-    // PWA. Leaving them in the DB means every future send hits dead endpoints.
+    // (HTTP 410 Gone). Use service-role so we can delete the recipient's stale rows.
     const expiredEndpoints = rows
         .filter((_, i) => {
             const r = results[i];
@@ -103,7 +139,7 @@ export async function POST(req: NextRequest) {
         .map(r => r.endpoint);
 
     if (expiredEndpoints.length > 0) {
-        const { error: pruneError } = await supabase
+        const { error: pruneError } = await serviceSupabase
             .from('push_subscriptions')
             .delete()
             .in('endpoint', expiredEndpoints);

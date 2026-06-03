@@ -111,6 +111,7 @@ export function OnboardingFlow() {
       tts_enabled: true,
       tts_rate: 1.0,
       created_at: new Date().toISOString(),
+      user_type: type,
       plan_type: 'free',
     };
 

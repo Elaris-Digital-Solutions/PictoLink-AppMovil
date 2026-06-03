@@ -18,7 +18,7 @@ import { Avatar, ContactForm } from '@/components/ContactForm';
 
 export default function DashboardPage() {
     const profile = useProfileStore(s => s.profile);
-    const { contacts, isLoading, loadContacts, addContact, removeContact } = useContactStore();
+    const { contacts, isLoading, loadContacts, addContact, updateContact, removeContact } = useContactStore();
     const [showForm, setShowForm] = useState(false);
     const [editContact, setEditContact] = useState<Contact | null>(null);
 
@@ -36,8 +36,13 @@ export default function DashboardPage() {
 
     async function handleEdit(data: Omit<Contact, 'id'>) {
         if (!editContact || !profile?.id) return;
-        await removeContact(editContact.id);
-        await addContact(data, profile.id);
+        // In-place update — the edit form keeps contact_id fixed, so we only
+        // patch name / role / avatar. Atomic: no risk of losing the contact.
+        await updateContact(editContact.id, {
+            name: data.name,
+            role: data.role,
+            avatarUrl: data.avatarUrl,
+        });
         setEditContact(null);
     }
 

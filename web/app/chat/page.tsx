@@ -340,7 +340,7 @@ function GroupInlineReply({ group }: { group: Group }) {
             <span className="text-white/60 text-xs font-bold flex-shrink-0">{lastReply.sender_name}:</span>
             {lastReply.pictograms?.length > 0 ? (
                 lastReply.pictograms.slice(0, 5).map((p, i) => (
-                    <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
+                    <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="lg" />
                 ))
             ) : (
                 <p className="text-base font-bold text-white leading-snug line-clamp-2">{lastReply.content}</p>
@@ -527,7 +527,7 @@ function GroupHistorial({ group, onClose }: { group: Group; onClose: () => void 
                                             {msg.pictograms?.length > 0 && (
                                                 <div className="flex gap-2 flex-wrap justify-end max-w-[320px]">
                                                     {msg.pictograms.map((p, i) => (
-                                                        <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                        <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
                                                     ))}
                                                 </div>
                                             )}
@@ -550,7 +550,7 @@ function GroupHistorial({ group, onClose }: { group: Group; onClose: () => void 
                                                 {msg.pictograms?.length > 0 ? (
                                                     <div className="flex gap-2 flex-wrap max-w-[280px]">
                                                         {msg.pictograms.map((p, i) => (
-                                                            <PictoChip key={i} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
+                                                            <PictoChip key={`${p.id}-${i}`} label={p.label} arasaacId={p.arasaacId} color={p.color} size="xl" />
                                                         ))}
                                                     </div>
                                                 ) : (
@@ -783,6 +783,10 @@ function ConversationBoard({
     // Open / switch conversation — runs when profile or contact changes
     useEffect(() => {
         if (profile?.id && contact.contact_id) {
+            // Reset board to root and drop any half-built sentence so it doesn't
+            // leak from a previous conversation into this one.
+            useBoardStore.getState().goHome();
+            useBoardStore.getState().clearSentence();
             setCurrentContact(contact.contact_id, profile.id);
         }
         return () => unsubscribeFromMessages();
@@ -879,8 +883,15 @@ function GroupConversationBoard({
 
     useEffect(() => {
         if (profile?.id) {
-            loadGroupMessages(group.id);
+            // Reset board to root and drop any half-built sentence so it doesn't
+            // leak from a previous conversation into this one.
+            useBoardStore.getState().goHome();
+            useBoardStore.getState().clearSentence();
+            // Subscribe before loading so RT messages arriving during the query
+            // are not missed; the dedup in subscribeToGroup's callback handles
+            // any overlap with the initial load results.
             subscribeToGroup(group.id, profile.id);
+            loadGroupMessages(group.id);
         }
         return () => unsubscribeFromGroup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -936,14 +947,18 @@ function GroupConversationBoard({
 
 export default function ChatPage() {
     const contacts = useContactStore((s) => s.contacts);
-    const { loadContacts } = useContactStore();
+    const { loadContacts, subscribeToContacts, unsubscribeFromContacts } = useContactStore();
     const profile = useProfileStore((s) => s.profile);
     const { selectedContactId, selectedGroupId, setSelectedContactId, setSelectedGroupId, clearSelectedContact } = useChatNavStore();
 
     const loadSummary = useChatStore((s) => s.loadSummary);
     const subscribeToInbox = useChatStore((s) => s.subscribeToInbox);
     const unsubscribeFromInbox = useChatStore((s) => s.unsubscribeFromInbox);
-    const { loadGroups, loadGroupSummary, subscribeToInboxGroups, unsubscribeFromInboxGroups } = useGroupStore();
+    const {
+        loadGroups, loadGroupSummary,
+        subscribeToInboxGroups, unsubscribeFromInboxGroups,
+        subscribeToGroupMembership, unsubscribeFromGroupMembership,
+    } = useGroupStore();
     const groups = useGroupStore((s) => s.groups);
 
     useEffect(() => {
@@ -957,16 +972,25 @@ export default function ChatPage() {
         // user reloads the page or opens that specific chat.
         subscribeToInbox(profile.id);
         subscribeToInboxGroups(profile.id);
+        // Keeps the contact list fresh when the DB trigger auto_create_reverse_contact
+        // inserts a new contact row (e.g. when someone messages you for the first time).
+        subscribeToContacts(profile.id);
+        // Live group list: appear/disappear when added to or removed from a group.
+        subscribeToGroupMembership(profile.id);
 
         return () => {
             unsubscribeFromInbox();
             unsubscribeFromInboxGroups();
+            unsubscribeFromContacts();
+            unsubscribeFromGroupMembership();
         };
     }, [
         profile?.id,
         loadContacts, loadSummary, loadGroups, loadGroupSummary,
         subscribeToInbox, unsubscribeFromInbox,
         subscribeToInboxGroups, unsubscribeFromInboxGroups,
+        subscribeToContacts, unsubscribeFromContacts,
+        subscribeToGroupMembership, unsubscribeFromGroupMembership,
     ]);
 
     const selectedContact = contacts.find((c) => c.id === selectedContactId) ?? null;
