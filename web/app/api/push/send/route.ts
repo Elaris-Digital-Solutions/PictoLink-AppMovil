@@ -4,18 +4,29 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-    'mailto:pictolink@example.com',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-);
+// This route depends on request cookies + runtime env — never statically render it.
+export const dynamic = 'force-dynamic';
+
+// Configure VAPID lazily (per request). Doing this at module scope crashes the
+// Vercel build's "collecting page data" step when the env vars aren't present
+// in the build environment.
+function configureWebPush(): boolean {
+    const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const priv = process.env.VAPID_PRIVATE_KEY;
+    if (!pub || !priv) return false;
+    webpush.setVapidDetails('mailto:pictolink@example.com', pub, priv);
+    return true;
+}
 
 // Service-role client — bypasses RLS to read any user's push subscriptions and
-// prune expired endpoints. Never returned to the client.
-const serviceSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// prune expired endpoints. Created lazily so a missing key doesn't break the
+// build; returns null when the env var isn't configured.
+function getServiceClient() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) return null;
+    return createClient(url, key);
+}
 
 export async function POST(req: NextRequest) {
     const cookieStore = await cookies();
@@ -41,6 +52,15 @@ export async function POST(req: NextRequest) {
     const { recipientId, body, groupId } = await req.json();
     if (!recipientId) {
         return NextResponse.json({ error: 'Missing recipientId' }, { status: 400 });
+    }
+
+    // Lazy runtime setup. If the push env vars aren't configured we bail with a
+    // 500 rather than crashing — and since these run inside the handler (not at
+    // module scope) the Vercel build no longer evaluates them.
+    const serviceSupabase = getServiceClient();
+    if (!serviceSupabase || !configureWebPush()) {
+        console.error('[push/send] missing SUPABASE_SERVICE_ROLE_KEY or VAPID keys');
+        return NextResponse.json({ error: 'Push notifications not configured' }, { status: 500 });
     }
 
     // Verify the caller is authorized to send this notification:
