@@ -9,6 +9,7 @@ Una aplicación de mensajería con soporte para pictogramas usando ARASAAC.
 npm install
 ```
 
+
 ### 2. Configurar Supabase
 1. Crea un proyecto en [Supabase](https://supabase.com)
 2. Ve a Settings > API en tu dashboard de Supabase

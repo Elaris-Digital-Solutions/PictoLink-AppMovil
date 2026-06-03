@@ -33,10 +33,6 @@ body,
   background-color: #000000;
 }
 
-body {
-  /* Main background handled by the html/body reset above */
-}
-
 /* ─── Focus ring (AAC: thick and visible) ────────────────────────────────── */
 :focus-visible {
   outline: 3px solid #3B82F6;
