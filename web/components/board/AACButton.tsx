@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GridCell, CATEGORY_COLORS } from '@/data/aac-grid-layout';
+import { GridCell, CATEGORY_COLORS, PICTO_OVERRIDES } from '@/data/aac-grid-layout';
 import { searchPictograms } from '@/lib/pictograms';
 import { cn } from '@/lib/utils';
 import { Folder, MoreHorizontal } from 'lucide-react';
@@ -17,6 +17,13 @@ export function AACButton({ cell, onClick, className }: AACButtonProps) {
         let isMounted = true;
 
         const fetchImage = async () => {
+            // Prioridad 1: imagen local propia por etiqueta (conceptos no cubiertos por ARASAAC)
+            const override = PICTO_OVERRIDES[cell.label];
+            if (override) {
+                setImageUrl(override);
+                return;
+            }
+
             if (cell.pictogramId) {
                 setImageUrl(`https://static.arasaac.org/pictograms/${cell.pictogramId}/${cell.pictogramId}_500.png`);
                 return;
