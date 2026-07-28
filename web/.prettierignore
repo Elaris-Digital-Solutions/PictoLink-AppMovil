@@ -1,0 +1,13 @@
+.next/
+out/
+node_modules/
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/data/
+scripts/
+package-lock.json
+
+# 6082 lines of curated board data — reformatting it would produce an
+# unreviewable diff and destroy the therapist-facing column alignment.
+data/aac-grid-layout.ts
