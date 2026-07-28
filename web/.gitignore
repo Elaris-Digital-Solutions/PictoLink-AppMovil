@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results
+
+# tooling caches
+.eslintcache
 
 # next.js
 /.next/
