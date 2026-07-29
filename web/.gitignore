@@ -21,6 +21,20 @@
 /.next/
 /out/
 
+# PWA build output (next-pwa writes these into public/ on every build)
+# They were versioned until 2026-07-27, which meant every `next build` dirtied
+# the working tree and blocked branch switches: sw.js embeds the Next build id,
+# which is regenerated each compile. Vercel rebuilds them on every deploy, so
+# the repo never needed them. See QA-3 in ESTADO-DEL-PROYECTO.md.
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/worker-*.js
+/public/worker-*.js.map
+/public/swe-worker-*.js
+/public/fallback-*.js
+
 # production
 /build
 
@@ -36,6 +50,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# Local working folders — deliberately not versioned.
+# Listing them here is not only about `git status` noise: Tailwind 4's automatic
+# content detection scans the project and skips whatever .gitignore excludes, so
+# an unignored folder gets scanned. docs/ holds implementation plans with full
+# source code in fenced blocks, which was regenerating CSS for classes deleted
+# from the app (e.g. `accent-orange-500`, gone with the admin panel).
+/docs/
+/desencriptar/
+/fotos/
 
 # vercel
 .vercel

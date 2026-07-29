@@ -34,7 +34,8 @@ const eslintConfig = [
         // ESTADO-DEL-PROYECTO.md.
         //
         // Ceiling history: 98 (2026-07-27, linting introduced) → 90 (2026-07-27,
-        // admin panel removed, taking UserTable.tsx's 8 warnings with it).
+        // admin panel removed, taking UserTable.tsx's 8 warnings with it) → 88
+        // (2026-07-28, PERF-1 removed the dead getPictogramsByCategory).
         rules: {
             '@typescript-eslint/no-unused-vars': [
                 'warn',

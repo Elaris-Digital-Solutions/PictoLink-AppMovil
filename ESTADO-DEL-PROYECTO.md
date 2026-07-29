@@ -10,7 +10,7 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-07-27 (panel admin eliminado: cierra `SEC-7`, `PERF-5`, `BUG-8`. Antes: rama 0 de tooling y MCP restaurado)
+- **Última actualización:** 2026-07-28 (`PERF-1` resuelto: 22 MB fuera. `QA-3` parcial: artefactos de build desversionados)
 
 > **Restricción de planificación (decidida 2026-07-27):** no hay fecha límite del proyecto.
 > El criterio de orden es **riesgo/costo activo primero, y agrupar todo lo legal, comercial
@@ -44,8 +44,8 @@ reescribir tres subsistemas (auth, push, TTS).
 | Producto / UX | 🟢 Avanzado | 🟢 | Tablero AAC con ~44 páginas curadas por terapeuta, dos interfaces (AAC / cuidador), chat P2P y grupos |
 | Arquitectura web | 🟡 Funcional con deuda | 🟡 | Todo client-side, sin capa de servicio, páginas de 1000–1400 líneas |
 | Seguridad / RLS | 🔴 Fallos explotables | 🔴 | **14 hallazgos, 1 cerrado** (`SEC-7`, por eliminación del panel admin). Sigue crítico: `P0-2` (freemium escribible por el usuario) y `SEC-12` (borrar una cuenta destruye datos de terceros) |
-| Rendimiento / costos | 🔴 Problemas graves | 🔴 | 22 MB precacheados por usuario, polling permanente, y el índice más caliente del esquema no existe (`PERF-7`) |
-| Calidad de ingeniería | 🔴 Ausente | 🟠 | Gate `npm run verify` operativo (typecheck + lint + tests). Falta CI, tests de RLS y del flujo de mensajes |
+| Rendimiento / costos | 🔴 Problemas graves | 🟠 | **Los 22 MB por usuario ya no están** (`PERF-1` cerrado). Siguen el polling permanente (`PERF-2`) y la ausencia del índice más caliente del esquema (`PERF-7`) |
+| Calidad de ingeniería | 🔴 Ausente | 🟠 | Gate `npm run verify:full` operativo: typecheck + lint + 13 tests unitarios + build + 27 comprobaciones de humo sobre la app corriendo. Falta CI, tests de RLS y del flujo de mensajes |
 | Preparación tiendas | 🔴 No iniciada | 🔴 | Faltan bloqueadores legales y de guidelines |
 | Licencia de contenido | 🔴 **Bloqueador legal** | 🟠 | Decidido: set propio generado con IA. Deja de ser negociación externa y pasa a ser producción + migración interna (`P0-1`) |
 
@@ -77,7 +77,6 @@ web/  (Next.js 16.1.6 · React 19 · App Router · Tailwind 4 · Webpack)
 │   ├── ai/                  → cliente del HF Space (FastAPI externo)
 │   └── pictograms/, cloudinary.ts, notifications.ts, analytics.ts
 ├── data/aac-grid-layout.ts  6082 L / 520 KB  ← se empaqueta en el bundle cliente
-├── public/data/arasaac_catalog.jsonl  22 MB  ← código muerto, pero se precachea
 ├── worker/index.ts          → SW custom (push + notificationclick)
 ├── supabase/schema.sql      → 8 tablas, RLS, 9 funciones SECURITY DEFINER
 ├── supabase/queries/        → SQL de métricas del piloto (reemplaza al panel admin)
@@ -361,7 +360,7 @@ propia. Habría que condicionar los tres y evaluar COPPA/GDPR-K.
 
 | ID | Sev. | Hallazgo | Estado |
 |---|---|---|---|
-| `PERF-1` | 🔴 | **El SW precachea 22 MB de código muerto.** Confirmado en el manifest de `public/sw.js`: `{url:"/data/arasaac_catalog.jsonl",revision:"fa4c75ed..."}`. Cada usuario descarga 22 MB al instalar la PWA. La única función que lee ese archivo (`getPictogramsByCategory`, que además lo parsea línea a línea en el cliente) **no la llama nadie**. Borrarlo de `public/` es la mejora individual más grande del proyecto. | [ ] |
+| `PERF-1` | 🟢 | ~~**El SW precachea 22 MB de código muerto.**~~ **Resuelto y verificado 2026-07-28.** Borrados `public/data/arasaac_catalog.jsonl` (**21,61 MB** medidos) y la función muerta que lo leía (`getPictogramsByCategory` + su `CUSTOM_CATEGORY_DATA` en `lib/pictograms.ts`) — dejar el lector apuntando a un archivo inexistente habría sido peor que no tocar nada. **Verificado sobre el `sw.js` regenerado:** 0 referencias a `arasaac_catalog`, el manifiesto pasó de 63 a 62 entradas, y la única diferencia real es esa (el resto son el build id de Next y hashes de CSS). La regla `CacheFirst` de imágenes ARASAAC sigue intacta. | [x] |
 | `PERF-2` | 🔴 | **Polling permanente sobre realtime.** `useChatStore.ts:178` recarga mensajes cada **3 s** y `useGroupStore.ts:410` cada **5 s**, *además* de las suscripciones realtime. Con un chat abierto son ~1200 queries/hora/usuario: batería, datos móviles y egress facturado que escala linealmente. El fallback debería activarse solo al detectar desconexión del canal, con backoff. | [ ] |
 | `PERF-3` | 🟠 | **520 KB de layout en el bundle cliente.** `data/aac-grid-layout.ts` (6082 líneas) se importa desde `AACBoard`/`AACButton`, componentes cliente → las ~44 páginas del tablero viajan y se parsean aunque el usuario abra una. Debería ser JSON cargado por página bajo demanda y cacheado por el SW; permitiría además actualizar el tablero sin redesplegar. | [ ] |
 | `PERF-4` | 🟠 | **`AACButton` hace una petición HTTP por celda sin `pictogramId`** (`AACButton.tsx:36`): hasta 45 llamadas concurrentes al HF Space por página, cuyo tier gratuito tiene cold starts de 30 s (el timeout está justo en 30 s). Peor: la URL se deriva de forma sincrónica en el 99% de los casos pero se calcula dentro de un `useEffect` con `useState`, forzando un render extra por botón. | [ ] |
@@ -386,6 +385,7 @@ impida que un refactor rompa el tablero de 44 páginas.
 - [x] ESLint + Prettier (2026-07-27, rama `chore/qa-1-tooling-base`)
 - [x] Script `typecheck` en `package.json` (+ `lint`, `test`, `verify`)
 - [x] Runner de tests (Vitest) con alias `@/` y primera suite
+- [x] **Suite de humo contra la app en ejecución** (`tests/smoke/smoke.mjs`, 27 comprobaciones)
 - [ ] CI en GitHub Actions (typecheck + lint + build) ← **pendiente de decisión del usuario**
 - [ ] Tests de RLS contra Supabase local
 - [ ] Test de integridad del layout AAC (ninguna celda apunta a carpeta inexistente ni a `pictogramId` roto)
@@ -395,11 +395,40 @@ impida que un refactor rompa el tablero de 44 páginas.
 (= `typecheck && lint && test:run`). Se comprobó que los tres escalones fallan ante una
 violación nueva introducida a propósito, no solo que pasan en verde.
 
-**`npm run verify:full`** = `verify` + `next build`. Disponible desde que se borró el panel
-admin: hasta entonces el build fallaba (`BUG-8`) y no servía como gate. Ahora pasa incluso
-con la `SUPABASE_SERVICE_ROLE_KEY` local inválida, porque ya nada consulta a Supabase en
-tiempo de build. Usar `verify:full` en las ramas que tocan dependencias o configuración de
-Next (p. ej. `SEC-14`); `verify` a secas alcanza para el resto.
+**`npm run verify:full`** = `verify` + `next build` + `test:smoke`. Disponible desde que se
+borró el panel admin: hasta entonces el build fallaba (`BUG-8`) y no servía como gate. Ahora
+pasa incluso con la `SUPABASE_SERVICE_ROLE_KEY` local inválida, porque ya nada consulta a
+Supabase en tiempo de build.
+
+### Prueba de humo — `npm run test:smoke`
+
+`verify` demuestra que el código **compila**, no que la app **funcione**: typecheck, lint y
+13 tests unitarios sobre un módulo puro no ejecutan la aplicación. `tests/smoke/smoke.mjs`
+llena ese hueco: levanta el build de producción y lo interroga por HTTP. **27
+comprobaciones** — 12 rutas con su código esperado, integridad de los assets de 4 páginas
+(49 chunks verificados uno por uno), y aserciones sobre el `sw.js` servido.
+
+Los **404 esperados son tan importantes como los 200**: son la prueba *en ejecución* de que
+`PERF-1` y la eliminación del panel admin surtieron efecto, no solo de que los archivos ya
+no están en el árbol.
+
+Se validó introduciendo la regresión a propósito —volver a poner
+`public/data/arasaac_catalog.jsonl` y reconstruir— y confirmando que la suite falla con
+exit 1 en las dos comprobaciones correctas.
+
+> **Dos trampas encontradas al construirla, ambas del entorno Windows:**
+>
+> 1. **`spawn(..., { shell: true })` deja servidores zombi.** `child.kill()` mata el
+>    `cmd.exe` envoltorio, no el `node` nieto, que sigue escuchando en el puerto. La
+>    consecuencia era grave: la corrida siguiente no podía enlazar el puerto, pero
+>    `waitForServer` se daba por satisfecho con el zombi y **la suite medía un build
+>    viejo dando 27/27 en verde**. Se corrigió lanzando el binario de Next con
+>    `process.execPath` sin shell, más una guarda que aborta si el puerto está ocupado.
+> 2. **Next resuelve las rutas de `public/` con un manifiesto de arranque, pero lee el
+>    contenido del disco en cada pedido.** Un archivo agregado a `public/` después de
+>    arrancar el servidor da 404 aunque exista; el `sw.js`, en cambio, refleja los cambios
+>    al instante. Por eso una prueba sobre `public/` solo es válida con `build` de por
+>    medio.
 
 > ⚠️ **Al borrar o renombrar una ruta hay que limpiar `.next/` antes de `typecheck`.**
 > `tsconfig.json` incluye `.next/types/**/*.ts`, que son tipos generados: si la ruta ya no
@@ -449,17 +478,41 @@ directivas `eslint-disable` inútiles 2 · `no-img-element` 1. Concentrados en
 |---|---|---|
 | `hooks/useSpeech.ts` | 185 | Duplicado de `lib/hooks/useSpeech.ts`; nadie lo importa. Contiene la única implementación de speech-to-text del proyecto |
 | `components/layout/RouteGuard.tsx` | 44 | Nadie lo usa; la lógica real vive en `AppShell` |
-| `lib/pictograms.ts:getPictogramsByCategory` + `CUSTOM_CATEGORY_DATA` | — | Sin llamadas. Es lo que justificaba el archivo de 22 MB |
+| ~~`lib/pictograms.ts:getPictogramsByCategory` + `CUSTOM_CATEGORY_DATA`~~ | ~~70~~ | **Eliminados 2026-07-28 con `PERF-1`** |
+| `lib/pictograms.ts:getPictogramCategories` + `CATEGORY_ICONS` | 25 | Sin llamadas. Quedaron al borrar lo anterior; se dejaron fuera de `PERF-1` a propósito para no ensanchar esa rama |
 | `types/index.ts` → `Message`, `Room` | — | Describen un esquema (`room_id`) que la BD no tiene |
 
 - [ ] Código muerto eliminado
 
-### `QA-3` 🟡 Artefactos versionados que no deberían estar
+### `QA-3` 🔵 Artefactos versionados que no deberían estar
 
 `web/ts-errors.txt`, `web/compile-errors.txt`, `bash.exe.stackdump`,
 `PictoLink_Guia.pptx` (547 KB), y 15 archivos `*_result*.txt` en `web/scripts/`.
 
-- [ ] Limpiados del repo y añadidos a `.gitignore`
+**Parcialmente resuelto 2026-07-28 — la parte que bloqueaba el flujo de trabajo.** Los
+artefactos de next-pwa (`public/sw.js`, `workbox-*`, `worker-*`, `swe-worker-*`,
+`fallback-*`) estaban versionados sin motivo: Vercel los regenera en cada deploy. Peor,
+`sw.js` embebe el **build id de Next**, que cambia en cada compilación → **cada
+`npm run build` ensuciaba el árbol y bloqueaba el `git checkout`**. Pasó tres veces en una
+sola sesión. Ahora están en `.gitignore` y fuera del índice.
+
+**Hallazgo colateral que justifica ignorar también las carpetas locales:** la detección
+automática de contenido de **Tailwind 4 escanea el proyecto y omite lo que `.gitignore`
+excluya**. `web/docs/` no estaba ignorado (solo sin trackear), y contiene planes de
+implementación con **código fuente completo en bloques cerrados** — incluido el del panel
+admin borrado. Tailwind generaba CSS para clases que ya no existen en la app: se verificó
+que `accent-orange-500`, que solo vivía en el `FreemiumSlider.tsx` eliminado, seguía en el
+bundle de producción. Al ignorar `docs/`, `desencriptar/` y `fotos/`, el CSS bajó de
+**56,87 KB a 55,13 KB** y las clases muertas desaparecieron, conservando las reales.
+
+> **Regla general que deja este hallazgo:** en este proyecto, dejar una carpeta *sin
+> trackear pero sin ignorar* no es neutro — entra al escaneo de Tailwind. Si no es fuente
+> de la app, va al `.gitignore`.
+
+- [x] Artefactos de next-pwa fuera del índice y en `.gitignore`
+- [x] Carpetas locales (`docs/`, `desencriptar/`, `fotos/`) ignoradas
+- [ ] Resto de artefactos: `ts-errors.txt`, `compile-errors.txt`, `bash.exe.stackdump`,
+      `PictoLink_Guia.pptx`, `scripts/*_result*.txt` (Bloque D)
 
 ### Bugs funcionales confirmados
 
@@ -601,8 +654,9 @@ login social, pasa a ser obligatorio.
 
 Todo esto es explotable hoy o está facturando ahora mismo. Ningún ítem depende de otro.
 
-- [ ] `PERF-1` Borrar `public/data/arasaac_catalog.jsonl`. Código muerto, 22 MB por
-      instalación. Diez minutos de trabajo, la mejor relación esfuerzo/impacto del proyecto.
+- [x] `PERF-1` ~~Borrar `public/data/arasaac_catalog.jsonl`~~ **Hecho 2026-07-28** junto con
+      `QA-3` (artefactos de build fuera del versionado), rama
+      `chore/qa-3-perf-1-build-artifacts`.
 - [ ] `SEC-1` Verificar propiedad del `publicId` en `/api/cloudinary/delete`. Hoy cualquier
       autenticado borra cualquier imagen de la cuenta.
 - [ ] `SEC-2` Firmar las subidas a Cloudinary. Hoy el preset unsigned está en el bundle:
@@ -789,6 +843,8 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-07-28 | `QA-1` | **Prueba de humo sobre la app en ejecución** (`tests/smoke/smoke.mjs`, `npm run test:smoke`, incorporada a `verify:full`). Motivo: hasta acá se había verificado con typecheck, lint, tests unitarios sobre un módulo puro y compilación — nada de eso ejecuta la aplicación, y sin embargo se habían borrado 22 MB y 511 líneas apoyándose en eso. 27 comprobaciones: 12 rutas con código esperado, 49 assets verificados uno por uno en 4 páginas, y aserciones sobre el `sw.js` servido. Confirmó en ejecución real que `/sw.js` responde 200 (o sea que `QA-3` no rompe la PWA al desversionar los artefactos) y que `/data/arasaac_catalog.jsonl` y `/admin/metrics` dan 404. Validada introduciendo la regresión a propósito. **Dos defectos propios encontrados y corregidos en el proceso**, ambos específicos de Windows: zombis por `shell: true` que hacían que la suite midiera un build viejo en verde, y el manifiesto de arranque de `public/` en Next. Ambos documentados en `QA-1`. | — |
+| 2026-07-28 | `PERF-1`, `QA-3`, `QA-2` parcial, `QA-4` | **22 MB fuera y artefactos de build desversionados** (`chore/qa-3-perf-1-build-artifacts`). `PERF-1`: borrados `public/data/arasaac_catalog.jsonl` (21,61 MB) y su único lector muerto; verificado sobre el `sw.js` regenerado que el manifiesto pasó de 63 a 62 entradas y que la regla `CacheFirst` de imágenes sigue viva. `QA-3`: los artefactos de next-pwa salen del índice — `sw.js` embebe el build id de Next y ensuciaba el árbol en cada compilación, bloqueando el `checkout` (pasó 3 veces en una sesión). Descubierto de paso que **Tailwind 4 escanea todo lo que no esté en `.gitignore`**: `web/docs/` inyectaba en el CSS de producción clases de código ya borrado (`accent-orange-500` del panel admin). Ignoradas las carpetas locales → CSS de 56,87 a 55,13 KB. Techo de avisos 90 → 88. `verify:full` exit 0. | — |
 | 2026-07-27 | `SEC-7`, `PERF-5`, `BUG-8`, `SEC-11`, `SEC-14`, `BUG-3`, `QA-4` | **Panel administrativo eliminado** (`chore/remove-admin-metrics-panel`). Decisión del usuario: `/admin/metrics` fue un prototipo para una presentación puntual y no forma parte del producto publicable. Borrados `app/admin/` (457 L), `lib/supabase/admin.ts` y `proxy.ts` — **511 líneas**. Cierra `SEC-7`, `PERF-5` y `BUG-8`; rebaja `SEC-14` (🔴→🟠, los bypass de middleware se quedan sin blanco) y `SEC-11` (🟠→🟡, ya no hay lector de métricas que falsificar); agrava el texto de `BUG-3` (ya no existe middleware alguno); baja el techo de `QA-4` de 98 a 90. **El build vuelve a pasar** (exit 0) y se añadió `npm run verify:full` (verify + build). Las seis agregaciones del panel se conservan como SQL en `web/supabase/queries/pilot-metrics.sql`, **las seis ejecutadas y verificadas contra la BD real** vía MCP. La recolección de analítica se mantiene (ver nota en `P0-8`). | — |
 | 2026-07-27 | `BUG-8`, `PERF-5` | **`npm run build` falla en local** al prerenderizar `/admin/metrics`. Causa raíz doble: (a) `BUG-8`, la página trata `data: null` como `[]` con un default de desestructuración que solo cubre `undefined`, y descarta el `error`; (b) el `SUPABASE_SERVICE_ROLE_KEY` de `.env.local` es inválido (401 «Invalid API key», formato no reconocido — 43 caracteres, ni JWT legacy ni `sb_secret_*`). El fallo del entorno local es lo que **destapó** el bug, pero el bug es real e independiente. Medido de paso el volumen real de la BD para dimensionar `PERF-5`. | — |
 | 2026-07-27 | `SEC-14` | **Hallazgo nuevo por `npm audit`**, posible gracias al tooling de la rama 0: 13 vulnerabilidades preexistentes, 8 altas. `next@16.1.6` acumula 28 advisories, entre ellos tres bypass de middleware en App Router — encadenables con `SEC-7` para alcanzar `/admin/metrics`, que corre con `service_role`. Fix sin cambio mayor en `next@16.2.12`. Añadido al Bloque A. | — |
