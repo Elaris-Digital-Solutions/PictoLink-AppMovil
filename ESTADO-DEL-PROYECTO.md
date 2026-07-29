@@ -45,7 +45,7 @@ reescribir tres subsistemas (auth, push, TTS).
 | Arquitectura web | 🟡 Funcional con deuda | 🟡 | Todo client-side, sin capa de servicio, páginas de 1000–1400 líneas |
 | Seguridad / RLS | 🔴 Fallos explotables | 🔴 | **14 hallazgos, 1 cerrado** (`SEC-7`, por eliminación del panel admin). Sigue crítico: `P0-2` (freemium escribible por el usuario) y `SEC-12` (borrar una cuenta destruye datos de terceros) |
 | Rendimiento / costos | 🔴 Problemas graves | 🟠 | **Los 22 MB por usuario ya no están** (`PERF-1` cerrado). Siguen el polling permanente (`PERF-2`) y la ausencia del índice más caliente del esquema (`PERF-7`) |
-| Calidad de ingeniería | 🔴 Ausente | 🟠 | Gate `npm run verify` operativo (typecheck + lint + tests). Falta CI, tests de RLS y del flujo de mensajes |
+| Calidad de ingeniería | 🔴 Ausente | 🟠 | Gate `npm run verify:full` operativo: typecheck + lint + 13 tests unitarios + build + 27 comprobaciones de humo sobre la app corriendo. Falta CI, tests de RLS y del flujo de mensajes |
 | Preparación tiendas | 🔴 No iniciada | 🔴 | Faltan bloqueadores legales y de guidelines |
 | Licencia de contenido | 🔴 **Bloqueador legal** | 🟠 | Decidido: set propio generado con IA. Deja de ser negociación externa y pasa a ser producción + migración interna (`P0-1`) |
 
@@ -385,6 +385,7 @@ impida que un refactor rompa el tablero de 44 páginas.
 - [x] ESLint + Prettier (2026-07-27, rama `chore/qa-1-tooling-base`)
 - [x] Script `typecheck` en `package.json` (+ `lint`, `test`, `verify`)
 - [x] Runner de tests (Vitest) con alias `@/` y primera suite
+- [x] **Suite de humo contra la app en ejecución** (`tests/smoke/smoke.mjs`, 27 comprobaciones)
 - [ ] CI en GitHub Actions (typecheck + lint + build) ← **pendiente de decisión del usuario**
 - [ ] Tests de RLS contra Supabase local
 - [ ] Test de integridad del layout AAC (ninguna celda apunta a carpeta inexistente ni a `pictogramId` roto)
@@ -394,11 +395,40 @@ impida que un refactor rompa el tablero de 44 páginas.
 (= `typecheck && lint && test:run`). Se comprobó que los tres escalones fallan ante una
 violación nueva introducida a propósito, no solo que pasan en verde.
 
-**`npm run verify:full`** = `verify` + `next build`. Disponible desde que se borró el panel
-admin: hasta entonces el build fallaba (`BUG-8`) y no servía como gate. Ahora pasa incluso
-con la `SUPABASE_SERVICE_ROLE_KEY` local inválida, porque ya nada consulta a Supabase en
-tiempo de build. Usar `verify:full` en las ramas que tocan dependencias o configuración de
-Next (p. ej. `SEC-14`); `verify` a secas alcanza para el resto.
+**`npm run verify:full`** = `verify` + `next build` + `test:smoke`. Disponible desde que se
+borró el panel admin: hasta entonces el build fallaba (`BUG-8`) y no servía como gate. Ahora
+pasa incluso con la `SUPABASE_SERVICE_ROLE_KEY` local inválida, porque ya nada consulta a
+Supabase en tiempo de build.
+
+### Prueba de humo — `npm run test:smoke`
+
+`verify` demuestra que el código **compila**, no que la app **funcione**: typecheck, lint y
+13 tests unitarios sobre un módulo puro no ejecutan la aplicación. `tests/smoke/smoke.mjs`
+llena ese hueco: levanta el build de producción y lo interroga por HTTP. **27
+comprobaciones** — 12 rutas con su código esperado, integridad de los assets de 4 páginas
+(49 chunks verificados uno por uno), y aserciones sobre el `sw.js` servido.
+
+Los **404 esperados son tan importantes como los 200**: son la prueba *en ejecución* de que
+`PERF-1` y la eliminación del panel admin surtieron efecto, no solo de que los archivos ya
+no están en el árbol.
+
+Se validó introduciendo la regresión a propósito —volver a poner
+`public/data/arasaac_catalog.jsonl` y reconstruir— y confirmando que la suite falla con
+exit 1 en las dos comprobaciones correctas.
+
+> **Dos trampas encontradas al construirla, ambas del entorno Windows:**
+>
+> 1. **`spawn(..., { shell: true })` deja servidores zombi.** `child.kill()` mata el
+>    `cmd.exe` envoltorio, no el `node` nieto, que sigue escuchando en el puerto. La
+>    consecuencia era grave: la corrida siguiente no podía enlazar el puerto, pero
+>    `waitForServer` se daba por satisfecho con el zombi y **la suite medía un build
+>    viejo dando 27/27 en verde**. Se corrigió lanzando el binario de Next con
+>    `process.execPath` sin shell, más una guarda que aborta si el puerto está ocupado.
+> 2. **Next resuelve las rutas de `public/` con un manifiesto de arranque, pero lee el
+>    contenido del disco en cada pedido.** Un archivo agregado a `public/` después de
+>    arrancar el servidor da 404 aunque exista; el `sw.js`, en cambio, refleja los cambios
+>    al instante. Por eso una prueba sobre `public/` solo es válida con `build` de por
+>    medio.
 
 > ⚠️ **Al borrar o renombrar una ruta hay que limpiar `.next/` antes de `typecheck`.**
 > `tsconfig.json` incluye `.next/types/**/*.ts`, que son tipos generados: si la ruta ya no
@@ -813,6 +843,7 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-07-28 | `QA-1` | **Prueba de humo sobre la app en ejecución** (`tests/smoke/smoke.mjs`, `npm run test:smoke`, incorporada a `verify:full`). Motivo: hasta acá se había verificado con typecheck, lint, tests unitarios sobre un módulo puro y compilación — nada de eso ejecuta la aplicación, y sin embargo se habían borrado 22 MB y 511 líneas apoyándose en eso. 27 comprobaciones: 12 rutas con código esperado, 49 assets verificados uno por uno en 4 páginas, y aserciones sobre el `sw.js` servido. Confirmó en ejecución real que `/sw.js` responde 200 (o sea que `QA-3` no rompe la PWA al desversionar los artefactos) y que `/data/arasaac_catalog.jsonl` y `/admin/metrics` dan 404. Validada introduciendo la regresión a propósito. **Dos defectos propios encontrados y corregidos en el proceso**, ambos específicos de Windows: zombis por `shell: true` que hacían que la suite midiera un build viejo en verde, y el manifiesto de arranque de `public/` en Next. Ambos documentados en `QA-1`. | — |
 | 2026-07-28 | `PERF-1`, `QA-3`, `QA-2` parcial, `QA-4` | **22 MB fuera y artefactos de build desversionados** (`chore/qa-3-perf-1-build-artifacts`). `PERF-1`: borrados `public/data/arasaac_catalog.jsonl` (21,61 MB) y su único lector muerto; verificado sobre el `sw.js` regenerado que el manifiesto pasó de 63 a 62 entradas y que la regla `CacheFirst` de imágenes sigue viva. `QA-3`: los artefactos de next-pwa salen del índice — `sw.js` embebe el build id de Next y ensuciaba el árbol en cada compilación, bloqueando el `checkout` (pasó 3 veces en una sesión). Descubierto de paso que **Tailwind 4 escanea todo lo que no esté en `.gitignore`**: `web/docs/` inyectaba en el CSS de producción clases de código ya borrado (`accent-orange-500` del panel admin). Ignoradas las carpetas locales → CSS de 56,87 a 55,13 KB. Techo de avisos 90 → 88. `verify:full` exit 0. | — |
 | 2026-07-27 | `SEC-7`, `PERF-5`, `BUG-8`, `SEC-11`, `SEC-14`, `BUG-3`, `QA-4` | **Panel administrativo eliminado** (`chore/remove-admin-metrics-panel`). Decisión del usuario: `/admin/metrics` fue un prototipo para una presentación puntual y no forma parte del producto publicable. Borrados `app/admin/` (457 L), `lib/supabase/admin.ts` y `proxy.ts` — **511 líneas**. Cierra `SEC-7`, `PERF-5` y `BUG-8`; rebaja `SEC-14` (🔴→🟠, los bypass de middleware se quedan sin blanco) y `SEC-11` (🟠→🟡, ya no hay lector de métricas que falsificar); agrava el texto de `BUG-3` (ya no existe middleware alguno); baja el techo de `QA-4` de 98 a 90. **El build vuelve a pasar** (exit 0) y se añadió `npm run verify:full` (verify + build). Las seis agregaciones del panel se conservan como SQL en `web/supabase/queries/pilot-metrics.sql`, **las seis ejecutadas y verificadas contra la BD real** vía MCP. La recolección de analítica se mantiene (ver nota en `P0-8`). | — |
 | 2026-07-27 | `BUG-8`, `PERF-5` | **`npm run build` falla en local** al prerenderizar `/admin/metrics`. Causa raíz doble: (a) `BUG-8`, la página trata `data: null` como `[]` con un default de desestructuración que solo cubre `undefined`, y descarta el `error`; (b) el `SUPABASE_SERVICE_ROLE_KEY` de `.env.local` es inválido (401 «Invalid API key», formato no reconocido — 43 caracteres, ni JWT legacy ni `sb_secret_*`). El fallo del entorno local es lo que **destapó** el bug, pero el bug es real e independiente. Medido de paso el volumen real de la BD para dimensionar `PERF-5`. | — |
