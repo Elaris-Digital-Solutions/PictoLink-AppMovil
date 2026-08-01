@@ -16,7 +16,9 @@ El terapeuta pidió interrogativos con estilo **"persona + ?"** (tipo SymbolStix
 | algo | ⏸️ pendiente | Pronombre abstracto, sin imagen ARASAAC clara. Actual `38768` = **"chocar contra algo"** (mal), 1 celda usa `2413` = "grapadora" (mal). 38 celdas en total. |
 | abrigar | ⏸️ pendiente | Verbo sin match ARASAAC ("abrigarse" 404). La única opción ("calentarse"/fuego 18446) no convenció. Actual `29977` (tienda de ropa). ropa rop-35. |
 
-**Decisión pendiente del usuario/terapeuta:** seguir solo con ARASAAC, evaluar cambio de librería, o subir imágenes propias. Hasta resolverlo estas celdas quedan SIN tocar (mantienen su picto actual aunque sea incorrecto).
+**✅ DECIDIDO (2026-07-27):** se encarga un **set propio generado con IA**. ARASAAC queda como mockup provisional hasta que el set propio esté listo. Ver `P0-1` en `ESTADO-DEL-PROYECTO.md`.
+
+Consecuencia para esta tabla: los 5 diferidos (`qué`, `dónde`, `más`, `algo`, `abrigar`) dejan de ser un problema de catálogo — eran justo lo que ARASAAC no cubría. **Pasan a ser casos de prueba de la guía de estilo del set propio**, incluido el estilo "persona + ?" que pidió el terapeuta. Mientras tanto las celdas siguen SIN tocar (mantienen su picto actual aunque sea incorrecto).
 
 ### Mecanismo de imágenes locales (nuevo)
 
@@ -29,6 +31,7 @@ Para conceptos que ARASAAC no cubre, hay un mapa `PICTO_OVERRIDES` en `aac-grid-
 - uña del pie → `/pictos/una-del-pie.png` (ídem).
 - manos sucias → `/pictos/manos-sucias.png` (Global Symbols set 96, mano con suciedad).
 - *Atribución/licencia pendiente de revisar:* manchas = derivado de ARASAAC (CC BY-NC-SA); dedo/uña/manos sucias = Global Symbols sets 110/96 (verificar licencia antes de publicar).
+  - **⚠️ 2026-07-27:** ya no hace falta verificar la licencia de Global Symbols — esos 3 se regeneran con el set propio. Pero **las manchas de color hay que regenerarlas desde cero, no recolorear**: recolorear un picto ARASAAC produce obra derivada que hereda el `NC`, y eso reintroduce en el set propio el problema que se pretende eliminar. La misma regla aplica a todo el pipeline de IA: generar desde prompt de texto, nunca `img2img` ni fine-tune sobre el catálogo ARASAAC.
 
 ## Avance aplicado — Sprint D (Cuidado personal) ✅
 
