@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "supabase-pictolink": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=xxbvzvoglnxrgcwhkktc&read_only=true"
+    }
+  }
+}
