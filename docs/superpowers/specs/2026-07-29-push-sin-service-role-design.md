@@ -20,9 +20,21 @@ funcionalidad accesoria.
 
 El objetivo declarado del proyecto es migrar a apps nativas Android/iOS; el PWA
 actual es banco de pruebas. La ruta nativa concreta (Capacitor, React
-Native/Flutter, o nativo puro) **aún no está decidida**, así que este diseño
+Native/Flutter, o nativo puro) ~~**aún no está decidida**~~, así que este diseño
 asume el mínimo común denominador: **no existe ningún backend propio donde
 alojar lógica de autorización**. Todo lo que proteja datos vive en Postgres.
+
+> ⚠ **Corregido el 2026-08-24.** La frase era cierta al escribirse el 2026-07-29 y caducó:
+> `DEC-1` se resolvió el 2026-08-24 → **Capacitor + Vite**. Se anota acá y no se reescribe el
+> diseño porque **la premisa aguantó, y por un motivo mejor del que la sostenía**: no es que
+> la ruta siguiera sin decidirse, es que la ruta elegida **tampoco aporta backend propio** —
+> las 5 rutas de `web/` se quedan en Vercel y la app móvil las consume como cliente. La
+> conclusión —«todo lo que proteja datos vive en Postgres»— sigue en pie.
+>
+> **Lo que sí cambia** y hay que releer antes de ejecutar la tanda `E.4`: este documento
+> diseña sobre **Web Push (VAPID)**, que **no existe en WKWebView**. El transporte pasa a
+> APNs/FCM con tabla `device_tokens`. La parte de autorización se conserva; la de transporte,
+> no.
 
 ## 2. Objetivos
 

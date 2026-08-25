@@ -10,7 +10,7 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-07-28 (`PERF-1` resuelto: 22 MB fuera. `QA-3` parcial: artefactos de build desversionados)
+- **Última actualización:** 2026-08-24 (`DEC-1` resuelta → Vite + Capacitor en el mismo repo. `DEC-5` y `DEC-6` abiertas. Hallazgo nuevo `SEC-16`: 3 PAT de Supabase en el historial público)
 
 > **Restricción de planificación (decidida 2026-07-27):** no hay fecha límite del proyecto.
 > El criterio de orden es **riesgo/costo activo primero, y agrupar todo lo legal, comercial
@@ -336,6 +336,7 @@ propia. Habría que condicionar los tres y evaluar COPPA/GDPR-K.
 | `SEC-14` | 🟢 Resuelta | **Next.js 16.1.6 acumulaba 28 advisories.** Detectado 2026-07-27, resuelto 2026-07-28 en `fix/sec-14-dependency-vulns`. `next` 16.1.6→**16.2.12** cierra los 28 (verificado: 0 advisories propios en 16.2.12), incluidos SSRF por WebSocket upgrade (CVSS 8.6), bypass de middleware por inyección de parámetro dinámico (8.1), XSS con nonces de CSP y exposición no autenticada de endpoints de Server Function. `@supabase/supabase-js` 2.98→**2.111** elimina `ws` del árbol: era **la única vulnerable que corría en producción**, el transporte del chat en vivo. `npm audit fix` cierra `@babel/*` y `fast-uri`. **Advisories reales de 15 a 7.** Ver `SEC-15` para el residual aceptado. | [x] |
 | `SEC-15` | 🔵 Aceptada | **Residual de `SEC-14`: 7 advisories que no se pueden cerrar desde acá.** Seis son de *build time* — corren en el pipeline con input propio, no en producción: `postcss` (3, embebido en `node_modules/next/`), `serialize-javascript` (2, vía workbox) y `brace-expansion` (1, vía `minimatch` de eslint/glob). El séptimo es `sharp` <0.35.0 (CVEs de libvips), que **sí** corre en producción con `next/image`, mitigado porque `next.config.ts:47-53` restringe `remotePatterns` a `static.arasaac.org/pictograms/**`: el optimizador no acepta URLs arbitrarias, así que no hay input controlable por un atacante. `postcss` y `sharp` dependen de que Vercel los suba en una próxima versión de `next`; se descartó forzarlos con `overrides` porque `sharp` es binario nativo y divergir de la versión que Next probó arriesga romper el build de Vercel (Linux) sin mitigar un vector real. **`@ducanh2912/next-pwa` no se toca**: el «fix» que propone npm es *bajarlo* de 10.2.9 a 10.2.6 (y luego a 8.7.1), un cambio mayor hacia atrás en el generador del service worker, para mitigar un DoS de CPU en el propio build. **Revisar cuando salga `next` 16.3 estable.** | [ ] |
 | `SEC-13` | 🟠 Media | **No hay política `DELETE` en `messages` ni `group_messages`**: nadie puede borrar un mensaje que envió. Problema doble — moderación UGC (Apple 1.2, `P0-5`) y derecho de supresión (GDPR). Extiende `SEC-8`, que solo cubría `profiles` y `groups` | `supabase/schema.sql` | [ ] |
+| `SEC-16` | 🔴 Alta | **Tres PAT de Supabase completos en el historial público de este repo.** Detectado 2026-08-24. `.claude/settings.local.json` se versionó en `beb3b69` (2026-04-26, un token) y `d130b8e` (2026-04-29, dos más); los tres son `sbp_` de **44 caracteres**, o sea el valor íntegro, y los dos commits son ancestros de `origin/main`. **Verificado por efecto, no deducido:** la API pública de GitHub devuelve `.claude/settings.local.json@d130b8e` con **13 898 bytes**, sin autenticar. Se destrackeó en `5ef32cd` (2026-06-02, *«untrack local Claude settings with secrets»*) y `.gitignore:33` lo ignora hoy — **pero destrackear no borra el historial, y el propio commit que lo destrackea lleva los tokens en su diff**. Un PAT es de la **cuenta**, no de un proyecto: alcanza todos los proyectos de la organización. **No es hallazgo** el JWT del mismo archivo: se decodificó y es `"role":"anon"` del proyecto `xxbvzvoglnxrgcwhkktc`, público por diseño. **Cierre:** revocar los tres en el panel de cuenta + `E.0.1` (push protection verificada con control negativo). **Reescribir el historial no es la contención** — revocado, el valor publicado no vale nada, y un `force-push` a `main` rompe todos los clones | historial de `main`, commits `beb3b69` y `d130b8e` | [ ] |
 
 > `SEC-10`→`SEC-13` provienen de la auditoría del esquema del 2026-07-27, hecha sobre
 > `web/supabase/schema.sql` (sincronizado 2026-06-02). **Pendiente de verificar contra la BD
@@ -572,9 +573,35 @@ pictograma.** En AAC, el retardo entre tap y voz es el criterio de usabilidad qu
 terapeutas evalúan. Un WebView con 45 imágenes remotas, TTS puenteado y `active:scale`
 de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 
-> **Recomendación:** ir por **B**, y medir ese retardo en el dispositivo más lento del
-> piloto *antes* de comprometerse con la tienda. Ese número, no una preferencia de stack,
-> es lo que debe decidir si algún día se justifica D.
+> ~~**Recomendación:** ir por **B**, y medir ese retardo en el dispositivo más lento del
+> piloto *antes* de comprometerse con la tienda.~~ **Superada el 2026-08-24 por `DEC-1`, que
+> eligió C.** Se conserva porque su segunda mitad sigue vigente y es la que manda: **ese
+> número, no una preferencia de stack, es lo que debe decidir si algún día se justifica D.**
+>
+> **`DEC-1` resuelta el 2026-08-24 → camino C (Vite + Capacitor), en el mismo repo.**
+>
+> **Por qué C y no B.** Medido sobre el árbol real ese día: **0 Server Components, 0
+> `'use server'`, sin middleware, 35 de 58 archivos `'use client'`, y 21 sitios de import de
+> Next en total** — `next/navigation` (7), `next/server` (5, sólo dentro de las rutas API, que
+> se quedan en `web/`), `next/headers` (3, sólo servidor), `next/link` (2), `next` (2,
+> metadata), `next/image` (1) y `next/font` (1). B mantiene Next dentro del bundle móvil para
+> exportarlo estático; con esas cifras eso es cargar su build sin recibir nada a cambio.
+>
+> **B y C resolvían las dos el problema, así que el criterio dejó de ser el problema.** El
+> segundo criterio fue la condición que puso Alejandro: **conservar el tablero tal cual**. Son
+> 7 componentes, **778 líneas y cero imports de Next**, así que en B y en C se copian sin
+> tocar — empatan. Lo que desempata es que **la web baja a landing**: después del corte casi
+> no queda código compartido, y mantener dos builds de Next para eso no se paga.
+>
+> **Descartadas, con su motivo, para que no vuelvan a proponerse:** **A** (Capacitor contra la
+> URL de Vercel) por Apple 4.2 y por perder el offline; **D** (React Native/Expo) porque
+> reescribe las 778 líneas del tablero, que es exactamente lo que la condición prohíbe;
+> **Dactyl** (evaluado el 2026-08-24) porque genera SwiftUI desde un prompt: no migra un repo,
+> lo reinterpreta, y deja tres bases de código en lenguajes que el equipo no domina.
+>
+> **Costo aceptado, escrito por delante:** `mobile/` y `web/` van a divergir en dependencias, y
+> algún día una subida de versión en uno romperá al otro sin que nadie toque el código
+> compartido. Se paga duplicando los dos archivos de tipos generados, no montando un workspace.
 
 > ⚠️ **Trampa de medición (importante dado el orden decidido).** El port (Bloque E) va
 > *antes* del reemplazo de pictogramas (Bloque F). Si se mide la latencia tap→voz con el
@@ -582,18 +609,27 @@ de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 > peor caso posible. Con el set propio empaquetado en la app esas imágenes son locales y el
 > número cae mucho. Medir en el orden equivocado hace que el WebView parezca insuficiente y
 > empuja hacia el camino **D** (React Native, 4–6 meses) por un problema que no es del
-> WebView sino del origen de las imágenes. **Para decidir B vs. D hay que medir con
+> WebView sino del origen de las imágenes. **Para decidir ~~B~~ C vs. D hay que medir con
 > imágenes locales** — basta precargar un subconjunto de prueba en `public/pictos/`, no
 > hace falta el set completo.
+>
+> *(Corregido el 2026-08-24: decía «B vs. D» y B dejó de ser el camino elegido. Se corrige
+> porque está en **modo imperativo** — un dato caducado que manda hacer algo no se cita, se
+> ejecuta. La instrucción en sí no cambia: sigue siendo medir con imágenes locales.)*
 
-### 7.3 Decisiones pendientes (bloquean el Bloque E)
+### 7.3 Decisiones ~~pendientes (bloquean el Bloque E)~~ — el Bloque E ya no está bloqueado
+
+*(Título corregido el 2026-08-24: `DEC-1` era lo único que bloqueaba el bloque y quedó resuelta.)*
 
 | ID | Decisión | Estado |
 |---|---|---|
-| `DEC-1` | Camino de empaquetado (A / B / C / D) — recomendado **B** | ⏳ Pendiente |
+| `DEC-1` | Camino de empaquetado (A / B / C / D) — ~~recomendado **B**~~ | 🟢 **Resuelta 2026-08-24: camino C, Vite + Capacitor, en el mismo repo.** Motivo, alternativas descartadas y costo aceptado en §7.2 |
 | `DEC-2` | ¿El público objetivo incluye menores de edad? (ver `P0-8`) | ⏳ Pendiente |
 | `DEC-3` | Librería de pictogramas definitiva (ver `P0-1` y `REVISION-PENDIENTES.md`) | 🟢 **Resuelta 2026-07-27: set propio generado con IA.** ARASAAC queda como mockup provisional |
-| `DEC-4` | ¿Se elimina o se implementa nativo el speech-to-text? | ⏳ Pendiente |
+| `DEC-4` | ¿Se elimina o se implementa nativo el speech-to-text? | ⏳ Pendiente — se resuelve en la tanda `E.5` |
+| `DEC-5` | ¿El Bloque A se cierra antes del port, o se corre expuesto durante el port? | 🟢 **Resuelta 2026-08-24: partido.** `SEC-1`, `SEC-2` y `P0-7` **antes** — son chicos y viven en `web/`, que se queda después del corte. `PERF-2` **después**, porque toca `lib/store/useChatStore.ts` y ese archivo se muda a `mobile/` en `E.1`: arreglarlo antes es arreglarlo dos veces. **Costo aceptado por delante:** `PERF-2` es egress facturado, así que la decisión tiene un precio que corre mientras dure el port |
+| `DEC-6` | ¿Mac de segunda mano (~400–600 USD, una vez) o build en la nube (Codemagic, 500 min M1/mes gratis)? | ⏳ Pendiente — **no bloquea nada hasta `E.6`**, puede dormir. Lo que cambia: sin Mac no hay Safari Web Inspector y el WebView de iOS se depura a ciegas. ⚠ **No elegir Ionic Appflow: cierra el 2027-12-31** |
+| `DEC-7` | ¿El repo sigue público o pasa a privado? | 🟢 **Resuelta 2026-08-24: sigue público.** Consecuencias asumidas: minutos de Actions gratis (así que E2E de Playwright en cada PR es viable, y esto desbloquea el «CI mínimo ← pendiente de decisión» del Bloque B), y a cambio **más superficie para el género de `SEC-16`** — un proyecto Capacitor suma `android/` e `ios/` con configuración de firma. Por eso la push protection entra como paso del día uno, no como higiene posterior |
 
 ### 7.4 Trabajo de empaquetado (cualquier camino)
 
@@ -731,12 +767,22 @@ verificación, y varios se tocan entre sí.
 - [ ] `BUG-3` Corregir el comentario de `app/page.tsx:7` (o implementar la protección
       server-side que afirma existir) · `BUG-4` Reescribir el `README.md` obsoleto
 
-### Bloque E — Port móvil (camino B) — bloqueado por `DEC-1`
+### Bloque E — Port móvil (~~camino B~~ **camino C: Vite + Capacitor**) — ~~bloqueado por `DEC-1`~~ desbloqueado el 2026-08-24
+
+> **Plan de tandas:** [`docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md`](docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md).
+> Siete tandas (`E.0`→`E.6`), **cortadas por forma del daño, no por tamaño**, un PR cada una.
+> El orden que más importa y su argumento: **`E.2` va antes que `E.3` y `E.4` porque la
+> medición de latencia puede invalidar el stack**, y construir auth por tokens y push nativo
+> encima de un Capacitor que después se descarta es trabajo tirado entero.
+>
+> **Métrica que manda en todo el bloque: líneas reescritas de `components/board/` = 0 de 778.**
 
 - [ ] Extraer la SPA (quitar SSR del bundle móvil). **El middleware ya no existe** — se
       borró con el panel admin el 2026-07-27, así que esa mitad está hecha. Tampoco queda
-      ningún Server Component: la app es enteramente cliente + 5 route handlers, que es
-      exactamente la premisa del camino **B**
+      ningún Server Component: la app es enteramente cliente + 5 route handlers. Esa premisa
+      valía para **B**, y **medida el 2026-08-24 resultó valer todavía más para C**: con 0
+      Server Components y 21 imports de Next en total, mantener Next en el bundle móvil es
+      cargar su build sin recibir nada a cambio. Ver `DEC-1` en §7.2
 - [ ] Auth por tokens con almacenamiento seguro nativo
 - [ ] Push nativo APNs/FCM con tabla `device_tokens`
 - [ ] TTS nativo · Orientación nativa · Deep links
@@ -846,6 +892,8 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-08-24 | `SEC-16` | **Tres PAT de Supabase completos encontrados en el historial público de este repo.** Hallazgo lateral: se buscó tras un aviso sobre otro repo (`UPC-Inventario`, que tenía dos más — **cinco en total entre los dos**). `.claude/settings.local.json` versionado en `beb3b69` (2026-04-26, un token) y `d130b8e` (2026-04-29, dos más), ambos ancestros de `origin/main`. **Verificado por efecto:** la API pública de GitHub devuelve el archivo con **13 898 bytes** sin autenticar. Ya se había intentado arreglar en `5ef32cd` (2026-06-02, *«untrack local Claude settings with secrets»*) — **destrackear no borra el historial, y ese mismo commit lleva los tokens en su diff**. **Dos instrumentos que mintieron y quedan anotados:** (a) `git log --all -- <ruta>` devolvió **0 commits** para un archivo que sí estaba, porque la simplificación de historial lo poda y el borrado entró por un merge — `git show --name-status` sobre el commit sí lo mostraba; (b) `gh api .../secret-scanning/alerts` respondió **404 «disabled»** en los dos repos, o sea que **el aviso no salió de GitHub** y no había alerta que consultar. La verificación buena fue pedir el blob a la API pública y contar sus bytes. **No es hallazgo** el JWT del mismo archivo: decodificado es `"role":"anon"`, público por diseño | — |
+| 2026-08-24 | `DEC-1`, `DEC-5`, `DEC-6`, `DEC-7` | **Stack móvil decidido y Bloque E desbloqueado.** `DEC-1` → **camino C (Vite + Capacitor), mismo repo**, revisando la recomendación de B que estaba escrita desde el 2026-07-26. Lo que la cambió fueron cifras medidas ese día sobre el árbol real: **0 Server Components, 0 `'use server'`, sin middleware, 35 de 58 archivos `'use client'`, 21 imports de Next en total, y el tablero en 778 líneas con cero imports de Next**. Se evaluó y descartó **Dactyl** (dactyl.dev, generador de SwiftUI por prompt): no migra un repo, lo reinterpreta — incompatible con la condición de conservar el tablero tal cual. **Aviso sobre esa evaluación: `dactyl.dev` devuelve 403 al lector automático, así que sus datos vienen de fragmentos de su propio marketing y no hay reseña independiente.** `DEC-5` → Bloque A partido (`SEC-1`, `SEC-2`, `P0-7` antes; `PERF-2` después, porque su archivo se muda en `E.1`). `DEC-7` → repo sigue público, lo que **desbloquea el «CI mínimo ← pendiente de decisión»** del Bloque B por minutos gratis de Actions. `DEC-6` (Mac vs. nube) queda abierta y no bloquea hasta `E.6`. Plan de tandas en `docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md` | — |
 | 2026-07-28 | `SEC-14`, `SEC-15` | **Vulnerabilidades de dependencias** (`fix/sec-14-dependency-vulns`). `next` 16.1.6→16.2.12 (cierra los 28 advisories), `eslint-config-next`→^16.2.12, `@supabase/supabase-js` 2.98→2.111 (elimina `ws`, **la única vulnerable que corría en producción**: el transporte del chat en vivo), `npm audit fix` para `@babel/*` y `fast-uri`. **Advisories reales de 15 a 7**; el residual queda documentado y aceptado en `SEC-15`. Tres pasos con `verify:full` entre cada uno — `27/27` las tres veces, y el techo de avisos **no** hubo que recalibrarlo (88, idéntico). **Dos lecciones registradas:** (a) el número que reporta `npm audit` no mide riesgo — tras el `audit fix` el total *subió* de 14 a 24 mientras los advisories reales *bajaban* de 15 a 7, porque npm cuenta igual un paquete con CVE propio que uno que solo arrastra a otro (el campo `via` los distingue: objetos = reales, strings = arrastre); (b) un «fix» que retrocede una versión mayor (`next@9.3.3`, `next-pwa@8.7.1`) significa «no hay solución aguas arriba», no «aceptá el downgrade». **Descartado y revertido a propósito:** subir `@supabase/ssr` 0.9→0.12, que se había colado sin ser necesario (el peer de 0.9.0 ya aceptaba supabase-js 2.111). Está en semver `0.x`, maneja las cookies de sesión, y **el gate no cubre flujos autenticados** — habría compilado, dado 200 en todas las rutas y 27/27 con el login roto. Queda pendiente de `QA-1`/Bloque B. | — |
 | 2026-07-28 | `QA-1` | **Prueba de humo sobre la app en ejecución** (`tests/smoke/smoke.mjs`, `npm run test:smoke`, incorporada a `verify:full`). Motivo: hasta acá se había verificado con typecheck, lint, tests unitarios sobre un módulo puro y compilación — nada de eso ejecuta la aplicación, y sin embargo se habían borrado 22 MB y 511 líneas apoyándose en eso. 27 comprobaciones: 12 rutas con código esperado, 49 assets verificados uno por uno en 4 páginas, y aserciones sobre el `sw.js` servido. Confirmó en ejecución real que `/sw.js` responde 200 (o sea que `QA-3` no rompe la PWA al desversionar los artefactos) y que `/data/arasaac_catalog.jsonl` y `/admin/metrics` dan 404. Validada introduciendo la regresión a propósito. **Dos defectos propios encontrados y corregidos en el proceso**, ambos específicos de Windows: zombis por `shell: true` que hacían que la suite midiera un build viejo en verde, y el manifiesto de arranque de `public/` en Next. Ambos documentados en `QA-1`. | — |
 | 2026-07-28 | `PERF-1`, `QA-3`, `QA-2` parcial, `QA-4` | **22 MB fuera y artefactos de build desversionados** (`chore/qa-3-perf-1-build-artifacts`). `PERF-1`: borrados `public/data/arasaac_catalog.jsonl` (21,61 MB) y su único lector muerto; verificado sobre el `sw.js` regenerado que el manifiesto pasó de 63 a 62 entradas y que la regla `CacheFirst` de imágenes sigue viva. `QA-3`: los artefactos de next-pwa salen del índice — `sw.js` embebe el build id de Next y ensuciaba el árbol en cada compilación, bloqueando el `checkout` (pasó 3 veces en una sesión). Descubierto de paso que **Tailwind 4 escanea todo lo que no esté en `.gitignore`**: `web/docs/` inyectaba en el CSS de producción clases de código ya borrado (`accent-orange-500` del panel admin). Ignoradas las carpetas locales → CSS de 56,87 a 55,13 KB. Techo de avisos 90 → 88. `verify:full` exit 0. | — |
