@@ -1,0 +1,62 @@
+# Gate de PR. Corre lo mismo que `npm run verify:full` en local, en el mismo
+# orden, pero como pasos separados: cuando falla, el nombre del paso ya dice
+# qué se rompió sin abrir el log.
+#
+# Medido el 2026-08-28 apartando `.env.local`: build y humo pasan con el
+# entorno vacío, así que este workflow no necesita secrets. Eso también lo
+# hace válido en PRs desde forks, que en un repo público es el caso normal.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+
+# Un push nuevo al mismo PR cancela el run anterior: no se gastan minutos
+# verificando un commit que ya quedó atrás.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Lo rápido va primero: el lint corta antes de gastar el build.
+      # El techo de avisos está en el propio script (--max-warnings=88), así
+      # que un aviso nuevo pone el PR en rojo sin que haya que recordarlo.
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests unitarios
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      # Levanta la app compilada y comprueba 27 cosas contra ella.
+      # No cubre flujos autenticados: eso sigue siendo verificación a mano.
+      - name: Humo sobre la app corriendo
+        run: npm run test:smoke
