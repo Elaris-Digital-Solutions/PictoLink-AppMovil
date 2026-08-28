@@ -10,7 +10,7 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-08-24 (`DEC-1` resuelta → Vite + Capacitor en el mismo repo. `DEC-5` y `DEC-6` abiertas. Hallazgo nuevo `SEC-16`: 3 PAT de Supabase en el historial público)
+- **Última actualización:** 2026-08-28 (`P0-7` con el código listo y el panel pendiente. `SEC-16` sigue abierta: los 5 PAT no constan revocados)
 
 > **Restricción de planificación (decidida 2026-07-27):** no hay fecha límite del proyecto.
 > El criterio de orden es **riesgo/costo activo primero, y agrupar todo lo legal, comercial
@@ -274,17 +274,48 @@ Requiere validación de recibos server-side y sincronización del estado hacia
 
 ---
 
-### `P0-7` 🔴 Confirmación de email desactivada en producción
+### `P0-7` 🔵 Confirmación de email: código listo, panel pendiente
 
-`components/onboarding/OnboardingFlow.tsx:99` muestra al usuario el mensaje:
+`components/onboarding/OnboardingFlow.tsx:99` mostraba al usuario el mensaje:
 *«ve a tu panel de Supabase > Authentication > Providers > Email y apaga Confirm email»*.
 Eso significa que producción corre con verificación de correo desactivada: habilita
-registro con correos de terceros y suplantación de identidad. Tampoco existe flujo de
+registro con correos de terceros y suplantación de identidad. Tampoco existía flujo de
 recuperación de contraseña.
 
-- [ ] Confirmación de email habilitada y flujo implementado
-- [ ] Flujo de reset de contraseña
-- [ ] Mensaje de error de debug eliminado del código
+**Hallazgo del 2026-08-28, y es el que ordena la tanda: activar la casilla del panel
+sin desplegar antes este código rompe todo registro nuevo.** No es un flag independiente
+del código. Con la confirmación activada `signUp` devuelve `session: null`, y el
+código anterior no miraba el valor de retorno: mandaba al usuario al paso de crear el
+perfil, que sin sesión RLS rechaza. **El mensaje de la línea 99 existía justamente
+porque alguien ya había chocado con esto** — la salida elegida entonces fue explicarle
+al usuario final cómo apagar la verificación en un panel que no es suyo.
+
+**Orden obligatorio: primero el despliegue del código, después la casilla del panel.**
+
+Hecho (`fix/e-a-p0-7-confirmacion-email`):
+
+- [x] `signUp` mira `data.session` y deriva a una pantalla de «revisá tu correo»
+- [x] Ruta `/auth/confirm` con `verifyOtp` sobre `token_hash` — **una sola ruta para
+      los dos flujos**, porque el parámetro `type` distingue alta de recuperación
+- [x] Flujo de reset completo: `resetPasswordForEmail` + pantalla de contraseña nueva
+- [x] Mensaje de debug eliminado
+- [x] Deja de mostrarse el error crudo de PostgREST al usuario (id de correlación en su
+      lugar), y el `catch` que sólo logueaba y seguía deja de dar el alta por buena
+- [x] `mensajeDeAuth` devuelve **el mismo texto** para «credenciales inválidas» y
+      «correo sin confirmar», para no abrir un segundo oráculo de enumeración
+      además del de `SEC-4`
+
+Falta, y **nada de esto lo cierra el gate**:
+
+- [ ] Activar *Confirm email* en el panel — **después** de desplegar
+- [ ] Plantillas *Confirm signup* y *Reset password*: cambiar `{{ .ConfirmationURL }}`
+      por `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+      (y `type=recovery` en la de reset)
+- [ ] Site URL del proyecto apuntando al dominio de producción
+- [ ] Marcar como confirmadas las cuentas existentes (**decidido el 2026-08-28**, ver
+      registro: se da por buena una propiedad de correo que nunca se probó)
+- [ ] **Ejecutar el flujo real**: registrarse, recibir el correo, hacer clic. Nada de
+      lo verificado hasta ahora llamó a `verifyOtp` contra Supabase ni envió un correo
 
 ---
 
@@ -892,6 +923,7 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-08-28 | `P0-7` | **Confirmación de email y recuperación de contraseña, en código** (`fix/e-a-p0-7-confirmacion-email`). Nueva ruta `/auth/confirm` que verifica el `token_hash` del correo; `signUp` pasa a mirar `data.session` y a derivar a una pantalla de espera; flujo de reset completo; el mensaje que le pedía al usuario apagar la verificación en el panel de Supabase, eliminado. **El hallazgo que ordena la tanda:** activar la casilla del panel sin este código desplegado **rompe todo registro nuevo**, porque con la confirmación activada `signUp` devuelve `session: null` y el paso siguiente crea el perfil, que sin sesión RLS rechaza. El mensaje de la línea 99 era la prueba de que ya había pasado. **Orden obligatorio: desplegar y después activar.** **Decisión con costo declarado:** las cuentas existentes se marcan como confirmadas en bloque, o sea que se da por buena una propiedad de correo que nunca se probó — se elige eso antes que dejar sin acceso a usuarios reales, y queda escrito que es un supuesto, no una verificación. **Decisión de seguridad:** «credenciales inválidas» y «correo sin confirmar» devuelven el mismo texto, para no abrir un segundo oráculo de enumeración de correos junto al de `SEC-4`. **Verificación:** `verify:full` exit 0 — techo de lint **intacto en 88** (el único aviso nuevo, `react-hooks/set-state-in-effect`, se silencia acotado al efecto con el motivo escrito, en vez de subir el techo), 18 tests + 1 todo, build con `ƒ /auth/confirm` en el manifiesto y humo 27/27. **Control negativo del test:** al mover la guardia de verificación detrás de la comprobación de `recovery`, fallan **exactamente los 2** tests que protegen esa guardia y los otros 3 siguen verdes. **Lo que nada de esto prueba:** no se envió ni un correo, `verifyOtp` nunca se llamó contra Supabase y el gate no cubre flujos autenticados — `P0-7` queda 🔵, no 🟢 | — |
 | 2026-08-24 | `SEC-16` | **Tres PAT de Supabase completos encontrados en el historial público de este repo.** Hallazgo lateral: se buscó tras un aviso sobre otro repo (`UPC-Inventario`, que tenía dos más — **cinco en total entre los dos**). `.claude/settings.local.json` versionado en `beb3b69` (2026-04-26, un token) y `d130b8e` (2026-04-29, dos más), ambos ancestros de `origin/main`. **Verificado por efecto:** la API pública de GitHub devuelve el archivo con **13 898 bytes** sin autenticar. Ya se había intentado arreglar en `5ef32cd` (2026-06-02, *«untrack local Claude settings with secrets»*) — **destrackear no borra el historial, y ese mismo commit lleva los tokens en su diff**. **Dos instrumentos que mintieron y quedan anotados:** (a) `git log --all -- <ruta>` devolvió **0 commits** para un archivo que sí estaba, porque la simplificación de historial lo poda y el borrado entró por un merge — `git show --name-status` sobre el commit sí lo mostraba; (b) `gh api .../secret-scanning/alerts` respondió **404 «disabled»** en los dos repos, o sea que **el aviso no salió de GitHub** y no había alerta que consultar. La verificación buena fue pedir el blob a la API pública y contar sus bytes. **No es hallazgo** el JWT del mismo archivo: decodificado es `"role":"anon"`, público por diseño | — |
 | 2026-08-24 | `DEC-1`, `DEC-5`, `DEC-6`, `DEC-7` | **Stack móvil decidido y Bloque E desbloqueado.** `DEC-1` → **camino C (Vite + Capacitor), mismo repo**, revisando la recomendación de B que estaba escrita desde el 2026-07-26. Lo que la cambió fueron cifras medidas ese día sobre el árbol real: **0 Server Components, 0 `'use server'`, sin middleware, 35 de 58 archivos `'use client'`, 21 imports de Next en total, y el tablero en 778 líneas con cero imports de Next**. Se evaluó y descartó **Dactyl** (dactyl.dev, generador de SwiftUI por prompt): no migra un repo, lo reinterpreta — incompatible con la condición de conservar el tablero tal cual. **Aviso sobre esa evaluación: `dactyl.dev` devuelve 403 al lector automático, así que sus datos vienen de fragmentos de su propio marketing y no hay reseña independiente.** `DEC-5` → Bloque A partido (`SEC-1`, `SEC-2`, `P0-7` antes; `PERF-2` después, porque su archivo se muda en `E.1`). `DEC-7` → repo sigue público, lo que **desbloquea el «CI mínimo ← pendiente de decisión»** del Bloque B por minutos gratis de Actions. `DEC-6` (Mac vs. nube) queda abierta y no bloquea hasta `E.6`. Plan de tandas en `docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md` | — |
 | 2026-07-28 | `SEC-14`, `SEC-15` | **Vulnerabilidades de dependencias** (`fix/sec-14-dependency-vulns`). `next` 16.1.6→16.2.12 (cierra los 28 advisories), `eslint-config-next`→^16.2.12, `@supabase/supabase-js` 2.98→2.111 (elimina `ws`, **la única vulnerable que corría en producción**: el transporte del chat en vivo), `npm audit fix` para `@babel/*` y `fast-uri`. **Advisories reales de 15 a 7**; el residual queda documentado y aceptado en `SEC-15`. Tres pasos con `verify:full` entre cada uno — `27/27` las tres veces, y el techo de avisos **no** hubo que recalibrarlo (88, idéntico). **Dos lecciones registradas:** (a) el número que reporta `npm audit` no mide riesgo — tras el `audit fix` el total *subió* de 14 a 24 mientras los advisories reales *bajaban* de 15 a 7, porque npm cuenta igual un paquete con CVE propio que uno que solo arrastra a otro (el campo `via` los distingue: objetos = reales, strings = arrastre); (b) un «fix» que retrocede una versión mayor (`next@9.3.3`, `next-pwa@8.7.1`) significa «no hay solución aguas arriba», no «aceptá el downgrade». **Descartado y revertido a propósito:** subir `@supabase/ssr` 0.9→0.12, que se había colado sin ser necesario (el peer de 0.9.0 ya aceptaba supabase-js 2.111). Está en semver `0.x`, maneja las cookies de sesión, y **el gate no cubre flujos autenticados** — habría compilado, dado 200 en todas las rutas y 27/27 con el login roto. Queda pendiente de `QA-1`/Bloque B. | — |
