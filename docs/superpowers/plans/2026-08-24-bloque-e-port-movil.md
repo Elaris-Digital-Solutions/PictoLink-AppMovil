@@ -152,6 +152,50 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 
 **Lo rápido va primero** para que el lint corte antes de gastar los minutos del build.
 
+> ### Cierre de `E.0.2` — 2026-08-29 · cerrada, **no integrada** (PR #2 abierto contra `develop`)
+>
+> **Alcance cumplido.** 1 de las 4 tareas de `E.0`. Gate de PR en GitHub Actions de punta a punta:
+> **pasa cuando debe y corta cuando debe, y las dos mitades están medidas.**
+>
+> **Trazas.** Rama `chore/e0-andamiaje-y-contencion`, **3 commits** (`9dd154b`, `e64b743`,
+> `fbed158`), PR #2. **4 runs:** rojo `33292231084` (fallo real), verdes `33292830744` y
+> `33293200060`, rojo deliberado `33293288058` en `test/e0-control-negativo`.
+>
+> **Correcciones al plan — 2, y las dos viven en el registro del ESTADO del 2026-08-29.**
+>
+> 1. **El orden que este plan prescribe no era ejecutable tal cual.** `lint → typecheck → build`
+>    deja el typecheck antes del build, pero `next-env.d.ts` —quien declara los módulos `*.png`—
+>    lo genera el build y `.gitignore` lo excluye: en un checkout limpio no existe. Primer run rojo
+>    con `TS2307`. Resuelto **sin reordenar**: `typecheck` = `next typegen && tsc --noEmit`, que
+>    arregla el gate local y el de CI a la vez porque es el único punto por el que pasan los dos.
+> 2. **`on: push` no cubre las ramas de trabajo**, sólo `develop` y `main`. Empujar una rama `fix/*`
+>    no dispara nada, y sus PR no mostrarán checks hasta que el workflow esté **en `develop`**.
+>
+> **Métricas, antes → después.**
+>
+> | | Antes | Después |
+> |---|---|---|
+> | Gate en CI | no existía | 6 pasos, **65 s**, verde leído en el log y no en el tick |
+> | Runs ejecutados | 0 | 4 |
+> | `verify` local | — | **+9 s** por el typegen en caliente (35 s en frío) |
+> | Lint · tests · humo | 88 · 13+1 todo · 27/27 en local | **idénticos en `ubuntu-latest`** |
+>
+> **Lo que deja sin hacer.**
+>
+> - `E.0.1` (push protection) y `E.0.3` (Playwright — **no está instalado**, así que es escribir la
+>   suite desde cero) siguen abiertas.
+> - **El gate no ejerce nada autenticado.** Se midió que build y humo pasan con el entorno vacío;
+>   el lado incómodo de esa misma medición es que `P0-7` sigue sin probarse contra Supabase.
+> - Mientras el workflow viva sólo en esta rama, **las otras dos ramas sin mergear no tienen gate**.
+>
+> **Lo que el plan previó y se cumplió:** el control negativo del lint, tal cual estaba escrito —
+> 89 avisos contra un techo de 88, rojo **en el paso `Lint`**, con los cuatro pasos siguientes sin
+> ejecutar y el aviso atribuible al archivo canario. **Lo que no previó y salió de ejecutar:** las
+> dos correcciones de arriba, y que **un rojo real no sustituye al control negativo** — el del
+> `TS2307` cortó en `Typecheck`, con `Lint` en verde antes, así que no probaba nada sobre el lint.
+>
+> **Siguiente:** `E.0.1`, la tarea de riesgo de la tanda, con su propio control negativo.
+
 ---
 
 ### E.1 — La SPA fuera de Next
