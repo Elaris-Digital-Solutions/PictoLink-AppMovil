@@ -1,19 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Heart, Building2, ExternalLink, ArrowLeft, Loader2 } from 'lucide-react';
+import { MessageSquare, Heart, Building2, ExternalLink, ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { trackEvent } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
+import type { AuthError } from '@supabase/supabase-js';
 import type { Profile, UserType } from '@/types';
 import logoPng from '@/assets/favicon.png';
 import AvatarUpload from '@/components/ui/AvatarUpload';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 'welcome' | 'auth' | 'name' | 'user-type' | 'institution';
+type Step = 'welcome' | 'auth' | 'check-email' | 'new-password' | 'name' | 'user-type' | 'institution';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,39 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
   );
 }
 
+/**
+ * Traduce un error de Supabase Auth a algo que se le pueda mostrar a una
+ * persona, sin filtrar lo que el sistema sabe.
+ *
+ * DECISION DE PRODUCTO, marcada a proposito — ver el bloque `enumeracion`:
+ * distinguir «no confirmaste el correo» de «contraseña incorrecta» le ahorra
+ * una llamada a soporte al usuario legitimo, y a la vez le confirma a un
+ * desconocido que ESA cuenta existe. El proyecto ya tiene un oraculo de
+ * enumeracion abierto (SEC-4), asi que aqui se elige no abrir el segundo.
+ */
+function mensajeDeAuth(error: AuthError): string {
+  switch (error.code) {
+    // ── enumeracion ─────────────────────────────────────────────────────────
+    // Los dos devuelven el MISMO texto a proposito. Si se separan, cualquiera
+    // puede averiguar que correos tienen cuenta probandolos de a uno.
+    case 'invalid_credentials':
+    case 'email_not_confirmed':
+      return 'Correo o contraseña incorrectos, o falta confirmar el correo.';
+    // ─────────────────────────────────────────────────────────────────────────
+
+    case 'weak_password':
+      return 'La contraseña es muy corta: usá al menos 6 caracteres.';
+    case 'over_email_send_rate_limit':
+    case 'over_request_rate_limit':
+      return 'Probaste varias veces seguidas. Esperá un minuto.';
+    case 'validation_failed':
+      return 'Revisá que el correo esté bien escrito.';
+    default:
+      // Nada de `error.message`: el texto de Supabase describe el sistema.
+      return 'No pudimos completar la operación. Volvé a intentarlo.';
+  }
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function OnboardingFlow() {
@@ -79,6 +113,61 @@ export function OnboardingFlow() {
   const [isLogin, setIsLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  // Que estamos esperando que llegue por correo: el alta o el cambio de clave.
+  const [motivoCorreo, setMotivoCorreo] = useState<'alta' | 'reset'>('alta');
+
+  // Aterrizaje de /auth/confirm. Se lee de window y no con useSearchParams
+  // para no tener que envolver la pagina en un Suspense por el prerender.
+  /* eslint-disable react-hooks/set-state-in-effect --
+     La URL solo existe en el cliente: un inicializador de useState que lea
+     window daria un HTML distinto al del servidor. El render extra ocurre una
+     sola vez y solo al volver desde un enlace de correo. */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('recovery') === '1') {
+      setStep('new-password');
+    } else if (params.get('auth_error') === 'enlace') {
+      setStep('auth');
+      setIsLogin(true);
+      setAuthError('Ese enlace no sirve o ya venció. Pedí uno nuevo.');
+    }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Recuperacion de contraseña. El mensaje es el mismo exista la cuenta o no:
+  // decir «ese correo no está registrado» es el mismo oraculo que se evita
+  // en mensajeDeAuth.
+  async function handleReset() {
+    if (!email.trim()) {
+      setAuthError('Escribí tu correo arriba y volvé a tocar «Olvidé mi contraseña».');
+      return;
+    }
+    setIsLoading(true);
+    setAuthError('');
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/confirm`,
+    });
+    setIsLoading(false);
+    setMotivoCorreo('reset');
+    setStep('check-email');
+  }
+
+  // Contraseña nueva, ya con la sesion que dejo verifyOtp en las cookies.
+  async function handleNuevaPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setIsLoading(true);
+    setAuthError('');
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    setIsLoading(false);
+    if (error) {
+      setAuthError(mensajeDeAuth(error));
+      return;
+    }
+    setPassword('');
+    router.replace('/');
+  }
 
   // User-type selection → immediately completes onboarding (no plan step)
   async function handleUserTypeSelect(type: UserType) {
@@ -96,8 +185,11 @@ export function OnboardingFlow() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      setAuthError('Error: Supabase requiere verificar tu correo para iniciar sesión. Para quitar este paso, ve a tu panel de Supabase > Authentication > Providers > Email y apaga "Confirm email".');
-      setStep('auth');
+      // Sin sesion no hay perfil que crear: RLS lo rechaza. Antes esto le
+      // explicaba al usuario final como apagar la confirmacion de correo en un
+      // panel de Supabase que no es suyo.
+      setAuthError('Tenés que confirmar tu correo antes de terminar de crear la cuenta. Revisá tu bandeja de entrada.');
+      setStep('check-email');
       setIsLoading(false);
       return;
     }
@@ -134,14 +226,22 @@ export function OnboardingFlow() {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('REST ERROR CRUDO DE SUPABASE:', errText);
-        setAuthError(`Error de DB: ${errText}`);
+        // El cuerpo de PostgREST trae tabla, columna y constraint: al usuario
+        // le va el id de correlacion y nada mas.
+        const ref = crypto.randomUUID().slice(0, 8);
+        console.error('[onboarding] perfil rechazado', ref, res.status, await res.text());
+        setAuthError(`No pudimos guardar tu perfil. Volvé a intentarlo. (ref ${ref})`);
         setIsLoading(false);
         return;
       }
     } catch (e: unknown) {
-      console.error('FETCH ERROR:', e);
+      // Antes esto solo logueaba y seguia: el usuario entraba a la app sin
+      // perfil creado, convencido de que el alta habia funcionado.
+      const ref = crypto.randomUUID().slice(0, 8);
+      console.error('[onboarding] fallo de red al crear el perfil', ref, e);
+      setAuthError(`No pudimos guardar tu perfil. Revisá tu conexión. (ref ${ref})`);
+      setIsLoading(false);
+      return;
     }
 
     setProfile(profile);
@@ -216,7 +316,7 @@ export function OnboardingFlow() {
       if (isLogin) {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
-          setAuthError(error.message);
+          setAuthError(mensajeDeAuth(error));
         } else if (data.user) {
           // maybeSingle() avoids a noisy 406 when the user just signed up and the
           // profile row hasn't been created yet (the next onboarding step creates it).
@@ -237,17 +337,25 @@ export function OnboardingFlow() {
           }
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { display_name: displayName }
+            data: { display_name: displayName },
+            emailRedirectTo: `${window.location.origin}/auth/confirm`,
           }
         });
         if (error) {
-          setAuthError(error.message);
-        } else {
+          setAuthError(mensajeDeAuth(error));
+        } else if (data.session) {
+          // Confirmacion de correo desactivada: signUp ya devuelve sesion.
           setStep('name');
+        } else {
+          // Confirmacion activada: signUp devuelve session: null a proposito.
+          // Sin sesion, RLS rechaza crear el perfil, asi que el flujo se
+          // detiene aqui hasta que el usuario vuelva desde el correo.
+          setMotivoCorreo('alta');
+          setStep('check-email');
         }
       }
       setIsLoading(false);
@@ -298,7 +406,7 @@ export function OnboardingFlow() {
 
             {authError && (
               <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 font-medium leading-snug">
-                {authError === 'Invalid login credentials' ? 'Credenciales incorrectas' : authError === 'User already registered' ? 'El correo ya está registrado' : authError}
+                {authError}
               </p>
             )}
 
@@ -310,6 +418,119 @@ export function OnboardingFlow() {
             >
               {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
               {isLogin ? 'Ingresar' : 'Registrarme'}
+            </button>
+
+            {isLogin && (
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={isLoading}
+                className="text-sm text-slate-500 font-medium underline underline-offset-4 py-2 disabled:opacity-50"
+              >
+                Olvidé mi contraseña
+              </button>
+            )}
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step: Check email ───────────────────────────────────────────────────────
+  // Se llega aca cuando Supabase NO devolvio sesion: o el alta necesita
+  // confirmacion, o se pidio recuperar la contraseña. En los dos casos lo
+  // unico que se puede hacer es esperar el correo.
+  if (step === 'check-email') {
+    const esReset = motivoCorreo === 'reset';
+    return (
+      <div className="flex flex-col min-h-dvh bg-white px-6">
+        <div className="flex items-center gap-3 pt-4 pb-2">
+          <button
+            onClick={() => { setStep('auth'); setAuthError(''); }}
+            className="p-2 -ml-2 rounded-xl active:scale-95 transition-transform"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 pb-16">
+          <div
+            className="w-20 h-20 rounded-3xl flex items-center justify-center"
+            style={{ backgroundColor: '#FFF1E8' }}
+          >
+            <Mail className="w-10 h-10" style={{ color: BRAND_ORANGE }} />
+          </div>
+
+          <div>
+            <h2 className="text-3xl font-black leading-tight" style={{ color: BRAND_ORANGE }}>
+              Revisá tu correo
+            </h2>
+            <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed max-w-xs">
+              {esReset
+                ? 'Si ese correo tiene una cuenta, te mandamos un enlace para poner una contraseña nueva.'
+                : 'Te mandamos un enlace a tu correo. Abrilo para terminar de crear la cuenta.'}
+            </p>
+          </div>
+
+          <p className="text-xs text-slate-400 font-medium max-w-xs leading-relaxed">
+            Puede tardar un par de minutos. Mirá también la carpeta de spam.
+          </p>
+
+          <button
+            onClick={() => { setStep('auth'); setIsLogin(true); setAuthError(''); }}
+            className="text-sm font-bold underline underline-offset-4 mt-2"
+            style={{ color: BRAND_ORANGE }}
+          >
+            Volver a ingresar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step: New password ──────────────────────────────────────────────────────
+  // Se llega desde /auth/confirm con ?recovery=1: verifyOtp ya dejo la sesion
+  // en las cookies, pero la contraseña sigue siendo la que el usuario olvido.
+  if (step === 'new-password') {
+    return (
+      <div className="flex flex-col min-h-dvh bg-white px-6">
+        <div className="flex-1 flex flex-col pt-16 gap-6">
+          <div>
+            <h2 className="text-3xl font-black leading-tight" style={{ color: BRAND_ORANGE }}>
+              Poné una contraseña nueva
+            </h2>
+            <p className="text-sm text-slate-500 mt-1.5 font-medium">
+              Vas a usarla la próxima vez que ingreses
+            </p>
+          </div>
+
+          <form onSubmit={handleNuevaPassword} className="flex flex-col gap-4 mt-2">
+            <input
+              type="password"
+              placeholder="Contraseña nueva"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border-2 border-[#FFD5BF] bg-white text-slate-900 focus:border-[#FF8844] focus:outline-none transition-colors"
+              required
+              disabled={isLoading}
+              minLength={6}
+              autoFocus
+            />
+
+            {authError && (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 font-medium leading-snug">
+                {authError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform mt-4 disabled:opacity-70 flex items-center justify-center gap-2"
+              style={{ backgroundColor: BRAND_ORANGE }}
+            >
+              {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
+              Guardar
             </button>
           </form>
         </div>

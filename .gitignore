@@ -32,8 +32,9 @@ dist-ssr
 # embed API tokens in stored command strings. Never commit.
 .claude/settings.local.json
 
-# MCP configuration — may contain access tokens or project refs. Never commit.
-.mcp.json
+# .mcp.json SI se versiona: usa transporte HTTP con OAuth, sin token en disco.
+# El project_ref no es secreto (viaja en NEXT_PUBLIC_SUPABASE_URL). Versionarlo es
+# lo que garantiza que todo el equipo apunte al mismo proyecto y en solo lectura.
 
 # Node / package manager
 .pnp.cjs

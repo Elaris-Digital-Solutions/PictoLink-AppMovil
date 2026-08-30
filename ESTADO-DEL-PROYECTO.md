@@ -10,7 +10,7 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-07-28 (`PERF-1` resuelto: 22 MB fuera. `QA-3` parcial: artefactos de build desversionados)
+- **Última actualización:** 2026-08-30 (`E.0.2` **cerrada e integrada** y `E.0.1` **cerrada**: push protection bloquea de verdad, probado con control positivo y negativo. `SEC-16` **resuelta**: los 5 PAT revocados, y la publicación de uno nuevo queda bloqueada. `P0-7` **integrado en `develop` pero no desplegado**: falta desplegar y **después** tocar el panel de Supabase, en ese orden)
 
 > **Restricción de planificación (decidida 2026-07-27):** no hay fecha límite del proyecto.
 > El criterio de orden es **riesgo/costo activo primero, y agrupar todo lo legal, comercial
@@ -274,17 +274,48 @@ Requiere validación de recibos server-side y sincronización del estado hacia
 
 ---
 
-### `P0-7` 🔴 Confirmación de email desactivada en producción
+### `P0-7` 🔵 Confirmación de email: **integrada en `develop` el 2026-08-30, sin desplegar**; panel pendiente
 
-`components/onboarding/OnboardingFlow.tsx:99` muestra al usuario el mensaje:
+`components/onboarding/OnboardingFlow.tsx:99` mostraba al usuario el mensaje:
 *«ve a tu panel de Supabase > Authentication > Providers > Email y apaga Confirm email»*.
 Eso significa que producción corre con verificación de correo desactivada: habilita
-registro con correos de terceros y suplantación de identidad. Tampoco existe flujo de
+registro con correos de terceros y suplantación de identidad. Tampoco existía flujo de
 recuperación de contraseña.
 
-- [ ] Confirmación de email habilitada y flujo implementado
-- [ ] Flujo de reset de contraseña
-- [ ] Mensaje de error de debug eliminado del código
+**Hallazgo del 2026-08-28, y es el que ordena la tanda: activar la casilla del panel
+sin desplegar antes este código rompe todo registro nuevo.** No es un flag independiente
+del código. Con la confirmación activada `signUp` devuelve `session: null`, y el
+código anterior no miraba el valor de retorno: mandaba al usuario al paso de crear el
+perfil, que sin sesión RLS rechaza. **El mensaje de la línea 99 existía justamente
+porque alguien ya había chocado con esto** — la salida elegida entonces fue explicarle
+al usuario final cómo apagar la verificación en un panel que no es suyo.
+
+**Orden obligatorio: primero el despliegue del código, después la casilla del panel.**
+
+Hecho (`fix/e-a-p0-7-confirmacion-email`):
+
+- [x] `signUp` mira `data.session` y deriva a una pantalla de «revisá tu correo»
+- [x] Ruta `/auth/confirm` con `verifyOtp` sobre `token_hash` — **una sola ruta para
+      los dos flujos**, porque el parámetro `type` distingue alta de recuperación
+- [x] Flujo de reset completo: `resetPasswordForEmail` + pantalla de contraseña nueva
+- [x] Mensaje de debug eliminado
+- [x] Deja de mostrarse el error crudo de PostgREST al usuario (id de correlación en su
+      lugar), y el `catch` que sólo logueaba y seguía deja de dar el alta por buena
+- [x] `mensajeDeAuth` devuelve **el mismo texto** para «credenciales inválidas» y
+      «correo sin confirmar», para no abrir un segundo oráculo de enumeración
+      además del de `SEC-4`
+
+Falta, y **nada de esto lo cierra el gate**:
+
+- [ ] Activar *Confirm email* en el panel — **después** de desplegar
+- [ ] Plantillas *Confirm signup* y *Reset password*: cambiar `{{ .ConfirmationURL }}`
+      por `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+      (y `type=recovery` en la de reset)
+- [ ] Site URL del proyecto apuntando al dominio de producción
+- [ ] Marcar como confirmadas las cuentas existentes (**decidido el 2026-08-28**, ver
+      registro: se da por buena una propiedad de correo que nunca se probó)
+- [ ] **Ejecutar el flujo real**: registrarse, recibir el correo, hacer clic. Nada de
+      lo verificado hasta ahora llamó a `verifyOtp` contra Supabase ni envió un correo
 
 ---
 
@@ -321,8 +352,8 @@ propia. Habría que condicionar los tres y evaluar COPPA/GDPR-K.
 
 | ID | Sev. | Hallazgo | Ubicación | Estado |
 |---|---|---|---|---|
-| `SEC-1` | 🔴 Alta | `/api/cloudinary/delete` no verifica propiedad del `publicId`: cualquier usuario autenticado borra **cualquier** imagen de la cuenta Cloudinary | `app/api/cloudinary/delete/route.ts:36` | [ ] |
-| `SEC-2` | 🔴 Alta | Preset de subida Cloudinary *unsigned* y expuesto en el bundle → subida arbitraria de imágenes a tu cuenta, sin límite de tamaño/tipo ni moderación | `lib/cloudinary.ts:2,69` | [ ] |
+| `SEC-1` | 🟢 Resuelta | ~~`/api/cloudinary/delete` no verifica propiedad del `publicId`: cualquier usuario autenticado borra **cualquier** imagen de la cuenta Cloudinary~~ **Resuelto 2026-08-24** en `fix/e-a-sec-1-sec-2-cloudinary`. **El enunciado se quedaba corto:** decía «verificar propiedad», y verificarla **contra la base es imposible** — los cinco llamadores destruyen la imagen *anterior* después de haber escrito la URL nueva, así que el `publicId` viejo ya no está en ninguna fila, y en `delete_group` la fila entera desapareció. Lo destapó buscar los llamadores, no releer la ruta: **el archivo solo no contiene la información que lo condena.** La propiedad pasa a ir dentro del propio `publicId` (`users/{uid}/…`), lo que la hace independiente del orden de las llamadas — y eso **solo es posible con `SEC-2` resuelto**, así que los dos son un único arreglo | `app/api/cloudinary/delete/route.ts`, `lib/cloudinary.ts` (`ownsPublicId`) | [x] |
+| `SEC-2` | 🟢 Resuelta | ~~Preset de subida Cloudinary *unsigned* y expuesto en el bundle → subida arbitraria de imágenes a tu cuenta, sin límite de tamaño/tipo ni moderación~~ **Resuelto 2026-08-24.** La subida pasa por `/api/cloudinary/sign`, que exige sesión y firma con la carpeta `users/{uid}`. La constante `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` desaparece del código. **Verificado por efecto sobre el bundle compilado, con control positivo:** `NEXT_PUBLIC_SUPABASE_URL` aparece en **6** archivos de `.next/static` (o sea que Next sí incrusta las `NEXT_PUBLIC_*`, que es lo que hace válida la medición), y el preset aparece en **0**, la cadena `upload_preset` en **0**, y `api/cloudinary/sign` en **3**. **Lo que esa medición no cubre, y se dice en vez de darlo por hecho:** se hizo sobre un **build local**, así que no dice nada de lo desplegado en Vercel, y **nadie ha subido todavía un avatar real** contra la ruta firmada. Integrado en `develop` el 2026-08-30 (PR #7, merge `beec03b`) | `app/api/cloudinary/sign/route.ts`, `lib/cloudinary.ts` | [x] |
 | `SEC-3` | 🟠 Media | `profiles_select using (true)`: cualquier autenticado lee **todos** los perfiles (nombres, avatares, modo, plan) | `supabase/schema.sql:164` | [ ] |
 | `SEC-4` | 🟠 Media | `get_user_id_by_email` es `SECURITY DEFINER` invocable por cualquier autenticado → oráculo de enumeración de correos, sin rate limiting | `schema.sql:273`, `app/api/contacts/search/route.ts` | [ ] |
 | `SEC-5` | 🟠 Media | `messages_update_read` permite al receptor actualizar **cualquier** columna, incluidos `content` y `pictograms` → puede reescribir el mensaje que recibió | `supabase/schema.sql:178` | [ ] |
@@ -336,6 +367,7 @@ propia. Habría que condicionar los tres y evaluar COPPA/GDPR-K.
 | `SEC-14` | 🟢 Resuelta | **Next.js 16.1.6 acumulaba 28 advisories.** Detectado 2026-07-27, resuelto 2026-07-28 en `fix/sec-14-dependency-vulns`. `next` 16.1.6→**16.2.12** cierra los 28 (verificado: 0 advisories propios en 16.2.12), incluidos SSRF por WebSocket upgrade (CVSS 8.6), bypass de middleware por inyección de parámetro dinámico (8.1), XSS con nonces de CSP y exposición no autenticada de endpoints de Server Function. `@supabase/supabase-js` 2.98→**2.111** elimina `ws` del árbol: era **la única vulnerable que corría en producción**, el transporte del chat en vivo. `npm audit fix` cierra `@babel/*` y `fast-uri`. **Advisories reales de 15 a 7.** Ver `SEC-15` para el residual aceptado. | [x] |
 | `SEC-15` | 🔵 Aceptada | **Residual de `SEC-14`: 7 advisories que no se pueden cerrar desde acá.** Seis son de *build time* — corren en el pipeline con input propio, no en producción: `postcss` (3, embebido en `node_modules/next/`), `serialize-javascript` (2, vía workbox) y `brace-expansion` (1, vía `minimatch` de eslint/glob). El séptimo es `sharp` <0.35.0 (CVEs de libvips), que **sí** corre en producción con `next/image`, mitigado porque `next.config.ts:47-53` restringe `remotePatterns` a `static.arasaac.org/pictograms/**`: el optimizador no acepta URLs arbitrarias, así que no hay input controlable por un atacante. `postcss` y `sharp` dependen de que Vercel los suba en una próxima versión de `next`; se descartó forzarlos con `overrides` porque `sharp` es binario nativo y divergir de la versión que Next probó arriesga romper el build de Vercel (Linux) sin mitigar un vector real. **`@ducanh2912/next-pwa` no se toca**: el «fix» que propone npm es *bajarlo* de 10.2.9 a 10.2.6 (y luego a 8.7.1), un cambio mayor hacia atrás en el generador del service worker, para mitigar un DoS de CPU en el propio build. **Revisar cuando salga `next` 16.3 estable.** | [ ] |
 | `SEC-13` | 🟠 Media | **No hay política `DELETE` en `messages` ni `group_messages`**: nadie puede borrar un mensaje que envió. Problema doble — moderación UGC (Apple 1.2, `P0-5`) y derecho de supresión (GDPR). Extiende `SEC-8`, que solo cubría `profiles` y `groups` | `supabase/schema.sql` | [ ] |
+| `SEC-16` | 🟢 Resuelta | **Tres PAT de Supabase completos en el historial público de este repo.** Detectado 2026-08-24. `.claude/settings.local.json` se versionó en `beb3b69` (2026-04-26, un token) y `d130b8e` (2026-04-29, dos más); los tres son `sbp_` de **44 caracteres**, o sea el valor íntegro, y los dos commits son ancestros de `origin/main`. **Verificado por efecto, no deducido:** la API pública de GitHub devuelve `.claude/settings.local.json@d130b8e` con **13 898 bytes**, sin autenticar. Se destrackeó en `5ef32cd` (2026-06-02, *«untrack local Claude settings with secrets»*) y `.gitignore:33` lo ignora hoy — **pero destrackear no borra el historial, y el propio commit que lo destrackea lleva los tokens en su diff**. Un PAT es de la **cuenta**, no de un proyecto: alcanza todos los proyectos de la organización. **No es hallazgo** el JWT del mismo archivo: se decodificó y es `"role":"anon"` del proyecto `xxbvzvoglnxrgcwhkktc`, público por diseño. **Cierre:** revocar los tres en el panel de cuenta + `E.0.1` (push protection verificada con control negativo). **Reescribir el historial no es la contención** — revocado, el valor publicado no vale nada, y un `force-push` a `main` rompe todos los clones. **Revocados y verificado por efecto el 2026-08-29:** `GET https://api.supabase.com/v1/projects` con `Authorization: Bearer <PAT>` devuelve **HTTP 401 en los tres de este repo**, medido el 2026-08-29 — 200 habría significado token vivo. **Los 2 de `UPC-Inventario` (`6f34e0b`, `92cc01c`) también dan 401**, medido el 2026-08-29: los cinco revocados. El comando corre en la PowerShell de Alejandro: el sandbox no alcanza `api.supabase.com`. ~~**Queda abierta sólo por `E.0.1`**: lo publicado ya no vale nada, pero nada impide todavía que se publique otro~~ — **`E.0.1` cerrada el 2026-08-30, y con ella `SEC-16`.** Secret scanning y push protection activados y **probado que bloquean**: un `sbp_` sintético en un push a una rama de descarte fue rechazado con `GH013` nombrando `Supabase Personal Access Token`, y el commit nunca llegó al remoto; el mismo push sin el secreto sí pasó. **Lo que esto no hace:** borrar lo ya publicado — eso lo neutraliza la revocación | historial de `main`, commits `beb3b69` y `d130b8e` | [x] |
 
 > `SEC-10`→`SEC-13` provienen de la auditoría del esquema del 2026-07-27, hecha sobre
 > `web/supabase/schema.sql` (sincronizado 2026-06-02). **Pendiente de verificar contra la BD
@@ -387,7 +419,17 @@ impida que un refactor rompa el tablero de 44 páginas.
 - [x] Script `typecheck` en `package.json` (+ `lint`, `test`, `verify`)
 - [x] Runner de tests (Vitest) con alias `@/` y primera suite
 - [x] **Suite de humo contra la app en ejecución** (`tests/smoke/smoke.mjs`, 27 comprobaciones)
-- [ ] CI en GitHub Actions (typecheck + lint + build) ← **pendiente de decisión del usuario**
+- [x] CI en GitHub Actions ~~← pendiente de decisión del usuario~~ **Desbloqueado por `DEC-7`**
+      (repo público → minutos gratis) y **escrito el 2026-08-28** en `.github/workflows/ci.yml`
+      como tanda `E.0.2`. **Corrió por primera vez el 2026-08-29** (PR #2): rojo en `Typecheck` por
+      un fallo real del gate, y **verde tras el fix** (run `33292830744`, 65 s) — verificado en el
+      log: typegen OK, lint 88, tests 13+1 todo, humo 27/27. **Control negativo hecho el 2026-08-29**
+      (run `33293288058`, rama de descarte `test/e0-control-negativo`): un aviso de lint introducido
+      a propósito — 89 contra un techo de 88 — puso el job **rojo en el paso `Lint`**, con los cuatro
+      pasos siguientes sin ejecutar y el aviso atribuible al archivo canario. **El rojo real del
+      `TS2307` no habría servido:** cortó en `Typecheck`, con `Lint` en verde antes. **Cierre de la
+      tanda en el plan del Bloque E.** **Integrada en `develop` el 2026-08-30** (merge `ea026f5`),
+      así que el workflow ya cubre los PR de las demás ramas.
 - [ ] Tests de RLS contra Supabase local
 - [ ] Test de integridad del layout AAC (ninguna celda apunta a carpeta inexistente ni a `pictogramId` roto)
 - [ ] Test del flujo envío/recepción de mensajes
@@ -572,9 +614,35 @@ pictograma.** En AAC, el retardo entre tap y voz es el criterio de usabilidad qu
 terapeutas evalúan. Un WebView con 45 imágenes remotas, TTS puenteado y `active:scale`
 de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 
-> **Recomendación:** ir por **B**, y medir ese retardo en el dispositivo más lento del
-> piloto *antes* de comprometerse con la tienda. Ese número, no una preferencia de stack,
-> es lo que debe decidir si algún día se justifica D.
+> ~~**Recomendación:** ir por **B**, y medir ese retardo en el dispositivo más lento del
+> piloto *antes* de comprometerse con la tienda.~~ **Superada el 2026-08-24 por `DEC-1`, que
+> eligió C.** Se conserva porque su segunda mitad sigue vigente y es la que manda: **ese
+> número, no una preferencia de stack, es lo que debe decidir si algún día se justifica D.**
+>
+> **`DEC-1` resuelta el 2026-08-24 → camino C (Vite + Capacitor), en el mismo repo.**
+>
+> **Por qué C y no B.** Medido sobre el árbol real ese día: **0 Server Components, 0
+> `'use server'`, sin middleware, 35 de 58 archivos `'use client'`, y 21 sitios de import de
+> Next en total** — `next/navigation` (7), `next/server` (5, sólo dentro de las rutas API, que
+> se quedan en `web/`), `next/headers` (3, sólo servidor), `next/link` (2), `next` (2,
+> metadata), `next/image` (1) y `next/font` (1). B mantiene Next dentro del bundle móvil para
+> exportarlo estático; con esas cifras eso es cargar su build sin recibir nada a cambio.
+>
+> **B y C resolvían las dos el problema, así que el criterio dejó de ser el problema.** El
+> segundo criterio fue la condición que puso Alejandro: **conservar el tablero tal cual**. Son
+> 7 componentes, **778 líneas y cero imports de Next**, así que en B y en C se copian sin
+> tocar — empatan. Lo que desempata es que **la web baja a landing**: después del corte casi
+> no queda código compartido, y mantener dos builds de Next para eso no se paga.
+>
+> **Descartadas, con su motivo, para que no vuelvan a proponerse:** **A** (Capacitor contra la
+> URL de Vercel) por Apple 4.2 y por perder el offline; **D** (React Native/Expo) porque
+> reescribe las 778 líneas del tablero, que es exactamente lo que la condición prohíbe;
+> **Dactyl** (evaluado el 2026-08-24) porque genera SwiftUI desde un prompt: no migra un repo,
+> lo reinterpreta, y deja tres bases de código en lenguajes que el equipo no domina.
+>
+> **Costo aceptado, escrito por delante:** `mobile/` y `web/` van a divergir en dependencias, y
+> algún día una subida de versión en uno romperá al otro sin que nadie toque el código
+> compartido. Se paga duplicando los dos archivos de tipos generados, no montando un workspace.
 
 > ⚠️ **Trampa de medición (importante dado el orden decidido).** El port (Bloque E) va
 > *antes* del reemplazo de pictogramas (Bloque F). Si se mide la latencia tap→voz con el
@@ -582,18 +650,28 @@ de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 > peor caso posible. Con el set propio empaquetado en la app esas imágenes son locales y el
 > número cae mucho. Medir en el orden equivocado hace que el WebView parezca insuficiente y
 > empuja hacia el camino **D** (React Native, 4–6 meses) por un problema que no es del
-> WebView sino del origen de las imágenes. **Para decidir B vs. D hay que medir con
+> WebView sino del origen de las imágenes. **Para decidir ~~B~~ C vs. D hay que medir con
 > imágenes locales** — basta precargar un subconjunto de prueba en `public/pictos/`, no
 > hace falta el set completo.
+>
+> *(Corregido el 2026-08-24: decía «B vs. D» y B dejó de ser el camino elegido. Se corrige
+> porque está en **modo imperativo** — un dato caducado que manda hacer algo no se cita, se
+> ejecuta. La instrucción en sí no cambia: sigue siendo medir con imágenes locales.)*
 
-### 7.3 Decisiones pendientes (bloquean el Bloque E)
+### 7.3 Decisiones ~~pendientes (bloquean el Bloque E)~~ — el Bloque E ya no está bloqueado
+
+*(Título corregido el 2026-08-24: `DEC-1` era lo único que bloqueaba el bloque y quedó resuelta.)*
 
 | ID | Decisión | Estado |
 |---|---|---|
-| `DEC-1` | Camino de empaquetado (A / B / C / D) — recomendado **B** | ⏳ Pendiente |
+| `DEC-1` | Camino de empaquetado (A / B / C / D) — ~~recomendado **B**~~ | 🟢 **Resuelta 2026-08-24: camino C, Vite + Capacitor, en el mismo repo.** Motivo, alternativas descartadas y costo aceptado en §7.2 |
 | `DEC-2` | ¿El público objetivo incluye menores de edad? (ver `P0-8`) | ⏳ Pendiente |
 | `DEC-3` | Librería de pictogramas definitiva (ver `P0-1` y `REVISION-PENDIENTES.md`) | 🟢 **Resuelta 2026-07-27: set propio generado con IA.** ARASAAC queda como mockup provisional |
-| `DEC-4` | ¿Se elimina o se implementa nativo el speech-to-text? | ⏳ Pendiente |
+| `DEC-4` | ¿Se elimina o se implementa nativo el speech-to-text? | ⏳ Pendiente — se resuelve en la tanda `E.5` |
+| `DEC-5` | ¿El Bloque A se cierra antes del port, o se corre expuesto durante el port? | 🟢 **Resuelta 2026-08-24: partido.** `SEC-1`, `SEC-2` y `P0-7` **antes** — son chicos y viven en `web/`, que se queda después del corte. `PERF-2` **después**, porque toca `lib/store/useChatStore.ts` y ese archivo se muda a `mobile/` en `E.1`: arreglarlo antes es arreglarlo dos veces. **Costo aceptado por delante:** `PERF-2` es egress facturado, así que la decisión tiene un precio que corre mientras dure el port |
+| `DEC-6` | ¿Mac de segunda mano (~400–600 USD, una vez) o build en la nube (Codemagic, 500 min M1/mes gratis)? | ⏳ Pendiente — **no bloquea nada hasta `E.6`**, puede dormir. Lo que cambia: sin Mac no hay Safari Web Inspector y el WebView de iOS se depura a ciegas. ⚠ **No elegir Ionic Appflow: cierra el 2027-12-31** |
+| `DEC-7` | ¿El repo sigue público o pasa a privado? | 🟢 **Resuelta 2026-08-24: sigue público.** Consecuencias asumidas: minutos de Actions gratis (así que E2E de Playwright en cada PR es viable, y esto desbloquea el «CI mínimo ← pendiente de decisión» del Bloque B), y a cambio **más superficie para el género de `SEC-16`** — un proyecto Capacitor suma `android/` e `ios/` con configuración de firma. Por eso la push protection entra como paso del día uno, no como higiene posterior |
+| `DEC-8` | ¿`E.0.3` (E2E de Playwright) entra antes del port o después? | 🟢 **Resuelta 2026-08-30: después de `E.1`.** El motivo no es lo que cuesta escribirla: es que **`E.1` saca la SPA de Next y cambia rutas, arranque y estructura**, así que unos E2E escritos ahora apuntarían justo a lo que está por moverse y habría que rehacerlos. **Playwright no está instalado** (medido el 2026-08-28), así que tampoco es «activarlo»: es instalarlo, configurarlo y escribir la suite desde cero, más su control negativo. Lo que ya cubre parte y **sigue dentro del gate**: `test:smoke`, **27 comprobaciones** contra la app corriendo. **Costo aceptado por adelantado:** `E.0` queda abierta con **3 de 4 tareas** durante todo `E.1`, y en ese tramo el port se verifica **sin** E2E — la equivalencia del tablero se comprueba a mano o por unitarios, que es lo que `E.1.1` ya pide. **Alternativa descartada:** escribirla ahora para cerrar `E.0`, descartada porque el trabajo se haría dos veces. **Lo que esta decisión NO dice:** que los E2E sobren — `DEC-7` los dio por viables en cada PR por los minutos gratis del repo público, y eso sigue en pie para después de `E.1` |
 
 ### 7.4 Trabajo de empaquetado (cualquier camino)
 
@@ -658,10 +736,14 @@ Todo esto es explotable hoy o está facturando ahora mismo. Ningún ítem depend
 - [x] `PERF-1` ~~Borrar `public/data/arasaac_catalog.jsonl`~~ **Hecho 2026-07-28** junto con
       `QA-3` (artefactos de build fuera del versionado), rama
       `chore/qa-3-perf-1-build-artifacts`.
-- [ ] `SEC-1` Verificar propiedad del `publicId` en `/api/cloudinary/delete`. Hoy cualquier
-      autenticado borra cualquier imagen de la cuenta.
-- [ ] `SEC-2` Firmar las subidas a Cloudinary. Hoy el preset unsigned está en el bundle:
-      subida arbitraria, sin límite de tamaño ni tipo, sin moderación.
+- [x] `SEC-1` + `SEC-2` ~~Verificar propiedad del `publicId`~~ · ~~Firmar las subidas a
+      Cloudinary~~ **Hechos juntos el 2026-08-24** (`fix/e-a-sec-1-sec-2-cloudinary`), como
+      tanda `E.A`. **Resultaron ser un solo arreglo, no dos:** la subida sin firmar nunca
+      decía quién subía, así que la imagen no llevaba dueño y el borrado no tenía contra qué
+      comprobar. Firmar permite forzar la carpeta `users/{uid}`, y esa carpeta es lo que hace
+      comprobable el borrado. **Costo aceptado y decidido:** las imágenes anteriores no
+      tienen carpeta, así que ya no se pueden borrar y su almacenamiento queda como fuga —
+      preferible a dejar el agujero abierto para todo lo subido hasta hoy.
 - [ ] `P0-7` Habilitar confirmación de email + flujo de reset. Producción corre sin
       verificación → registro con correos de terceros y suplantación. Con datos de salud y
       posiblemente menores, es lo más grave del documento después de Cloudinary.
@@ -683,7 +765,8 @@ Todo esto es explotable hoy o está facturando ahora mismo. Ningún ítem depend
 > del Bloque A tenga un gate ejecutable. Ver `QA-4`.
 
 - [x] `QA-1` ESLint + Prettier + `typecheck` + Vitest (`chore/qa-1-tooling-base`)
-- [ ] `QA-1` CI mínimo en GitHub Actions ← pendiente de decisión
+- [x] `QA-1` CI mínimo en GitHub Actions ~~← pendiente de decisión~~ **Escrito 2026-08-28**
+      (`chore/e0-andamiaje-y-contencion`). Pendiente de correr una vez para valer como gate
 - [ ] `QA-1` Test de integridad estructural del layout AAC (que ninguna celda apunte a una
       carpeta inexistente). La parte de validación de assets se hace en el Bloque F, cuando
       exista el set definitivo.
@@ -731,12 +814,22 @@ verificación, y varios se tocan entre sí.
 - [ ] `BUG-3` Corregir el comentario de `app/page.tsx:7` (o implementar la protección
       server-side que afirma existir) · `BUG-4` Reescribir el `README.md` obsoleto
 
-### Bloque E — Port móvil (camino B) — bloqueado por `DEC-1`
+### Bloque E — Port móvil (~~camino B~~ **camino C: Vite + Capacitor**) — ~~bloqueado por `DEC-1`~~ desbloqueado el 2026-08-24
+
+> **Plan de tandas:** [`docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md`](docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md).
+> Siete tandas (`E.0`→`E.6`), **cortadas por forma del daño, no por tamaño**, un PR cada una.
+> El orden que más importa y su argumento: **`E.2` va antes que `E.3` y `E.4` porque la
+> medición de latencia puede invalidar el stack**, y construir auth por tokens y push nativo
+> encima de un Capacitor que después se descarta es trabajo tirado entero.
+>
+> **Métrica que manda en todo el bloque: líneas reescritas de `components/board/` = 0 de 778.**
 
 - [ ] Extraer la SPA (quitar SSR del bundle móvil). **El middleware ya no existe** — se
       borró con el panel admin el 2026-07-27, así que esa mitad está hecha. Tampoco queda
-      ningún Server Component: la app es enteramente cliente + 5 route handlers, que es
-      exactamente la premisa del camino **B**
+      ningún Server Component: la app es enteramente cliente + 5 route handlers. Esa premisa
+      valía para **B**, y **medida el 2026-08-24 resultó valer todavía más para C**: con 0
+      Server Components y 21 imports de Next en total, mantener Next en el bundle móvil es
+      cargar su build sin recibir nada a cambio. Ver `DEC-1` en §7.2
 - [ ] Auth por tokens con almacenamiento seguro nativo
 - [ ] Push nativo APNs/FCM con tabla `device_tokens`
 - [ ] TTS nativo · Orientación nativa · Deep links
@@ -846,6 +939,16 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-08-30 | `SEC-1`, `SEC-2`, `P0-7` | **Tanda `E.A` integrada entera** (PR #7, merge `beec03b`), y con ella el Bloque A queda cerrado **en código**. Gate en verde leído en el log: lint **88 problems (0 errors)**, **27 tests + 1 todo en 3 archivos**, humo **27/27** — las mismas cifras medidas en local sobre el merge antes de empujarlo. **El orden de integración se invirtió respecto al plan, y a propósito:** `E.A` se escribió antes que `E.0` (`dc178b0` el 24, `e7255a7` el 28 a las 13:05, contra `9dd154b` de las 14:04) pero se integró **después**, para que estas ramas pasaran por el gate en vez de entrar sin él. Costó **dos resoluciones de conflicto** en este archivo, previstas con `git merge-tree` antes de abrir los PR y resueltas **intercalando por hora de commit**, no por fecha — el commit de Cloudinary es de las 19:03 del 24 y el que trajo `SEC-16` y `DEC-1` de las 18:23. **Lo que sigue abierto y que ningún check verde cierra:** desplegar `P0-7` y sólo entonces tocar el panel; probarlo con un correo real, porque `verifyOtp` nunca ha corrido contra Supabase; subir un avatar real contra lo desplegado para `SEC-2`; y la pregunta de `mensajeDeAuth`. Cierre de la tanda en el plan del Bloque E | `beec03b` |
+| 2026-08-30 | `P0-7`, `E.0.2` | **`P0-7` integrado en `develop`** (PR #6, merge `6552d30`). Gate en verde y **leído en el log**: lint **88 problems (0 errors)**, `✓ Types generated successfully`, **18 tests + 1 todo en 2 archivos**, humo **27/27** — las mismas cifras que se habían medido en local sobre el merge antes de empujarlo, y el merge se verificó **como merge**, no sumando las dos ramas por separado. **Predicción del 2026-08-29, ahora probada:** la rama `fix/e-a-p0-7` **no contenía el workflow** (`git ls-tree` = 0) y el gate **corrió igual**, heredado de la base — integrar `.github/workflows/ci.yml` en `develop` es lo que da cobertura a las demás ramas, y no hace falta que cada una lo lleve. **Lo que este verde NO cierra:** `P0-7` sigue **sin probarse de verdad** — nunca se envió un correo y `verifyOtp` no ha corrido nunca contra Supabase; el gate no ejerce flujos autenticados, y se midió que build y humo pasan con el entorno vacío. **El orden con el panel sigue siendo obligatorio:** activar «Confirm email» sin este código **desplegado** (integrado no basta) rompe todo registro nuevo, porque `signUp` pasa a devolver `session: null` | `6552d30` |
+| 2026-08-30 | `E.0.1`, `SEC-16` | **Push protection activada y probada: bloquea de verdad, y con eso `SEC-16` se cierra.** Estado antes, leído por API: `secret_scanning` y `secret_scanning_push_protection` en **disabled**. Después: los dos **enabled**. **El experimento tuvo control positivo antes del negativo**, que es lo que lo hace concluyente: un push **sin** secreto a la rama de descarte **pasó** (queda en el remoto en `0c3443f`), y el mismo push **con** un `sbp_` sintético de 44 caracteres fue **rechazado** — `GH013`, *push declined due to repository rule violations*, patrón nombrado **`Supabase Personal Access Token`** en `juguete.env:1`. Verificado por efecto: el commit `646a8b7` **no está en ninguna rama remota**. Lo único que cambió entre los dos push es el secreto, así que el rechazo no se explica por permisos ni por la rama. **Comprobado antes de correrlo y no supuesto:** la documentación de GitHub lista `Supabase Personal Access Token` con push protection y **sin** *validity check*, o sea que detecta por patrón — por eso un token sintético sirve, y sin esa comprobación un no-bloqueo habría sido ambiguo entre que la protección no funciona y que ese patrón no está cubierto. **Lo que esta protección NO hace:** borrar lo ya publicado; los 5 PAT siguen en los historiales públicos y lo que los vuelve inertes es la revocación. Quedan **disabled a propósito** los patrones no-proveedor y los *validity checks*; **medido de paso y fuera de alcance**, `dependabot_security_updates` también está disabled. Cierre de la tanda en el plan del Bloque E | — (sin traza en git) |
+| 2026-08-30 | `E.0.2` | **`E.0.2` integrada en `develop`** (PR #2, merge `ea026f5`). **Verificado por efecto y no por el aviso de GitHub:** `.github/workflows/ci.yml` aparece en el árbol de `origin/develop` (`git ls-tree`, 1 coincidencia) y la rama `chore/e0-andamiaje-y-contencion` ya no existe en el remoto. **La consecuencia que estaba anotada como predicción entra en vigor:** las ramas `fix/*` tendrán gate en cuanto abran PR contra `develop`, porque el workflow vive ya en la base. **Medido contra el `develop` nuevo, sin heredar la medición anterior:** las dos ramas sin mergear conflictúan y **sólo en `ESTADO-DEL-PROYECTO.md`** — `git merge-tree` exit 1 en ambas, un único archivo, adiciones en las mismas zonas | `ea026f5` |
+| 2026-08-29 | `E.0.2`, `SEC-16` | **El CI corrió por primera vez, salió rojo, y el rojo era del gate.** `SEC-16` **contenida**: los **cinco PAT** devuelven HTTP 401 contra la Management API — revocados, verificado por efecto y no por el panel. **El fallo del CI** (run `33292231084`, PR #2): `Typecheck` rojo con `components/onboarding/OnboardingFlow.tsx(11,21): error TS2307: Cannot find module '@/assets/favicon.png'`, con `Lint` en verde antes. **Causa raíz, reproducida y no deducida:** `next-env.d.ts` lo genera el build, `.gitignore:69` lo excluye, y el workflow **typechequea antes de construir** — así que en un checkout limpio no existe, y es él quien declara los módulos `*.png` vía `next/image-types/global`. En local pasaba porque el archivo estaba generado desde el 2026-07-30. Apartándolo a mano salió **el mismo error, misma columna, exit 2**; devolviéndolo, exit 0. **Fix en una línea**, en el script y no en el workflow, porque es el único punto por el que pasan los dos llamadores: `typecheck` = `next typegen && tsc --noEmit`. Medido: typegen **35 s en frío, 9 s en caliente**; `verify` exit 0 desde un árbol sin `.next` y sin `next-env.d.ts`. **Lo que esto corrige del método:** «borrar `.next` antes de verify» era insuficiente — `next-env.d.ts` vive fuera de `.next`, así que el gate local nunca reprodujo un checkout limpio. **Instrumento que mintió, anotado:** `git cat-file -e "rama/con/barra:ruta"` sale con **128** en el Git Bash de Windows porque MSYS2 reescribe el argumento a `ramaconarra;ruta`; con el `2>/dev/null` de rigor se lee como «el archivo no está» en ramas donde sí está. El rodeo es `git ls-tree -r refs/heads/<rama>`. **Medido de paso:** el workflow existe **sólo** en `chore/e0-andamiaje-y-contencion`, y `on: push` cubre sólo `develop` y `main` — empujar una rama `fix/*` no dispara nada, y sus PR no mostrarán checks hasta que el workflow esté en `develop`. **Desenlace, leído en el log y no en el tick:** run `33292830744` sobre `e64b743` en **verde**, 65 s, seis pasos ejecutados — `Typecheck` imprime «✓ Types generated successfully», lint **88 problems (0 errors)**, tests **13 passed + 1 todo (14)**, humo **27/27 comprobaciones OK**; ningún paso pasó sobre cero elementos. **Lo que el rojo-y-luego-verde NO prueba:** que el paso `Lint` sepa tumbar el job — en el run rojo cortó `Typecheck` y el lint había pasado antes. El control negativo queda pendiente con blanco preciso: el techo está en **88 exacto**, así que un único aviso nuevo debe poner el job en rojo **en el paso Lint**. **Hecho el mismo día y cumplido tal cual:** run `33293288058` sobre `test/e0-control-negativo` — `✖ 89 problems (0 errors, 89 warnings)`, exit 1, **rojo en `Lint`**, `Typecheck`/`Tests`/`Build`/`Humo` sin ejecutar, y el aviso atribuible a `web/lint-canario.ts:1:7`. Medido antes en local con ida y vuelta (88 exit 0 → 89 exit 1 → 88 exit 0) para no gastar un run a ciegas, y comprobado de paso que el BOM que mete `Out-File` no altera el resultado. **`E.0.2` queda cerrada** — el gate pasa cuando debe y corta cuando debe — **pero no integrada**: sigue en el PR #2 | — |
+| 2026-08-28 | `E.0.2`, `QA-1` | **CI en GitHub Actions** (`chore/e0-andamiaje-y-contencion`, `.github/workflows/ci.yml`). Ocho pasos sobre `ubuntu-latest` en el orden que pide el plan — **lo rápido primero**: `npm ci` → lint → typecheck → tests → build → humo. Antes no existía `.github/` en absoluto. **Medición que decidió la forma del workflow:** apartando `.env.local` y corriendo el gate con el entorno vacío, **build exit 0 y humo 27/27**, así que el CI **no necesita secrets** — y eso lo hace válido también en PRs desde forks, que en un repo público es el caso normal. `concurrency` con `cancel-in-progress` para no gastar minutos en commits ya superados, y `permissions: contents: read`. **Dos afirmaciones caducadas corregidas de paso:** «CI ← pendiente de decisión del usuario» aparecía en dos sitios y `DEC-7` ya lo había resuelto el 2026-08-24. **Lo que esto NO es todavía:** el workflow **nunca ha corrido**. Se validó que el YAML parsea y que la estructura es la esperada (8 pasos, `working-directory: web`), pero **un workflow que no se ha ejecutado no es un gate, es un archivo**. El control negativo del plan — PR con error de lint a propósito → rojo — sigue pendiente, y hasta entonces `E.0.2` no está cerrada. **`E.0.1` (secret scanning + push protection) y `E.0.3` (Playwright) siguen abiertas**; medido de paso: **Playwright no está instalado**, así que `E.0.3` no es «activarlo» sino escribir la suite desde cero | — |
+| 2026-08-28 | `P0-7` | **Confirmación de email y recuperación de contraseña, en código** (`fix/e-a-p0-7-confirmacion-email`). Nueva ruta `/auth/confirm` que verifica el `token_hash` del correo; `signUp` pasa a mirar `data.session` y a derivar a una pantalla de espera; flujo de reset completo; el mensaje que le pedía al usuario apagar la verificación en el panel de Supabase, eliminado. **El hallazgo que ordena la tanda:** activar la casilla del panel sin este código desplegado **rompe todo registro nuevo**, porque con la confirmación activada `signUp` devuelve `session: null` y el paso siguiente crea el perfil, que sin sesión RLS rechaza. El mensaje de la línea 99 era la prueba de que ya había pasado. **Orden obligatorio: desplegar y después activar.** **Decisión con costo declarado:** las cuentas existentes se marcan como confirmadas en bloque, o sea que se da por buena una propiedad de correo que nunca se probó — se elige eso antes que dejar sin acceso a usuarios reales, y queda escrito que es un supuesto, no una verificación. **Decisión de seguridad:** «credenciales inválidas» y «correo sin confirmar» devuelven el mismo texto, para no abrir un segundo oráculo de enumeración de correos junto al de `SEC-4`. **Verificación:** `verify:full` exit 0 — techo de lint **intacto en 88** (el único aviso nuevo, `react-hooks/set-state-in-effect`, se silencia acotado al efecto con el motivo escrito, en vez de subir el techo), 18 tests + 1 todo, build con `ƒ /auth/confirm` en el manifiesto y humo 27/27. **Control negativo del test:** al mover la guardia de verificación detrás de la comprobación de `recovery`, fallan **exactamente los 2** tests que protegen esa guardia y los otros 3 siguen verdes. **Lo que nada de esto prueba:** no se envió ni un correo, `verifyOtp` nunca se llamó contra Supabase y el gate no cubre flujos autenticados — `P0-7` queda 🔵, no 🟢 | — |
+| 2026-08-24 | `SEC-1`, `SEC-2` | **Tanda `E.A`: subida firmada y borrado por propiedad** (`fix/e-a-sec-1-sec-2-cloudinary`). Nueva ruta `/api/cloudinary/sign` que exige sesión y firma con `folder=users/{uid}`; `uploadToCloudinary` deja de usar el preset unsigned; `/api/cloudinary/delete` exige que el `public_id` esté dentro de `users/{uid}/` y devuelve 403 si no. **El hallazgo `SEC-1` estaba mal formulado y ejecutarlo lo demostró:** «verificar propiedad» sugería consultar la base, y eso **habría roto los cinco flujos en producción** porque los cinco destruyen la imagen anterior *después* de escribir la URL nueva —y `delete_group` borra la fila entera—, así que en el momento del borrado no queda ninguna fila que pruebe la propiedad. **Lo destapó buscar los cinco llamadores; leer la ruta con más atención no lo habría destapado, porque la información que la condena no está en ese archivo.** Consecuencia: `SEC-1` y `SEC-2` son un único arreglo y se cerraron juntos. **Decisión con costo declarado:** las imágenes previas no tienen carpeta y por tanto no tienen dueño demostrable — se rechaza borrarlas y su almacenamiento queda como fuga (avatares de 60–150 KB), en vez de aceptar `public_id` sin carpeta, que dejaría el agujero abierto para todo lo existente. **Verificación:** `verify` en verde con el techo de lint **intacto en 88** y 22 tests (9 nuevos); build correcto con `/api/cloudinary/sign` en el manifiesto; **control negativo del test** — al quitar la barra final de la comprobación de prefijo falla **1 test y solo el correcto**, los otros 21 siguen verdes; y **control positivo sobre el bundle** — `NEXT_PUBLIC_SUPABASE_URL` aparece en 6 archivos de `.next/static` (Next sí incrusta las `NEXT_PUBLIC_*`), mientras el preset aparece en **0** y `api/cloudinary/sign` en **3** | — |
+| 2026-08-24 | `SEC-16` | **Tres PAT de Supabase completos encontrados en el historial público de este repo.** Hallazgo lateral: se buscó tras un aviso sobre otro repo (`UPC-Inventario`, que tenía dos más — **cinco en total entre los dos**). `.claude/settings.local.json` versionado en `beb3b69` (2026-04-26, un token) y `d130b8e` (2026-04-29, dos más), ambos ancestros de `origin/main`. **Verificado por efecto:** la API pública de GitHub devuelve el archivo con **13 898 bytes** sin autenticar. Ya se había intentado arreglar en `5ef32cd` (2026-06-02, *«untrack local Claude settings with secrets»*) — **destrackear no borra el historial, y ese mismo commit lleva los tokens en su diff**. **Dos instrumentos que mintieron y quedan anotados:** (a) `git log --all -- <ruta>` devolvió **0 commits** para un archivo que sí estaba, porque la simplificación de historial lo poda y el borrado entró por un merge — `git show --name-status` sobre el commit sí lo mostraba; (b) `gh api .../secret-scanning/alerts` respondió **404 «disabled»** en los dos repos, o sea que **el aviso no salió de GitHub** y no había alerta que consultar. La verificación buena fue pedir el blob a la API pública y contar sus bytes. **No es hallazgo** el JWT del mismo archivo: decodificado es `"role":"anon"`, público por diseño | — |
+| 2026-08-24 | `DEC-1`, `DEC-5`, `DEC-6`, `DEC-7` | **Stack móvil decidido y Bloque E desbloqueado.** `DEC-1` → **camino C (Vite + Capacitor), mismo repo**, revisando la recomendación de B que estaba escrita desde el 2026-07-26. Lo que la cambió fueron cifras medidas ese día sobre el árbol real: **0 Server Components, 0 `'use server'`, sin middleware, 35 de 58 archivos `'use client'`, 21 imports de Next en total, y el tablero en 778 líneas con cero imports de Next**. Se evaluó y descartó **Dactyl** (dactyl.dev, generador de SwiftUI por prompt): no migra un repo, lo reinterpreta — incompatible con la condición de conservar el tablero tal cual. **Aviso sobre esa evaluación: `dactyl.dev` devuelve 403 al lector automático, así que sus datos vienen de fragmentos de su propio marketing y no hay reseña independiente.** `DEC-5` → Bloque A partido (`SEC-1`, `SEC-2`, `P0-7` antes; `PERF-2` después, porque su archivo se muda en `E.1`). `DEC-7` → repo sigue público, lo que **desbloquea el «CI mínimo ← pendiente de decisión»** del Bloque B por minutos gratis de Actions. `DEC-6` (Mac vs. nube) queda abierta y no bloquea hasta `E.6`. Plan de tandas en `docs/superpowers/plans/2026-08-24-bloque-e-port-movil.md` | — |
 | 2026-07-28 | `SEC-14`, `SEC-15` | **Vulnerabilidades de dependencias** (`fix/sec-14-dependency-vulns`). `next` 16.1.6→16.2.12 (cierra los 28 advisories), `eslint-config-next`→^16.2.12, `@supabase/supabase-js` 2.98→2.111 (elimina `ws`, **la única vulnerable que corría en producción**: el transporte del chat en vivo), `npm audit fix` para `@babel/*` y `fast-uri`. **Advisories reales de 15 a 7**; el residual queda documentado y aceptado en `SEC-15`. Tres pasos con `verify:full` entre cada uno — `27/27` las tres veces, y el techo de avisos **no** hubo que recalibrarlo (88, idéntico). **Dos lecciones registradas:** (a) el número que reporta `npm audit` no mide riesgo — tras el `audit fix` el total *subió* de 14 a 24 mientras los advisories reales *bajaban* de 15 a 7, porque npm cuenta igual un paquete con CVE propio que uno que solo arrastra a otro (el campo `via` los distingue: objetos = reales, strings = arrastre); (b) un «fix» que retrocede una versión mayor (`next@9.3.3`, `next-pwa@8.7.1`) significa «no hay solución aguas arriba», no «aceptá el downgrade». **Descartado y revertido a propósito:** subir `@supabase/ssr` 0.9→0.12, que se había colado sin ser necesario (el peer de 0.9.0 ya aceptaba supabase-js 2.111). Está en semver `0.x`, maneja las cookies de sesión, y **el gate no cubre flujos autenticados** — habría compilado, dado 200 en todas las rutas y 27/27 con el login roto. Queda pendiente de `QA-1`/Bloque B. | — |
 | 2026-07-28 | `QA-1` | **Prueba de humo sobre la app en ejecución** (`tests/smoke/smoke.mjs`, `npm run test:smoke`, incorporada a `verify:full`). Motivo: hasta acá se había verificado con typecheck, lint, tests unitarios sobre un módulo puro y compilación — nada de eso ejecuta la aplicación, y sin embargo se habían borrado 22 MB y 511 líneas apoyándose en eso. 27 comprobaciones: 12 rutas con código esperado, 49 assets verificados uno por uno en 4 páginas, y aserciones sobre el `sw.js` servido. Confirmó en ejecución real que `/sw.js` responde 200 (o sea que `QA-3` no rompe la PWA al desversionar los artefactos) y que `/data/arasaac_catalog.jsonl` y `/admin/metrics` dan 404. Validada introduciendo la regresión a propósito. **Dos defectos propios encontrados y corregidos en el proceso**, ambos específicos de Windows: zombis por `shell: true` que hacían que la suite midiera un build viejo en verde, y el manifiesto de arranque de `public/` en Next. Ambos documentados en `QA-1`. | — |
 | 2026-07-28 | `PERF-1`, `QA-3`, `QA-2` parcial, `QA-4` | **22 MB fuera y artefactos de build desversionados** (`chore/qa-3-perf-1-build-artifacts`). `PERF-1`: borrados `public/data/arasaac_catalog.jsonl` (21,61 MB) y su único lector muerto; verificado sobre el `sw.js` regenerado que el manifiesto pasó de 63 a 62 entradas y que la regla `CacheFirst` de imágenes sigue viva. `QA-3`: los artefactos de next-pwa salen del índice — `sw.js` embebe el build id de Next y ensuciaba el árbol en cada compilación, bloqueando el `checkout` (pasó 3 veces en una sesión). Descubierto de paso que **Tailwind 4 escanea todo lo que no esté en `.gitignore`**: `web/docs/` inyectaba en el CSS de producción clases de código ya borrado (`accent-orange-500` del panel admin). Ignoradas las carpetas locales → CSS de 56,87 a 55,13 KB. Techo de avisos 90 → 88. `verify:full` exit 0. | — |

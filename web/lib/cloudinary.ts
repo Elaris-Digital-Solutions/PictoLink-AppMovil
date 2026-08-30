@@ -1,5 +1,7 @@
-const CLOUD_NAME    = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+// No Cloudinary constants live here on purpose (SEC-2). The upload preset name
+// used to be a `NEXT_PUBLIC_` const, which put it in the JS bundle and let anyone
+// upload to the account. Everything the upload needs now comes from
+// `/api/cloudinary/sign`, which only answers callers with a session.
 
 // ─── Compression ───────────────────────────────────────────────────────────────
 /**
@@ -59,17 +61,31 @@ export async function compressImage(
 
 // ─── Upload ────────────────────────────────────────────────────────────────────
 /**
- * Upload a File to Cloudinary using an unsigned upload preset.
+ * Upload a File to Cloudinary with a server-issued signature (SEC-2).
  * Always compress first — call `compressImage()` before this if you haven't.
  * Returns the secure_url of the uploaded image.
+ *
+ * The signature is scoped to `users/{uid}`, so the resulting `public_id` carries
+ * its owner. That is what `/api/cloudinary/delete` checks — see `ownsPublicId`.
  */
 export async function uploadToCloudinary(file: File): Promise<string> {
+    const signRes = await fetch('/api/cloudinary/sign', { method: 'POST' });
+    if (!signRes.ok) {
+        // Deliberately generic: the sign route already logged the real reason,
+        // and a 401 vs 503 distinction is not the browser's business.
+        throw new Error('No se pudo autorizar la subida');
+    }
+    const { cloudName, apiKey, timestamp, folder, signature } = await signRes.json();
+
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('api_key',   apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('folder',    folder);
+    formData.append('signature', signature);
 
     const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         { method: 'POST', body: formData },
     );
 
@@ -119,6 +135,36 @@ export function extractPublicId(url: string): string | null {
     // Fallback: no version tag — grab everything after /upload/
     const noVersion = url.match(/\/upload\/([^?#]+?)(?:\.[a-z0-9]+)?$/i);
     return noVersion?.[1] ?? null;
+}
+
+// ─── Ownership ─────────────────────────────────────────────────────────────────
+/** The Cloudinary folder every upload by `userId` is confined to. */
+export function userFolder(userId: string): string {
+    return `users/${userId}`;
+}
+
+/**
+ * Is `publicId` inside the caller's own folder? (SEC-1)
+ *
+ * Deliberately a string check and **not** a database lookup. Every caller
+ * destroys the *previous* image after the new URL has already been written, so
+ * by the time deletion runs the old public_id is gone from every row — and in
+ * the `delete_group` flow the row itself no longer exists. Ownership carried by
+ * the id survives that; ownership looked up in a table does not.
+ *
+ * Images uploaded before SEC-2 have no folder and therefore no provable owner,
+ * so they return `false` and leak their storage. That is the accepted cost: the
+ * alternative — letting any authenticated user delete any folderless id — is
+ * exactly the hole SEC-1 describes, left open for everything uploaded to date.
+ */
+export function ownsPublicId(publicId: string, userId: string): boolean {
+    if (!publicId || !userId) return false;
+    // `..` does not traverse in Cloudinary the way it does on a filesystem, but
+    // the id is attacker-supplied and rejecting it costs nothing.
+    if (publicId.includes('..')) return false;
+    // The trailing slash is load-bearing: without it `users/abc` would also
+    // match `users/abcdef/photo`.
+    return publicId.startsWith(`${userFolder(userId)}/`);
 }
 
 /**
