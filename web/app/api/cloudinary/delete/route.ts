@@ -9,12 +9,16 @@
  * Why server-side: Cloudinary destroy requires a SHA-1 HMAC signature built
  * from the API secret. Doing this in the browser would expose the secret.
  *
- * Auth: requires a valid Supabase session — unauthenticated callers get 401.
+ * Auth: requires a valid Supabase session (401 otherwise) **and** that the
+ * public_id sits inside the caller's own `users/{uid}` folder (403 otherwise).
+ * Authentication alone was the SEC-1 hole: it let any signed-in user destroy any
+ * image in the account.
  */
 
 import { createHash }            from 'crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { ownsPublicId } from '@/lib/cloudinary';
 
 export async function POST(req: NextRequest) {
     // ── Auth ────────────────────────────────────────────────────────────────
@@ -35,6 +39,16 @@ export async function POST(req: NextRequest) {
 
     if (!publicId || typeof publicId !== 'string' || publicId.length > 512) {
         return NextResponse.json({ error: 'Missing or invalid publicId' }, { status: 400 });
+    }
+
+    // ── Ownership (SEC-1) ────────────────────────────────────────────────────
+    // Being authenticated is not enough: before this check any signed-in user
+    // could destroy *any* image in the account. Ownership is read off the
+    // public_id itself rather than the database — see `ownsPublicId` for why the
+    // obvious database lookup cannot work here.
+    if (!ownsPublicId(publicId, user.id)) {
+        console.warn('[cloudinary/delete] refused, public_id outside caller folder:', publicId);
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // ── Cloudinary signed destroy ────────────────────────────────────────────
