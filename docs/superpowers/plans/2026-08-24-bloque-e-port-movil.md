@@ -128,6 +128,56 @@ corrección anterior puede haber dejado muerto un paso que todavía no se ejecut
 
 ---
 
+### E.A — `SEC-1`, `SEC-2` y `P0-7` (Bloque A ejecutándose primero)
+
+> ### Cierre de `E.A` — 2026-08-30 · **cerrada e integrada** en `develop` (PR #6 y #7)
+>
+> **Alcance cumplido.** Las **3 tareas** (`SEC-1`, `SEC-2`, `P0-7`), en **2 PR** y **8 commits**
+> integrados: 2 de código, 2 merges de `develop` en las ramas, 2 merges de PR y 2 de documentos.
+>
+> **Trazas.** `dc178b0` (Cloudinary) y `e7255a7` (auth); merges `6552d30` y `beec03b`. Gate en
+> verde **leído en el log**, no por el tick, en los dos PR.
+>
+> **Correcciones al plan — 1, y es de orden.**
+>
+> 1. **`E.A` se escribió antes que `E.0` pero se integró después, y a propósito.** El plan la
+>    ponía primera y el código se escribió primero (`dc178b0` el 24, `e7255a7` el 28 a las 13:05,
+>    contra `9dd154b` de las 14:04), pero se integró **detrás** de `E.0` para que estas dos ramas
+>    pasaran por el gate en vez de entrar sin él. Invertir ese orden costó **dos resoluciones de
+>    conflicto** en `ESTADO-DEL-PROYECTO.md`, previstas con `git merge-tree` antes de abrir los PR
+>    y resueltas **intercalando por hora de commit**, no por fecha.
+>
+> **Métricas, antes → después.**
+>
+> | | Antes | Después |
+> |---|---|---|
+> | Tests unitarios | 13 + 1 todo, **1 archivo** | **27 + 1 todo, 3 archivos** |
+> | Avisos de lint | 88 | **88**, y el techo es exacto: sin margen |
+> | Rutas API nuevas | — | **2** (`/auth/confirm`, `/api/cloudinary/sign`) |
+> | Humo | 27/27 | 27/27 — **sin cambio: no cubre nada autenticado** |
+>
+> **Lo que deja sin hacer.**
+>
+> - **`P0-7` está integrado, no desplegado**, y el orden es obligatorio: desplegar y **después**
+>   el panel de Supabase. Activar «Confirm email» antes rompe todo registro nuevo.
+> - **`P0-7` no se ha probado de verdad:** nunca se envió un correo y `verifyOtp` no ha corrido
+>   nunca contra Supabase. El gate no ejerce flujos autenticados — se midió que build y humo
+>   pasan con el entorno vacío, y ése es el lado incómodo de esa misma medición.
+> - **`SEC-2` se verificó sobre el bundle compilado en local**, con control positivo. Nadie ha
+>   subido todavía un avatar real contra lo desplegado en Vercel.
+> - **Pregunta abierta y sin responder:** en `OnboardingFlow.tsx`, dentro de `mensajeDeAuth`,
+>   `invalid_credentials` y `email_not_confirmed` devuelven el mismo texto **a propósito**, para
+>   no abrir un segundo oráculo de enumeración junto al de `SEC-4`. Separarlos mejora la UX del
+>   usuario legítimo. Son 2 líneas en cualquier dirección y **la decisión es de Alejandro**.
+> - `PERF-2` sigue fuera por `DEC-5`: su archivo se muda en `E.1`.
+>
+> **Lo que el plan previó y se cumplió:** la partición de `DEC-5` — `SEC-1`, `SEC-2` y `P0-7`
+> antes del port, `PERF-2` después. **Lo que no previó y salió de ejecutar:** que **el verde del
+> gate no cierra `P0-7`**, porque ningún check del proyecto ejerce un flujo autenticado; eso
+> convierte «desplegar y probar con un correo real» en trabajo pendiente y no en trámite.
+>
+> **Siguiente:** `E.1` — la SPA fuera de Next.
+
 ### E.0 — Andamiaje y contención
 
 **Forma del daño: ninguna.** Pero sin esto, todo lo demás se verifica a mano.
