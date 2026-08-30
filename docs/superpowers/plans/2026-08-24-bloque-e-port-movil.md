@@ -152,6 +152,48 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 
 **Lo rápido va primero** para que el lint corte antes de gastar los minutos del build.
 
+> ### Cierre de `E.0.1` — 2026-08-30 · cerrada. **No deja nada en el repositorio: su traza es la configuración**
+>
+> **Alcance cumplido.** Secret scanning y push protection activados, y **probado que el bloqueo es real**,
+> que era la condición del plan. Con `E.0.2` ya integrada van **3 de las 4 tareas** de `E.0` (`E.0.4` se
+> había cumplido el 2026-08-24 al registrar `DEC-1`, `DEC-5` y `DEC-7`).
+>
+> **Trazas.** Ninguna en git: el cambio vive en la configuración del repo, y la rama de descarte
+> `test/e0-1-push-protection` se borra. Lo medible queda en el registro del ESTADO del 2026-08-30.
+>
+> **El experimento, con sus tres piezas.**
+>
+> | | |
+> |---|---|
+> | Antes | `secret_scanning` y `secret_scanning_push_protection` en **disabled**, leídos por API |
+> | Control positivo | push **sin** secreto va y **pasa** (rama en el remoto en `0c3443f`) |
+> | Control negativo | push **con** secreto: `GH013`, *push declined*, patrón nombrado **`Supabase Personal Access Token`**, `juguete.env:1` |
+> | Efecto | el commit `646a8b7` **no está en ninguna rama remota**: el secreto no llegó |
+>
+> Lo único que cambia entre el push que pasa y el que no es el secreto, así que el rechazo es
+> atribuible a push protection y no al canal, al permiso ni a la rama.
+>
+> **Lo que deja sin hacer.**
+>
+> - `secret_scanning_non_provider_patterns` y `validity_checks` quedan **disabled a propósito**: el plan
+>   no los pedía y los patrones no-proveedor generan ruido. Se activan si aparece un caso que lo pida.
+> - **Medido de paso y fuera de alcance:** `dependabot_security_updates` también está **disabled**.
+> - **Push protection protege lo que se vaya a publicar, no lo ya publicado.** Los 5 PAT siguen en los
+>   historiales públicos; lo que los vuelve inertes es la revocación, no esto.
+> - Sólo se probó el patrón `Supabase Personal Access Token`. Nada dice de los demás.
+>
+> **Lo que el plan previó y se cumplió:** el control negativo, tal cual estaba escrito — push de un
+> secreto de juguete a una rama de descarte, bloqueado. **Lo que no previó y salió de ejecutar:**
+> (a) la **tarea de riesgo se ejecutó segunda, no primera** — salió bien, pero el orden del plan no se
+> respetó; (b) hacía falta un **control positivo previo**, o un rechazo no habría distinguido push
+> protection de un fallo de permiso; (c) había que **comprobar en la documentación de GitHub que
+> `sbp_` está cubierto** antes de correr el experimento: sin eso, un no-bloqueo habría sido ambiguo
+> entre que la protección no funciona y que ese patrón no está en la lista.
+>
+> **Siguiente:** `E.0.3` (Playwright). **No está instalado**, así que no es activarlo sino escribir la
+> suite desde cero, y el `test:smoke` de 27 comprobaciones ya cubre parte. **Si entra ahora o se
+> pospone es decisión de Alejandro.**
+
 > ### Cierre de `E.0.2` — 2026-08-29 · **cerrada e integrada** en `develop` el 2026-08-30 (PR #2, merge `ea026f5`)
 >
 > **Alcance cumplido.** 1 de las 4 tareas de `E.0`. Gate de PR en GitHub Actions de punta a punta:
@@ -182,8 +224,9 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 >
 > **Lo que deja sin hacer.**
 >
-> - `E.0.1` (push protection) y `E.0.3` (Playwright — **no está instalado**, así que es escribir la
->   suite desde cero) siguen abiertas.
+> - ~~`E.0.1` (push protection) y `E.0.3` siguen abiertas.~~ **`E.0.1` se cerró el 2026-08-30**;
+>   sigue abierta sólo `E.0.3` — **Playwright no está instalado**, así que es escribir la suite
+>   desde cero.
 > - **El gate no ejerce nada autenticado.** Se midió que build y humo pasan con el entorno vacío;
 >   el lado incómodo de esa misma medición es que `P0-7` sigue sin probarse contra Supabase.
 > - ~~Mientras el workflow viva sólo en esta rama, las otras dos ramas sin mergear no tienen gate.~~
