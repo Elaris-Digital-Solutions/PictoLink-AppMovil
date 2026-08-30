@@ -152,7 +152,7 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 
 **Lo rápido va primero** para que el lint corte antes de gastar los minutos del build.
 
-> ### Cierre de `E.0.2` — 2026-08-29 · cerrada, **no integrada** (PR #2 abierto contra `develop`)
+> ### Cierre de `E.0.2` — 2026-08-29 · **cerrada e integrada** en `develop` el 2026-08-30 (PR #2, merge `ea026f5`)
 >
 > **Alcance cumplido.** 1 de las 4 tareas de `E.0`. Gate de PR en GitHub Actions de punta a punta:
 > **pasa cuando debe y corta cuando debe, y las dos mitades están medidas.**
@@ -186,7 +186,10 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 >   suite desde cero) siguen abiertas.
 > - **El gate no ejerce nada autenticado.** Se midió que build y humo pasan con el entorno vacío;
 >   el lado incómodo de esa misma medición es que `P0-7` sigue sin probarse contra Supabase.
-> - Mientras el workflow viva sólo en esta rama, **las otras dos ramas sin mergear no tienen gate**.
+> - ~~Mientras el workflow viva sólo en esta rama, las otras dos ramas sin mergear no tienen gate.~~
+>   **Caducó el 2026-08-30 al integrarse:** el workflow ya está en `develop`, así que las dos ramas
+>   `fix/*` tendrán gate en cuanto abran PR. Lo que sigue en pie es el conflicto: las dos chocan con
+>   `develop` y **sólo en `ESTADO-DEL-PROYECTO.md`** (`git merge-tree` exit 1 en ambas, un archivo).
 >
 > **Lo que el plan previó y se cumplió:** el control negativo del lint, tal cual estaba escrito —
 > 89 avisos contra un techo de 88, rojo **en el paso `Lint`**, con los cuatro pasos siguientes sin
