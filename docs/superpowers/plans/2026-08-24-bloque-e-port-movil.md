@@ -491,6 +491,18 @@ falta entorno de riesgo.
 > - **Efecto colateral mío, sin daño:** el worktree de referencia comparte `node_modules` con `web/`
 >   por un junction; al quitar `next-pwa` ya no puede volver a arrancar. Se midió antes de quitarlo.
 
+> **`E.1.6` — hecha el 2026-10-31: la app no conserva service worker (`DEC-11` en el ESTADO, con
+> motivo, alternativa descartada y costo).** Borrados `mobile/worker/index.ts` y la página
+> `/offline`, que sólo existía como respaldo del service worker. El push lo sustituye `E.4`; los
+> pictogramas sin red, el set propio empaquetado de `P0-1`. **Costo nuevo leído en el código:**
+> `notifyNewMessage` espera `navigator.serviceWorker.ready` sin límite de tiempo y, sin service
+> worker, deja de notificar en el navegador — queda para `E.4`.
+>
+> **Hallazgo de paso que no es de esta tanda: `SEC-17`.** Al medir si los avisos de workbox se
+> habían ido con `next-pwa` (sí), `npm audit` mostró que **`next` 16.2.12 —la versión de
+> producción— tiene 6 avisos críticos de ejecución remota de código**, con corrección en 16.4.3.
+> Va por `hotfix/` desde `main`, no dentro de `E.1`.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide

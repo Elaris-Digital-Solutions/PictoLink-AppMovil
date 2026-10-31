@@ -2,8 +2,9 @@
  * App.tsx — lo que hacía web/app/layout.tsx más el enrutado por archivos de Next (E.1.4).
  *
  * Mismo orden de montaje que el layout: StoreHydrator, SessionTracker y AppShell
- * envolviendo la página. Fuera a propósito: PWARegistry (no hacía nada; el service
- * worker es E.1.6) y Analytics/SpeedInsights de Vercel (esta app no se sirve desde Vercel).
+ * envolviendo la página. Fuera a propósito: PWARegistry (no hacía nada), el service
+ * worker y su página /offline (DEC-11, E.1.6) y Analytics/SpeedInsights de Vercel
+ * (esta app no se sirve desde Vercel).
  */
 import { Component, type ReactNode } from 'react';
 import { Route, Switch } from 'wouter';
@@ -16,7 +17,6 @@ import ChatPage from '@/app/chat/page';
 import CuidadorPage from '@/app/cuidador/page';
 import CuidadorSettingsPage from '@/app/cuidador/settings/page';
 import DashboardPage from '@/app/dashboard/page';
-import OfflinePage from '@/app/offline/page';
 import OnboardingPage from '@/app/onboarding/page';
 import SettingsPage from '@/app/settings/page';
 import AACSettingsPage from '@/app/settings/aac/page';
@@ -46,7 +46,6 @@ export function App() {
                         <Route path="/cuidador" component={CuidadorPage} />
                         <Route path="/cuidador/settings" component={CuidadorSettingsPage} />
                         <Route path="/dashboard" component={DashboardPage} />
-                        <Route path="/offline" component={OfflinePage} />
                         <Route path="/onboarding" component={OnboardingPage} />
                         <Route path="/settings" component={SettingsPage} />
                         <Route path="/settings/aac" component={AACSettingsPage} />
