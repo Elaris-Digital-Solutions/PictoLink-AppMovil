@@ -10,9 +10,21 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-10-31 (revisión de arquitectura tras dos meses sin actividad: el estado del 2026-08-30 se re-midió y coincide. `P0-7` **está desplegado** desde el 2026-08-30, pero el panel **no se puede activar todavía**: el SMTP por defecto de Supabase sólo envía correos a los miembros del equipo. `DEC-9` registra dónde vive el freemium. `BUG-9`: el push lo dispara el teléfono del emisor y sus fallos se tragan en silencio. `DEC-10`: el dominio propio se compra, pero más adelante)
+- **Última actualización:** 2026-10-31 (revisión de arquitectura tras dos meses sin actividad: el estado del 2026-08-30 se re-midió y coincide. `P0-7` **está desplegado** desde el 2026-08-30, pero el panel **no se puede activar todavía**: el SMTP por defecto de Supabase sólo envía correos a los miembros del equipo. `DEC-9` registra dónde vive el freemium. `BUG-9`: el push lo dispara el teléfono del emisor y sus fallos se tragan en silencio. `DEC-10`: el dominio propio se compra, pero más adelante. **Por la tarde, Supabase volvió a responder**, el proyecto **no tiene SMTP propio**, *Confirm email* **está apagado** y Alejandro sólo tiene **acceso de invitado** al panel)
 
-> 🔴 **El proyecto de Supabase no responde desde, al menos, el 2026-10-31.** Medido ese día:
+> 🟢 **El proyecto de Supabase responde otra vez: medido el 2026-10-31 hacia las 16:52 (UTC-5)**;
+> cuándo volvió exactamente no se sabe. Medido
+> con el mismo control que la caída: `xxbvzvoglnxrgcwhkktc.supabase.co` resuelve (dos registros A)
+> y el subdominio inventado sigue dando *«DNS name does not exist»*; el MCP responde a `list_tables`
+> y a un `select` con `execute_sql`. **Lo que esto no dice:** por qué cayó ni quién lo reanudó — la
+> pausa sigue sin confirmar, y la fecha de pausa sigue sin conocerse. **Acceso:** Alejandro tiene
+> **acceso de invitado** al proyecto: ve el panel pero no puede cambiar la configuración. Lo que el
+> panel pida modificar (`P0-7` pasos 0 a 5) lo tiene que hacer quien sea dueño o administrador, y
+> **no consta quién es**. **El costo para el freemium sigue en pie:** el plan gratuito puede volver
+> a pausar; el Pro no pausa.
+>
+> ~~🔴 **El proyecto de Supabase no responde desde, al menos, el 2026-10-31.**~~ *Caducó el mismo
+> día; se deja para que se entienda el registro.* Medido ese día:
 > `xxbvzvoglnxrgcwhkktc.supabase.co` da **«DNS name does not exist»**, igual que un subdominio
 > inventado de control, mientras `supabase.co`, `supabase.com` y `github.com` sí resuelven desde
 > la misma máquina; y el MCP responde *«Database is possibly not accessible»* tanto a
@@ -338,14 +350,20 @@ tiene vuelta atrás para los usuarios:
 > **Consecuencia:** activar *Confirm email* sin SMTP propio rompe el alta de **todo** usuario real
 > igual que si el código no estuviera desplegado — sólo que con otro error. Y por el mismo motivo,
 > **si el proyecto no tiene SMTP propio, la recuperación de contraseña ya hoy no le llega a ningún
-> usuario real**. **No consta si lo tiene:** nadie lo ha mirado. Es documentación, no medición: se
-> cierra mirando *SMTP Settings* y probando con un correo que **no** sea del equipo.
+> usuario real**. ~~**No consta si lo tiene:** nadie lo ha mirado.~~ **Mirado el 2026-10-31 en el
+> panel por Alejandro: el proyecto no tiene SMTP propio activo.** Así que lo de la frase anterior
+> aplica — **según la documentación**: lo que sigue sin probarse es el envío real a un correo que
+> **no** sea del equipo.
 >
 > **Estado del panel:** los pasos se entregaron el 2026-08-30 a las 02:13. El 2026-10-31 Alejandro
-> **no recuerda haber tocado nada** en agosto. Es un recuerdo, no una medición: se confirma mirando
-> *Authentication → Providers → Email* en cuanto el proyecto vuelva a responder (ver la alerta de
-> la cabecera). La consulta que lo habría medido —altas posteriores al 2026-08-30 con
-> `email_confirmed_at` nulo— falló porque la base no es accesible.
+> **no recuerda haber tocado nada** en agosto. ~~Es un recuerdo, no una medición: se confirma mirando
+> *Authentication → Providers → Email* (*Confirm email*).~~ **Mirado el 2026-10-31 en el panel por
+> Alejandro: *Confirm email* está apagado.** O sea que **producción sigue hoy con el problema que
+> abrió `P0-7`**: cualquiera puede darse de alta con un correo ajeno. Los pasos 1 a 3 (plantillas y
+> Site URL) **no se miraron**. **La consulta que lo habría medido corrió
+> el 2026-10-31 y no dice nada:** `auth.users` tiene **13** cuentas, **0** sin confirmar y **0** altas
+> desde el 2026-08-30 (la última es del 2026-06-03). Sin altas posteriores, «todas confirmadas» es
+> compatible con la casilla activada y con la casilla apagada.
 >
 > **El paso 0 está bloqueado por `DEC-10`:** sin dominio propio no hay remitente que verificar.
 
@@ -362,7 +380,11 @@ tiene vuelta atrás para los usuarios:
       estable es la pública
 - [ ] 4. Marcar como confirmadas las cuentas existentes (**decidido el 2026-08-28**, ver
       registro: se da por buena una propiedad de correo que nunca se probó). En el **SQL Editor**
-      del panel, porque `execute_sql` del MCP da timeout. Los tres, en orden — sin el primero no
+      del panel ~~, porque `execute_sql` del MCP da timeout~~ *(el 2026-10-31 `execute_sql` sí
+      respondió a un `select`; no se probó escritura y no se prueba con este `update`)*. Lo corre
+      quien tenga permisos de escritura: **Alejandro sólo tiene acceso de invitado**. Medido el
+      2026-10-31: el primer `select` ya da **0**, así que hoy el `update` no tendría nada que hacer —
+      se repite el recuento justo antes del paso 5, por si hubo altas. Los tres, en orden — sin el primero no
       se sabe si el `update` hizo algo o no había nada que hacer, y el tercero tiene que dar **0**:
 
       ```sql
@@ -1038,6 +1060,7 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-10-31 | `P0-7` | **Supabase vuelve a responder** (cabecera). Mismo control que la caída: el subdominio del proyecto resuelve y el inventado no; el MCP responde a `list_tables` y a `execute_sql`. **Estado del repo re-medido antes de tocar nada:** `origin/develop` `170cc70`, `main` `0e76d76`, 11 PR (10 merged + #3 closed), `npm run verify` desde un árbol sin `.next` ni `next-env.d.ts` → **exit 0, 88 avisos, 3 archivos, 27 passed + 1 todo**. **Recuentos de `auth.users`:** 13 cuentas, 0 sin confirmar, 0 altas desde el 2026-08-30, última alta el 2026-06-03 — **no distinguen** si *Confirm email* está activado (`P0-7`). **Mirado en el panel por Alejandro:** no hay SMTP propio activo y *Confirm email* está **apagado** — producción sigue aceptando altas con correos ajenos; plantillas y Site URL no se miraron. **Acceso:** Alejandro es **invitado** en el proyecto y no puede cambiar la configuración; quién es dueño no consta. **El PR #11 también entró antes que su CI:** merge a las 18:47:23 UTC, run `41231108109` arrancado a las 18:47:27 — igual que el #10, verde por suerte. **Instrumento que miente, medido:** `list_tables` del MCP da `rows: 0` en las 8 tablas de `public` y `count(*)` da **10** en `profiles` y **110** en `messages`; leído al pie de la letra, habría parecido que la base volvió vacía. **Medido de paso y no investigado:** 13 cuentas en `auth.users` y 10 filas en `profiles` | — (solo doc) |
 | 2026-10-31 | `P0-7`, `DEC-9`, `DEC-10`, `BUG-9`, `E.1`→`E.4` | **Revisión de arquitectura tras dos meses sin actividad.** **Estado re-medido y coincide con el del 2026-08-30:** `develop` `4ed3011`, `main` `0e76d76`, 9 PR (8 merged + #3 closed), ningún commit ni run nuevo desde entonces; `npm run verify` desde un árbol sin `.next` ni `next-env.d.ts` → **exit 0, 88 avisos, 3 archivos, 27 passed + 1 todo**. **Registrado lo que el 2026-08-30 quedó sin escribir:** dominio de producción y que Vercel despliega `main` (§2), y el SQL para confirmar las cuentas existentes (`P0-7`, paso 4). **Hallazgo que reordena `P0-7`:** según la documentación de Supabase, el SMTP incluido sólo entrega a miembros del equipo, así que *Confirm email* necesita antes un SMTP propio (paso 0). **Estado del panel: desconocido**, no se da por hecho ni por pendiente. **`DEC-9`** fija dónde vive el freemium. **`BUG-9`**: el push lo dispara el teléfono del emisor, con `catch` vacío; el fix pasa a `E.4` (push disparado por la base). **Correcciones al plan del Bloque E**, en su cabecera: los comandos de `E.1`→`E.5` salían de `main` con prefijo `feat/`, y en gitflow las ramas de trabajo salen de `develop` con `feature/`. **Medido de paso y no corregido:** no existen `web/supabase/migrations` ni `config.toml` (sin Supabase local en Docker, así que el check «migraciones contra un Postgres limpio» no puede existir aún) ni Sentry en `package.json`; y **`develop` y `main` no tienen ninguna protección de rama ni ruleset** (`gh api .../branches/<rama>/protection` → 404 *Branch not protected* en las dos, `rulesets` → `[]`), así que «nada entra sin PR» y «el gate bloquea» se cumplen **por costumbre, no porque GitHub lo imponga**: un push directo a `main` entra y despliega. **Pasó ese mismo día:** el PR #10 se mergeó a las 18:38:25 UTC y su run de CI (`41230399241`) **arrancó a las 18:38:30**, o sea que entró **antes** de que el gate corriera. Salió verde, pero el orden lo decidió la suerte. **Más tarde el mismo día:** el proyecto de Supabase **no responde** (alerta en la cabecera), y `DEC-10` deja el dominio propio aplazado | — (solo doc) |
 | 2026-08-30 | `SEC-1`, `SEC-2`, `P0-7` | **Tanda `E.A` integrada entera** (PR #7, merge `beec03b`), y con ella el Bloque A queda cerrado **en código**. Gate en verde leído en el log: lint **88 problems (0 errors)**, **27 tests + 1 todo en 3 archivos**, humo **27/27** — las mismas cifras medidas en local sobre el merge antes de empujarlo. **El orden de integración se invirtió respecto al plan, y a propósito:** `E.A` se escribió antes que `E.0` (`dc178b0` el 24, `e7255a7` el 28 a las 13:05, contra `9dd154b` de las 14:04) pero se integró **después**, para que estas ramas pasaran por el gate en vez de entrar sin él. Costó **dos resoluciones de conflicto** en este archivo, previstas con `git merge-tree` antes de abrir los PR y resueltas **intercalando por hora de commit**, no por fecha — el commit de Cloudinary es de las 19:03 del 24 y el que trajo `SEC-16` y `DEC-1` de las 18:23. **Lo que sigue abierto y que ningún check verde cierra:** desplegar `P0-7` y sólo entonces tocar el panel; probarlo con un correo real, porque `verifyOtp` nunca ha corrido contra Supabase; subir un avatar real contra lo desplegado para `SEC-2`; y la pregunta de `mensajeDeAuth`. Cierre de la tanda en el plan del Bloque E | `beec03b` |
 | 2026-08-30 | `P0-7`, `E.0.2` | **`P0-7` integrado en `develop`** (PR #6, merge `6552d30`). Gate en verde y **leído en el log**: lint **88 problems (0 errors)**, `✓ Types generated successfully`, **18 tests + 1 todo en 2 archivos**, humo **27/27** — las mismas cifras que se habían medido en local sobre el merge antes de empujarlo, y el merge se verificó **como merge**, no sumando las dos ramas por separado. **Predicción del 2026-08-29, ahora probada:** la rama `fix/e-a-p0-7` **no contenía el workflow** (`git ls-tree` = 0) y el gate **corrió igual**, heredado de la base — integrar `.github/workflows/ci.yml` en `develop` es lo que da cobertura a las demás ramas, y no hace falta que cada una lo lleve. **Lo que este verde NO cierra:** `P0-7` sigue **sin probarse de verdad** — nunca se envió un correo y `verifyOtp` no ha corrido nunca contra Supabase; el gate no ejerce flujos autenticados, y se midió que build y humo pasan con el entorno vacío. **El orden con el panel sigue siendo obligatorio:** activar «Confirm email» sin este código **desplegado** (integrado no basta) rompe todo registro nuevo, porque `signUp` pasa a devolver `session: null` | `6552d30` |
