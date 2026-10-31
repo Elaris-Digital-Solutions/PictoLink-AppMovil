@@ -83,6 +83,9 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Tests unitarios
+        run: npm run test:run
+
       # `build` incluye el typecheck (tsc --noEmit && vite build).
       - name: Build
         run: npm run build
