@@ -10,7 +10,8 @@
 > Los IDs no se reutilizan ni se renumeran, aunque se cierren.
 
 - **Auditoría inicial:** 2026-07-26
-- **Última actualización:** 2026-08-30 (`E.0.2` **cerrada e integrada** y `E.0.1` **cerrada**: push protection bloquea de verdad, probado con control positivo y negativo. `SEC-16` **resuelta**: los 5 PAT revocados, y la publicación de uno nuevo queda bloqueada. `P0-7` **integrado en `develop` pero no desplegado**: falta desplegar y **después** tocar el panel de Supabase, en ese orden)
+- **Última actualización:** 2026-10-31 (revisión de arquitectura tras dos meses sin actividad: el estado del 2026-08-30 se re-midió y coincide. `P0-7` **está desplegado** desde el 2026-08-30, pero el panel **no se puede activar todavía**: el SMTP por defecto de Supabase sólo envía correos a los miembros del equipo. `DEC-9` registra dónde vive el freemium. `BUG-9`: el push lo dispara el teléfono del emisor y sus fallos se tragan en silencio)
+- ~~**Última actualización:** 2026-08-30 (…`P0-7` **integrado en `develop` pero no desplegado**…)~~ *Caducó el mismo 2026-08-30 con el PR #9 (`develop`→`main`, merge `0e76d76`); corregido el 2026-10-31.*
 
 > **Restricción de planificación (decidida 2026-07-27):** no hay fecha límite del proyecto.
 > El criterio de orden es **riesgo/costo activo primero, y agrupar todo lo legal, comercial
@@ -96,7 +97,7 @@ web/  (Next.js 16.1.6 · React 19 · App Router · Tailwind 4 · Webpack)
 | `static.arasaac.org` | CDN de imágenes de pictogramas | **Provisional** — se elimina al desplegar el set propio (`P0-1`). Hoy: licencia NC + dependencia de disponibilidad de un tercero sin SLA |
 | HF Space `elarisdigitalsolutions-pictolink` | NLP (predicción, búsqueda, texto↔pictos) | Tier gratuito, cold starts de ~30 s |
 | Cloudinary | Avatares | Preset unsigned expuesto (ver `SEC-2`) |
-| Vercel | Hosting + analytics + speed insights | Analítica condicionada por política de menores (`P0-8`) |
+| Vercel | Hosting + analytics + speed insights. **Producción: `https://picto-link-app-movil.vercel.app`, desplegada desde `main`** (no desde `develop`) — medido el 2026-08-30 por `gh api .../deployments` | Analítica condicionada por política de menores (`P0-8`) |
 
 **Nota arquitectónica clave:** la app es *client-heavy por diseño* — casi todo es
 `'use client'`, la lógica vive en stores Zustand que hablan directo a Supabase vía RLS,
@@ -195,7 +196,9 @@ dashboard admin. El freemium está modelado, no implementado.
 **Fix:** quitar `plan_type` y `user_type` del UPDATE del usuario mediante trigger
 `BEFORE UPDATE` que restaure los valores anteriores, o moverlo a una tabla
 `subscriptions` sin políticas de escritura para `authenticated`. Los límites deben vivir
-en funciones `SECURITY DEFINER` o route handlers, nunca en el cliente.
+en funciones `SECURITY DEFINER` ~~o route handlers~~, nunca en el cliente. *(Corregido el
+2026-10-31 por `DEC-9`: la app escribe directo en Supabase, así que un route handler no es un
+sitio por el que pasen todas las escrituras. Los límites van en Postgres.)*
 
 - [ ] `plan_type` protegido a nivel de BD
 - [ ] Límites freemium implementados server-side
@@ -274,7 +277,13 @@ Requiere validación de recibos server-side y sincronización del estado hacia
 
 ---
 
-### `P0-7` 🔵 Confirmación de email: **integrada en `develop` el 2026-08-30, sin desplegar**; panel pendiente
+### `P0-7` 🔵 Confirmación de email: **desplegada el 2026-08-30** (`main` `0e76d76`); panel **bloqueado por el SMTP**
+
+> ~~Título hasta el 2026-10-31: «integrada en `develop` el 2026-08-30, sin desplegar; panel pendiente».~~
+> Caducó el mismo día con el PR #9. **Desplegado, verificado por efecto con control negativo** el
+> 2026-08-30: `/auth/confirm` en producción devuelve una página de PictoLink y una ruta inventada
+> (`/auth/ruta-inventada-que-no-existe-9f3a`) devuelve 404; lo único que cambia entre las dos
+> peticiones es la ruta. **Eso no dice nada de `verifyOtp`**, que sigue sin haber corrido nunca.
 
 `components/onboarding/OnboardingFlow.tsx:99` mostraba al usuario el mensaje:
 *«ve a tu panel de Supabase > Authentication > Providers > Email y apaga Confirm email»*.
@@ -305,17 +314,50 @@ Hecho (`fix/e-a-p0-7-confirmacion-email`):
       «correo sin confirmar», para no abrir un segundo oráculo de enumeración
       además del de `SEC-4`
 
-Falta, y **nada de esto lo cierra el gate**:
+Falta, y **nada de esto lo cierra el gate**. **En este orden**, y el último paso es el que no
+tiene vuelta atrás para los usuarios:
 
-- [ ] Activar *Confirm email* en el panel — **después** de desplegar
-- [ ] Plantillas *Confirm signup* y *Reset password*: cambiar `{{ .ConfirmationURL }}`
-      por `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-      (y `type=recovery` en la de reset)
-- [ ] Site URL del proyecto apuntando al dominio de producción
-- [ ] Marcar como confirmadas las cuentas existentes (**decidido el 2026-08-28**, ver
-      registro: se da por buena una propiedad de correo que nunca se probó)
-- [ ] **Ejecutar el flujo real**: registrarse, recibir el correo, hacer clic. Nada de
-      lo verificado hasta ahora llamó a `verifyOtp` contra Supabase ni envió un correo
+> **Hallazgo del 2026-10-31, y reordena la lista: el paso 0 no estaba.** La documentación de
+> Supabase (*Auth → SMTP*, consultada ese día) dice que el servidor de correo incluido **sólo
+> entrega a las direcciones de los miembros del equipo de la organización**; cualquier otra
+> falla con `email_address_not_authorized`, y además tiene un límite bajo de envíos por hora.
+> **Consecuencia:** activar *Confirm email* sin SMTP propio rompe el alta de **todo** usuario real
+> igual que si el código no estuviera desplegado — sólo que con otro error. Y por el mismo motivo,
+> **si el proyecto no tiene SMTP propio, la recuperación de contraseña ya hoy no le llega a ningún
+> usuario real**. **No consta si lo tiene:** nadie lo ha mirado. Es documentación, no medición: se
+> cierra mirando *SMTP Settings* y probando con un correo que **no** sea del equipo.
+>
+> **Estado del panel: desconocido.** Los pasos se entregaron el 2026-08-30 a las 02:13 y no hay
+> confirmación de si se tocó. No se da por pendiente ni por hecho.
+
+- [ ] **0. SMTP propio** (*Authentication → Emails → SMTP Settings*). Necesita un proveedor de
+      correo y, en la práctica, un dominio remitente verificado — **la app no tiene dominio
+      propio todavía** (`pictolink.app` no resuelve). Sin esto, nada de lo de abajo sirve
+- [ ] 1. Plantilla *Confirm signup*: cambiar `{{ .ConfirmationURL }}` por
+      `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+- [ ] 2. Plantilla *Reset password*: lo mismo con `type=recovery`
+- [ ] 3. Site URL del proyecto: **`https://picto-link-app-movil.vercel.app`**, el dominio de
+      producción. Sacado de `gh api repos/.../deployments` el 2026-08-30: deployment Production
+      sobre `0e76d76`, `state=success`. **Vercel despliega desde `main`, no desde `develop`.** La
+      URL con hash del deployment tiene Deployment Protection (302 a `vercel.com/sso-api`); la
+      estable es la pública
+- [ ] 4. Marcar como confirmadas las cuentas existentes (**decidido el 2026-08-28**, ver
+      registro: se da por buena una propiedad de correo que nunca se probó). En el **SQL Editor**
+      del panel, porque `execute_sql` del MCP da timeout. Los tres, en orden — sin el primero no
+      se sabe si el `update` hizo algo o no había nada que hacer, y el tercero tiene que dar **0**:
+
+      ```sql
+      select count(*) from auth.users where email_confirmed_at is null;
+      update auth.users set email_confirmed_at = now() where email_confirmed_at is null;
+      select count(*) from auth.users where email_confirmed_at is null;
+      ```
+      *(Escrito por primera vez el 2026-10-31: el SQL se entregó el 2026-08-30 y no quedó en
+      ningún documento.)*
+- [ ] 5. Activar *Confirm email* (*Authentication → Providers → Email*). **El último.** Antes del 4,
+      deja fuera a las cuentas viejas; antes del 0, a todas las nuevas
+- [ ] 6. **Ejecutar el flujo real** con un correo **que no sea del equipo**: registrarse, recibir
+      el correo, hacer clic. Es lo único que cierra `P0-7`. Nada de lo verificado hasta ahora
+      llamó a `verifyOtp` contra Supabase ni envió un correo
 
 ---
 
@@ -568,6 +610,7 @@ bundle de producción. Al ignorar `docs/`, `desencriptar/` y `fotos/`, el CSS ba
 | `BUG-5` | 🟡 | Errores de pictograma documentados por el terapeuta y sin corregir (`web/data/REVISION-PENDIENTES.md:45`): "dormir" muestra "hacer" (`acc-14`) y "pañal" (`ayu-23`); "algo" muestra "chocar contra algo" en 38 celdas. **Diferido al Bloque F** (se descarta al reemplazar el set). Tradeoff asumido: un picto incorrecto es un fallo de comunicación real para los usuarios del piloto, no cosmético. | [ ] |
 | `BUG-8` | ⚪ | **Cerrado 2026-07-27 por eliminación** — el archivo con el defecto ya no existe. Se conserva el registro porque el patrón puede reaparecer: **el default de una desestructuración no cubre `null`**, y supabase-js devuelve `data: null` en cada fallo. Si alguna vez vuelve a escribirse `const { data: x = [] } = await supabase...`, el bug vuelve. Texto original: ~~Un error de Supabase en `/admin/metrics` rompe el build entero.~~ `app/admin/metrics/page.tsx:54-68` desestructura con `const [{ data: profiles = [] }, …]`. El valor por defecto de una desestructuración **solo se aplica a `undefined`**, y supabase-js devuelve `data: null` cuando la query falla — así que `profiles` queda en `null` y `.map()` (`:72`) revienta. Además el `error` de las 6 queries se descarta sin mirarlo. Como la página es un Server Component que Next prerenderiza en build, **cualquier fallo de Supabase en tiempo de build tumba el despliegue completo**, no solo esa ruta. Reproducido el 2026-07-27: `npm run build` → `TypeError: Cannot read properties of null (reading 'map')` → `Export encountered an error on /admin/metrics/page, exiting the build`. **Fix:** usar `?? []` en vez del default de desestructuración, comprobar `error`, y sacar la página del prerender (`export const dynamic = 'force-dynamic'`) — no tiene sentido prerenderizar un panel de métricas. | [ ] |
 | `BUG-7` | 🟡 | **`getPictoImageUrl` ignora su parámetro `size`.** `lib/pictograms/catalog.ts:24` declara `size: 300 \| 500 = 300` pero el template literal escribe `${id}_300.png` siempre. Latente: los 4 llamadores (`chat/page.tsx:233`, `SentenceBar.tsx:48`, `PredictionBar.tsx:42`, `FolderRow.tsx:86`) pasan `300` explícitamente. **Trampa para `P0-1`:** al unificar el constructor de URL en un solo punto (F.2), quien lo lea va a asumir que el parámetro funciona. Corregir o eliminar el parámetro en ese movimiento. Detectado 2026-07-27 al escribir la primera suite de tests. | [ ] |
+| `BUG-9` | 🟠 | **El push lo dispara el teléfono del emisor, y si falla nadie se entera.** `useChatStore.ts:250` y `useGroupStore.ts:340` llaman a `/api/push/send` con un `fetch` **después** de insertar el mensaje, sin esperar la respuesta y con `.catch(() => {})` vacío (`:254` y `:348`). Si el emisor pierde la red o cierra la app entre el insert y el `fetch`, el mensaje queda guardado pero **el receptor nunca recibe la notificación**, y no queda rastro en ningún lado. Además, en Capacitor una URL relativa `/api/push/send` no apunta a Vercel, así que en el port fallaría siempre, y en silencio. Contradice el requisito de producto «se notifica todo mensaje, en todo momento». **Fix decidido:** el push lo dispara la base, no el cliente — se hace en `E.4` (ver el plan del Bloque E). De paso: `useChatStore.ts:256-257` muestra al usuario el `e.message` crudo de la base, que es lo que la regla de errores prohíbe. Detectado el 2026-10-31 leyendo el código, no reproducido | [ ] |
 | `BUG-6` | 🟡 | **`update_group_with_members` borra campos en lugar de preservarlos.** `schema.sql:348-349` asigna `description = p_description` y `avatar_url = p_avatar_url` sin `coalesce`, mientras `name` justo arriba sí usa `coalesce(nullif(trim(p_name),''), name)`. Los parámetros están tipados opcionales (`lib/supabase/types.ts:164-165`), así que llamarla sin ellos pone ambos en `null`. Latente: el único llamador (`cuidador/page.tsx:525`) siempre los pasa — pero la RPC está expuesta al REST. | [ ] |
 
 ### `A11Y-1` 🟠 Accesibilidad — el punto más débil para una app AAC
@@ -671,7 +714,40 @@ de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 | `DEC-5` | ¿El Bloque A se cierra antes del port, o se corre expuesto durante el port? | 🟢 **Resuelta 2026-08-24: partido.** `SEC-1`, `SEC-2` y `P0-7` **antes** — son chicos y viven en `web/`, que se queda después del corte. `PERF-2` **después**, porque toca `lib/store/useChatStore.ts` y ese archivo se muda a `mobile/` en `E.1`: arreglarlo antes es arreglarlo dos veces. **Costo aceptado por delante:** `PERF-2` es egress facturado, así que la decisión tiene un precio que corre mientras dure el port |
 | `DEC-6` | ¿Mac de segunda mano (~400–600 USD, una vez) o build en la nube (Codemagic, 500 min M1/mes gratis)? | ⏳ Pendiente — **no bloquea nada hasta `E.6`**, puede dormir. Lo que cambia: sin Mac no hay Safari Web Inspector y el WebView de iOS se depura a ciegas. ⚠ **No elegir Ionic Appflow: cierra el 2027-12-31** |
 | `DEC-7` | ¿El repo sigue público o pasa a privado? | 🟢 **Resuelta 2026-08-24: sigue público.** Consecuencias asumidas: minutos de Actions gratis (así que E2E de Playwright en cada PR es viable, y esto desbloquea el «CI mínimo ← pendiente de decisión» del Bloque B), y a cambio **más superficie para el género de `SEC-16`** — un proyecto Capacitor suma `android/` e `ios/` con configuración de firma. Por eso la push protection entra como paso del día uno, no como higiene posterior |
+| `DEC-9` | ¿Dónde viven el plan del usuario y los límites freemium? | 🟢 **Resuelta 2026-10-31:** tabla que sólo escribe el servidor, límites en Postgres, validación de compras delegada a un servicio de suscripciones (proveedor sin elegir). Motivo, alternativas y costo justo debajo de esta tabla. **No decide precios ni límites** |
 | `DEC-8` | ¿`E.0.3` (E2E de Playwright) entra antes del port o después? | 🟢 **Resuelta 2026-08-30: después de `E.1`.** El motivo no es lo que cuesta escribirla: es que **`E.1` saca la SPA de Next y cambia rutas, arranque y estructura**, así que unos E2E escritos ahora apuntarían justo a lo que está por moverse y habría que rehacerlos. **Playwright no está instalado** (medido el 2026-08-28), así que tampoco es «activarlo»: es instalarlo, configurarlo y escribir la suite desde cero, más su control negativo. Lo que ya cubre parte y **sigue dentro del gate**: `test:smoke`, **27 comprobaciones** contra la app corriendo. **Costo aceptado por adelantado:** `E.0` queda abierta con **3 de 4 tareas** durante todo `E.1`, y en ese tramo el port se verifica **sin** E2E — la equivalencia del tablero se comprueba a mano o por unitarios, que es lo que `E.1.1` ya pide. **Alternativa descartada:** escribirla ahora para cerrar `E.0`, descartada porque el trabajo se haría dos veces. **Lo que esta decisión NO dice:** que los E2E sobren — `DEC-7` los dio por viables en cada PR por los minutos gratis del repo público, y eso sigue en pie para después de `E.1` |
+
+> **`DEC-9` — resuelta el 2026-10-31: dónde vive el freemium.** El modelo de negocio es freemium y
+> eso es una condición de la arquitectura, no una función más. Se decide **dónde vive**, no
+> **cuánto cuesta**: precios, límites y qué incluye cada plan siguen sin decidir.
+>
+> 1. **El plan del usuario vive en una tabla que sólo escribe el servidor** (la notificación de la
+>    tienda o del servicio de suscripciones), nunca el cliente. No en `profiles.plan_type`, que hoy
+>    es escribible por el usuario (`P0-2`).
+> 2. **Los límites se aplican en Postgres** — RLS, triggers o funciones `SECURITY DEFINER`.
+> 3. **La validación de compras se delega a un servicio de suscripciones** en vez de escribir a
+>    mano StoreKit + Play Billing + sus notificaciones de servidor. Candidato: RevenueCat. **No
+>    está elegido, y su precio no se ha verificado:** se elige en `F.5`.
+>
+> **Por qué en Postgres y no en route handlers.** La app habla **directo con Supabase** con la
+> clave `anon` y el JWT del usuario; las rutas de Vercel no están en el camino de los datos. Un
+> límite escrito en un route handler se salta yendo a Supabase sin pasar por él, igual que hoy se
+> salta `plan_type` con un `PATCH`. **En esta arquitectura, el único sitio por el que pasan todas
+> las escrituras es la base.**
+>
+> **Por qué se decide ahora y no en `F.5`.** No adelanta código: la implementación sigue en el
+> Bloque C (`P0-2`) y en `F.5`. Lo que adelanta es la regla, porque `E.3` (auth por tokens) y `E.4`
+> (`device_tokens`, triggers) tocan el esquema y la capa de acceso antes de `F.5`. Sin la regla
+> escrita, lo natural es construir sobre `profiles.plan_type`, que es justo la columna escribible.
+>
+> **Alternativas descartadas.** Límites en el cliente: son cosméticos (§2). Límites sólo en route
+> handlers: la app no pasa por ellos. Validación de recibos propia: son dos APIs distintas, más
+> renovaciones, reembolsos y periodos de gracia, para un equipo sin experiencia móvil.
+>
+> **Costo aceptado por delante:** (a) los cobros dependen de un tercero; (b) un límite en Postgres
+> **no se ve en el código de la app** y sólo lo prueba un test de RLS, que **hoy no existe**
+> (`QA-1`). Antes de activar cualquier límite pago tienen que existir esos tests, con su control
+> negativo: un usuario `free` que intenta pasar el límite y es rechazado **por la base**.
 
 ### 7.4 Trabajo de empaquetado (cualquier camino)
 
@@ -766,7 +842,9 @@ Todo esto es explotable hoy o está facturando ahora mismo. Ningún ítem depend
 
 - [x] `QA-1` ESLint + Prettier + `typecheck` + Vitest (`chore/qa-1-tooling-base`)
 - [x] `QA-1` CI mínimo en GitHub Actions ~~← pendiente de decisión~~ **Escrito 2026-08-28**
-      (`chore/e0-andamiaje-y-contencion`). Pendiente de correr una vez para valer como gate
+      (`chore/e0-andamiaje-y-contencion`). ~~Pendiente de correr una vez para valer como gate~~
+      **Corrió el 2026-08-29, con control negativo, e integrado el 2026-08-30** — ver `QA-1` en §6
+      *(corregido el 2026-10-31)*
 - [ ] `QA-1` Test de integridad estructural del layout AAC (que ninguna celda apunte a una
       carpeta inexistente). La parte de validación de assets se hace en el Bloque F, cuando
       exista el set definitivo.
@@ -881,7 +959,8 @@ descartaría o se rehría si se hiciera antes.
 - [ ] Formularios App Privacy (Apple) y Data Safety (Play)
 
 **F.5 — Comercial (bloqueado por F.3):**
-- [ ] Límites freemium server-side (`SECURITY DEFINER` o route handlers, nunca cliente)
+- [ ] Límites freemium en Postgres (RLS, triggers o `SECURITY DEFINER`) ~~o route handlers~~ — ver
+      `DEC-9`, que exige antes tests de RLS con control negativo *(corregido el 2026-10-31)*
 - [ ] `P0-6` IAP con StoreKit y Play Billing
 - [ ] Validación de recibos server-side + sincronización del estado de suscripción
 
@@ -939,6 +1018,7 @@ de `P0-1` como casos de prueba. Bugs de pictograma confirmados: ver `BUG-5`.
 
 | Fecha | ID | Cambio | Commit |
 |---|---|---|---|
+| 2026-10-31 | `P0-7`, `DEC-9`, `BUG-9`, `E.1`→`E.4` | **Revisión de arquitectura tras dos meses sin actividad.** **Estado re-medido y coincide con el del 2026-08-30:** `develop` `4ed3011`, `main` `0e76d76`, 9 PR (8 merged + #3 closed), ningún commit ni run nuevo desde entonces; `npm run verify` desde un árbol sin `.next` ni `next-env.d.ts` → **exit 0, 88 avisos, 3 archivos, 27 passed + 1 todo**. **Registrado lo que el 2026-08-30 quedó sin escribir:** dominio de producción y que Vercel despliega `main` (§2), y el SQL para confirmar las cuentas existentes (`P0-7`, paso 4). **Hallazgo que reordena `P0-7`:** según la documentación de Supabase, el SMTP incluido sólo entrega a miembros del equipo, así que *Confirm email* necesita antes un SMTP propio (paso 0). **Estado del panel: desconocido**, no se da por hecho ni por pendiente. **`DEC-9`** fija dónde vive el freemium. **`BUG-9`**: el push lo dispara el teléfono del emisor, con `catch` vacío; el fix pasa a `E.4` (push disparado por la base). **Correcciones al plan del Bloque E**, en su cabecera: los comandos de `E.1`→`E.5` salían de `main` con prefijo `feat/`, y en gitflow las ramas de trabajo salen de `develop` con `feature/`. **Medido de paso y no corregido:** no existen `web/supabase/migrations` ni `config.toml` (sin Supabase local en Docker, así que el check «migraciones contra un Postgres limpio» no puede existir aún) ni Sentry en `package.json` | — (solo doc) |
 | 2026-08-30 | `SEC-1`, `SEC-2`, `P0-7` | **Tanda `E.A` integrada entera** (PR #7, merge `beec03b`), y con ella el Bloque A queda cerrado **en código**. Gate en verde leído en el log: lint **88 problems (0 errors)**, **27 tests + 1 todo en 3 archivos**, humo **27/27** — las mismas cifras medidas en local sobre el merge antes de empujarlo. **El orden de integración se invirtió respecto al plan, y a propósito:** `E.A` se escribió antes que `E.0` (`dc178b0` el 24, `e7255a7` el 28 a las 13:05, contra `9dd154b` de las 14:04) pero se integró **después**, para que estas ramas pasaran por el gate en vez de entrar sin él. Costó **dos resoluciones de conflicto** en este archivo, previstas con `git merge-tree` antes de abrir los PR y resueltas **intercalando por hora de commit**, no por fecha — el commit de Cloudinary es de las 19:03 del 24 y el que trajo `SEC-16` y `DEC-1` de las 18:23. **Lo que sigue abierto y que ningún check verde cierra:** desplegar `P0-7` y sólo entonces tocar el panel; probarlo con un correo real, porque `verifyOtp` nunca ha corrido contra Supabase; subir un avatar real contra lo desplegado para `SEC-2`; y la pregunta de `mensajeDeAuth`. Cierre de la tanda en el plan del Bloque E | `beec03b` |
 | 2026-08-30 | `P0-7`, `E.0.2` | **`P0-7` integrado en `develop`** (PR #6, merge `6552d30`). Gate en verde y **leído en el log**: lint **88 problems (0 errors)**, `✓ Types generated successfully`, **18 tests + 1 todo en 2 archivos**, humo **27/27** — las mismas cifras que se habían medido en local sobre el merge antes de empujarlo, y el merge se verificó **como merge**, no sumando las dos ramas por separado. **Predicción del 2026-08-29, ahora probada:** la rama `fix/e-a-p0-7` **no contenía el workflow** (`git ls-tree` = 0) y el gate **corrió igual**, heredado de la base — integrar `.github/workflows/ci.yml` en `develop` es lo que da cobertura a las demás ramas, y no hace falta que cada una lo lleve. **Lo que este verde NO cierra:** `P0-7` sigue **sin probarse de verdad** — nunca se envió un correo y `verifyOtp` no ha corrido nunca contra Supabase; el gate no ejerce flujos autenticados, y se midió que build y humo pasan con el entorno vacío. **El orden con el panel sigue siendo obligatorio:** activar «Confirm email» sin este código **desplegado** (integrado no basta) rompe todo registro nuevo, porque `signUp` pasa a devolver `session: null` | `6552d30` |
 | 2026-08-30 | `E.0.1`, `SEC-16` | **Push protection activada y probada: bloquea de verdad, y con eso `SEC-16` se cierra.** Estado antes, leído por API: `secret_scanning` y `secret_scanning_push_protection` en **disabled**. Después: los dos **enabled**. **El experimento tuvo control positivo antes del negativo**, que es lo que lo hace concluyente: un push **sin** secreto a la rama de descarte **pasó** (queda en el remoto en `0c3443f`), y el mismo push **con** un `sbp_` sintético de 44 caracteres fue **rechazado** — `GH013`, *push declined due to repository rule violations*, patrón nombrado **`Supabase Personal Access Token`** en `juguete.env:1`. Verificado por efecto: el commit `646a8b7` **no está en ninguna rama remota**. Lo único que cambió entre los dos push es el secreto, así que el rechazo no se explica por permisos ni por la rama. **Comprobado antes de correrlo y no supuesto:** la documentación de GitHub lista `Supabase Personal Access Token` con push protection y **sin** *validity check*, o sea que detecta por patrón — por eso un token sintético sirve, y sin esa comprobación un no-bloqueo habría sido ambiguo entre que la protección no funciona y que ese patrón no está cubierto. **Lo que esta protección NO hace:** borrar lo ya publicado; los 5 PAT siguen en los historiales públicos y lo que los vuelve inertes es la revocación. Quedan **disabled a propósito** los patrones no-proveedor y los *validity checks*; **medido de paso y fuera de alcance**, `dependabot_security_updates` también está disabled. Cierre de la tanda en el plan del Bloque E | — (sin traza en git) |

@@ -6,6 +6,23 @@
 [`ESTADO-DEL-PROYECTO.md`](../../../ESTADO-DEL-PROYECTO.md). Si los dos discrepan, manda el ESTADO,
 y este plan se corrige.
 
+> ### Correcciones al plan — 2026-10-31, antes de ejecutar `E.1`
+>
+> Las dos afectan a pasos **todavía no ejecutados**, así que se corrigen en su sitio y aquí queda
+> lo que decían.
+>
+> 1. **Los comandos de rama de `E.1`→`E.5` no seguían gitflow.** Decían
+>    `git checkout main; git pull; git checkout -b feat/eN-...`: salían de **`main`**, con prefijo
+>    **`feat/`**, y con tres comandos encadenados por `;` en un mismo bloque. En gitflow las ramas
+>    de trabajo salen de **`develop`** con prefijo **`feature/`**, y encadenar con `;` ya provocó
+>    un pegado duplicado que borró mal una rama. Ahora hay **un solo procedimiento** en §4,
+>    un comando por bloque, y cada tanda sólo nombra su rama. El de `E.0` se deja como estaba
+>    porque ya se ejecutó así.
+> 2. **`E.4` sustituía el transporte del push pero no quién lo dispara.** Hoy lo dispara el
+>    teléfono del emisor con un `fetch` que, si falla, se traga en silencio (`BUG-9`), y eso choca
+>    con el requisito de producto «se notifica todo mensaje, en todo momento». `E.4.3` pasa a ser
+>    **push disparado por la base**.
+
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
 > Si el trabajo termina mereciendo fase propia, se renombra entonces.
@@ -125,6 +142,27 @@ dentro de la tanda no está terminado.
 
 **Y antes de cada tarea se relee lo que la ejecución ya desmintió** — no al cerrar la tanda. Una
 corrección anterior puede haber dejado muerto un paso que todavía no se ejecutó.
+
+**Cómo se abre cada tanda (gitflow).** Las ramas salen de `develop`, nunca de `main`, y el PR va
+contra `develop`. Un comando por bloque; `<rama>` es la que nombra cada tanda.
+
+Ir a `develop`:
+
+```powershell
+git checkout develop
+```
+
+Traer lo último del remoto a la rama local (`git fetch` solo no la mueve):
+
+```powershell
+git pull
+```
+
+Crear la rama de la tanda:
+
+```powershell
+git checkout -b <rama>
+```
 
 ---
 
@@ -300,9 +338,7 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 archivos y cambia quién los compila. Por eso se puede verificar por **equivalencia** y no hace
 falta entorno de riesgo.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e1-spa-fuera-de-next
-```
+**Rama:** `feature/e1-spa-fuera-de-next` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -321,9 +357,7 @@ git checkout main; git pull; git checkout -b feat/e1-spa-fuera-de-next
 
 **Esta tanda existe para producir un número.** Todo lo que no haga falta para medir, no entra.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e2-capacitor-android
-```
+**Rama:** `feature/e2-capacitor-android` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -352,9 +386,7 @@ git checkout main; git pull; git checkout -b feat/e2-capacitor-android
 **Forma del daño: deja a usuarios reales fuera de su cuenta.** Superficie pequeña, consecuencia
 grave. Verificación completamente distinta a E.1, por eso no comparten PR.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e3-auth-por-tokens
-```
+**Rama:** `feature/e3-auth-por-tokens` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -373,16 +405,19 @@ git checkout main; git pull; git checkout -b feat/e3-auth-por-tokens
 **Forma del daño: introduce el primer secreto de servidor del port** y cambia el esquema. Dos
 motivos independientes para ir en su propio PR.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e4-push-nativo
-```
+**Rama:** `feature/e4-push-nativo` (se abre como dice §4).
+
+**Por qué hacen falta dos canales, y no uno siempre abierto.** Con la app en primer plano, el
+mensaje llega por Supabase Realtime (WebSocket), como hoy. Con la app en segundo plano o cerrada,
+iOS y Android suspenden la app y su socket: **el canal permanente lo mantiene el sistema
+operativo**, y se llama APNs (Apple) y FCM (Google). Esta tanda construye ese segundo canal.
 
 | # | Tarea | Verificación |
 |---|---|---|
 | **E.4.1** | 🔴 Releer `docs/superpowers/specs/2026-07-29-push-sin-service-role-design.md` **antes de escribir nada** | El diseño asumía que el camino nativo no estaba decidido. Ahora sí lo está: confirmar qué sigue en pie |
-| E.4.2 | Tabla `device_tokens` + RLS, en Supabase **local en Docker** primero | Migración contra un Postgres limpio |
-| E.4.3 | Sender a APNs/FCM, sustituyendo `web-push` | Notificación recibida en dispositivo real |
-| E.4.4 | Retirar `push_subscriptions` y el worker de Web Push | Control negativo: nada quedó llamando al endpoint viejo |
+| E.4.2 | Tabla `device_tokens` + RLS, en Supabase **local en Docker** primero. **Supabase local no está montado** (medido el 2026-10-31: no existen `web/supabase/config.toml` ni `migrations/`), así que el primer paso es `supabase init` y pasar el esquema a migraciones | Migración contra un Postgres limpio |
+| E.4.3 | ~~Sender a APNs/FCM, sustituyendo `web-push`~~ **El push lo dispara la base** *(corregido el 2026-10-31, `BUG-9`)*: trigger `AFTER INSERT` en `messages` y `group_messages` → Edge Function → FCM, que entrega también en iOS a través de APNs. Sustituye a `web-push` **y** a la llamada desde el cliente. El secreto de FCM vive en los secretos de la Edge Function. La autorización que hoy hace `/api/push/send` (contacto o membresía) ya la impuso RLS al aceptar el insert | **Control que distingue «lo dispara la base» de «lo dispara el cliente»:** insertar un mensaje **por SQL, sin ningún cliente emisor**, y que la notificación llegue al dispositivo real |
+| E.4.4 | Retirar `push_subscriptions`, el worker de Web Push, `/api/push/send` y los dos `fetch` de los stores (`useChatStore.ts:250`, `useGroupStore.ts:340`) | Control negativo: nada quedó llamando al endpoint viejo |
 
 > **Ninguna migración toca la base remota sin haber pasado por el Supabase local en Docker, y no
 > se aplica sola al mergear: se aplica a propósito.**
@@ -394,9 +429,7 @@ git checkout main; git pull; git checkout -b feat/e4-push-nativo
 **Agrupadas porque fallan igual:** las tres son «el plugin nativo no está disponible → degradar al
 equivalente web». Mismo modo de fallo, misma verificación.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e5-plugins-nativos
-```
+**Rama:** `feature/e5-plugins-nativos` (se abre como dice §4).
 
 | # | Tarea |
 |---|---|
