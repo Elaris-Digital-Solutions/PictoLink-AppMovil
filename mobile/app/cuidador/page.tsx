@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import Link from 'next/link';
+import { Link } from 'wouter';
 import {
     ArrowLeft, Send, Volume2,
     Search, Plus, CheckCheck, Settings, UserRound, X, UsersRound,

@@ -9,7 +9,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/lib/navigation';
 import { ArrowLeft, Volume2, Check, Play, Languages, LogOut, UserCircle } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { useSpeech } from '@/lib/hooks/useSpeech';

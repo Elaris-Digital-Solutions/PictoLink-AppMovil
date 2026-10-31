@@ -12,14 +12,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/ssr": "0.9.0",
+    "@supabase/supabase-js": "2.111.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.577.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "tailwind-merge": "3.5.0",
+    "wouter": "3.13.0",
+    "zustand": "5.0.11"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.2.1",
     "@types/node": "^20.19.43",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "4.2.1",
     "typescript": "^5.9.3",
     "vite": "^8.3.5",
     "vitest": "^4.1.10"

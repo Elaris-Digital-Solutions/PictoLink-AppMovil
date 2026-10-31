@@ -425,6 +425,39 @@ falta entorno de riesgo.
 >   `mobile/`, agregar dependencias se hace con `npx npm@11 install`**; la CI no cambia.
 > - **El job `mobile` corre ahora los tests** antes del build.
 
+> **`E.1.4` — hecha el 2026-10-31. Router: wouter 3.13.0** (decisión de Alejandro, entre wouter,
+> React Router y TanStack Router: la app usa 15 `replace`, 1 `push`, 1 `back`, 2 `usePathname` y
+> 2 `<Link>`, sin parámetros dinámicos). **0 imports de `next/` en `mobile/`**; build y 13 tests
+> en verde. **Métrica de la tanda: 0 líneas cambiadas en `components/board/`** respecto de
+> `develop` (7 renombres puros).
+>
+> - **Cómo se sustituyó:** `lib/navigation.ts` (25 líneas) da `useRouter()` y `usePathname()` con
+>   la forma de Next sobre wouter, así que en 6 archivos cambió **sólo la línea del import**;
+>   `<Link>` de wouter acepta `href` igual. Total en páginas y componentes: 11 líneas. `next/image`
+>   → `<img>` con `color: transparent`, que es lo que ponía Next. `App.tsx` hace lo de
+>   `app/layout.tsx`: mismo orden de montaje, `app/error.tsx` como error boundary, StrictMode como
+>   el App Router. **Fuera a propósito:** `PWARegistry` (no hacía nada) y Analytics/SpeedInsights
+>   de Vercel (esta app no se sirve desde Vercel).
+> - **Corrección 5 resuelta sin tocar código:** `process.env.NEXT_PUBLIC_*` se sustituye en el build
+>   con `define`, leyendo **sólo** las `NEXT_PUBLIC_` de `web/.env.local`. **Verificado en el
+>   bundle, no en la config:** las 4 públicas con valor aparecen y los 5 secretos no. Una alarma
+>   (`HF_API_URL`) resultó tener el mismo valor que la pública y que la URL escrita en el código.
+> - **Corrección 8, no estaba en el plan: la UI llama a la API con rutas relativas** (6 llamadas a
+>   `/api/...`, todas con sesión por cookie). En el navegador lo resuelve un proxy de Vite hacia el
+>   Next de `web/`; **en el teléfono no funciona y es exactamente `E.3`**. Y una omisión de `E.1.3`:
+>   `assets/favicon.png` (el logo del onboarding) se mudó aquí.
+> - **Equivalencia medida contra el original**, con un worktree de `develop` (`1e281aa`) corriendo
+>   Next: **tablero dentro de la app real, 0 diferencias** en las 45 celdas, incluido el tamaño de
+>   cada imagen cargada, y el mismo comportamiento («yo» → barra; «personas» → título y 45 celdas).
+>   **Onboarding, página entera:** 16 elementos, la única diferencia es el logo, 60×60.72 contra
+>   60×60.94 — Next lo sirve reescalado a 64×65 y redondea la proporción; Vite usa el original
+>   (332×336). **El route guard funciona:** `/chat` sin sesión redirige a `/onboarding`.
+> - **Error de medición, corregido en el momento:** la primera medida del logo en Next se tomó antes
+>   de que cargara (daba 60×60, el tamaño de los atributos). Las medidas esperan ahora a que todas
+>   las imágenes estén completas.
+> - **Qué no prueba:** ningún flujo con sesión (chat, cuidador, ajustes) se ejerció; el bundle es un
+>   único JS de 978 kB (Next partía por ruta) — no afecta a la equivalencia, sí al arranque en E.2.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide
