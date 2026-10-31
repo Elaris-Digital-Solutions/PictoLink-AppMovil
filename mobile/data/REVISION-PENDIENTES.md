@@ -22,7 +22,7 @@ Consecuencia para esta tabla: los 5 diferidos (`qué`, `dónde`, `más`, `algo`,
 
 ### Mecanismo de imágenes locales (nuevo)
 
-Para conceptos que ARASAAC no cubre, hay un mapa `PICTO_OVERRIDES` en `aac-grid-layout.ts` (etiqueta → ruta local) que `AACButton` usa con prioridad sobre `pictogramId`. Las imágenes van en `web/public/pictos/`. Sirve para aplicar imágenes propias/externas sin tocar cada celda.
+Para conceptos que ARASAAC no cubre, hay un mapa `PICTO_OVERRIDES` en `aac-grid-layout.ts` (etiqueta → ruta local) que `AACButton` usa con prioridad sobre `pictogramId`. Las imágenes van en `mobile/public/pictos/` (hasta el 2026-10-31, `web/public/pictos/`). Sirve para aplicar imágenes propias/externas sin tocar cada celda.
 
 **Resueltos con imagen local (jun 2026):**
 - anaranjado → `/pictos/anaranjado.png` (mancha naranja generada recoloreando la mancha roja de ARASAAC).

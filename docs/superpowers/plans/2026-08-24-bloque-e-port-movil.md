@@ -399,6 +399,32 @@ falta entorno de riesgo.
 > (`@rolldown/binding-linux-x64-gnu`); que `npm ci` funcione en `ubuntu-latest` se ve en el primer
 > run del PR. **Tailwind no se instala todavía:** llega en `E.1.3` con `globals.css`.
 
+> **`E.1.3` — hecha el 2026-10-31.** Commit `87e58f0`, **51 renombres al 100 %** (contenido
+> intacto: `git diff -M` no marca ningún cambio). Se mudaron `components/`, `data/`, `hooks/`,
+> `lib/` salvo lo de servidor, **las 8 páginas de la interfaz** (`app/chat`, `cuidador`,
+> `cuidador/settings`, `dashboard`, `offline`, `onboarding`, `settings`, `settings/aac`),
+> `app/globals.css`, `public/pictos/` y el test de catálogo. **Verificación: 13 passed + 1 todo
+> desde `mobile/`**; en `web/` quedan 2 archivos con 14 passed — 13 + 14 = los 27 de antes.
+>
+> - **El reparto de `lib/` (corrección 3), medido por quién importa cada archivo:** sólo `web/`
+>   → `supabase/server.ts`, `supabase/types.ts`, `auth-confirm.ts`. **Los dos**, copiados →
+>   `cloudinary.ts` (mixto: la UI sube y borra, las rutas usan `userFolder`/`ownsPublicId` de
+>   `SEC-2`), `ai/picto-nlp.ts` + `ai/hf-client.ts` (`cuidador` y `health-check`) y `types/index.ts`
+>   (lo importa `supabase/types.ts`). **Deuda:** las copias pueden divergir; en `E.1.5` cada lado
+>   se queda con lo que usa.
+> - **Corrección 7: el plan no movía las páginas**, y sin ellas `E.1.4` no tiene dónde sustituir
+>   `next/navigation`. Se mudaron con la misma estructura de carpetas para que el renombre sea puro.
+> - **`web/` queda en rojo hasta `E.1.5`**, a propósito y sólo en local: el typecheck da 4 errores,
+>   todos en `app/layout.tsx` (importa `AppShell`, `StoreHydrator`, `PWARegistry`,
+>   `SessionTracker`). El PR no se abre hasta que las dos apps estén en verde.
+> - **`hooks/useSpeech.ts` no lo importa nadie** (todos usan `lib/hooks/useSpeech.ts`, que es otra
+>   versión: 185 contra 108 líneas). Se mudó igual; a `§10` del ESTADO.
+> - **Rodeo de entorno, medido aislado:** `npm install` de vitest 4.1.10 (y 5.0.5) junto a Vite
+>   8.3.5 revienta en npm 10.9.2 (`Cannot read properties of null (reading 'edgesOut')`, en
+>   `#loadPeerSet`); con **npm 11.19.1** instala, y el `npm ci` de npm 10 acepta ese lockfile. **En
+>   `mobile/`, agregar dependencias se hace con `npx npm@11 install`**; la CI no cambia.
+> - **El job `mobile` corre ahora los tests** antes del build.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide
