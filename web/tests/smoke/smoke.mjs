@@ -37,24 +37,40 @@ function record(name, ok, detail = '') {
  * Rutas y su código esperado. Los 404 son tan importantes como los 200: son la
  * prueba en ejecución de que PERF-1 y la eliminación del panel admin surtieron
  * efecto, no solo de que el archivo ya no está en el árbol.
+ *
+ * Desde E.1.5 web/ es landing + API: las pantallas de la app, el manifest y el
+ * service worker se fueron a mobile/, y sus 404 prueban que salieron de verdad.
  */
 const ROUTES = [
     ['/', 200],
-    ['/onboarding', 200],
-    ['/chat', 200],
-    ['/cuidador', 200],
-    ['/settings', 200],
-    ['/dashboard', 200],
-    ['/offline', 200],
-    ['/manifest.webmanifest', 200],
-    ['/sw.js', 200],
+    ['/onboarding', 404],
+    ['/chat', 404],
+    ['/cuidador', 404],
+    ['/settings', 404],
+    ['/dashboard', 404],
+    ['/offline', 404],
+    ['/manifest.webmanifest', 404],
+    ['/sw.js', 404],
     ['/api/health-check', 200],
     ['/data/arasaac_catalog.jsonl', 404], // PERF-1
     ['/admin/metrics', 404], // panel admin eliminado
 ];
 
+/**
+ * Las rutas de la API sin sesión. Medidas el 2026-10-31 antes de E.1.5 contra
+ * `develop` y después, con respuestas idénticas: un 200 aquí sería una ruta que
+ * dejó de exigir sesión. `contacts/search` valida el cuerpo antes que la sesión.
+ */
+const API_SIN_SESION = [
+    ['/api/cloudinary/sign', 401],
+    ['/api/cloudinary/delete', 401],
+    ['/api/contacts/search', 400],
+    ['/api/push/subscribe', 401],
+    ['/api/push/send', 401],
+];
+
 /** Rutas cuyos assets se verifican uno por uno. */
-const ASSET_ROUTES = ['/', '/chat', '/cuidador', '/onboarding'];
+const ASSET_ROUTES = ['/'];
 
 async function status(path) {
     const res = await fetch(`${BASE}${path}`, { redirect: 'manual' });
@@ -86,14 +102,22 @@ async function checkAssets() {
     }
 }
 
-async function checkServiceWorker() {
-    const sw = await (await fetch(`${BASE}/sw.js`)).text();
-
-    record('sw: no precachea el catálogo ARASAAC', !sw.includes('arasaac_catalog'));
-    record('sw: conserva el CacheFirst de imágenes', sw.includes('arasaac-pictograms'));
-
-    const entries = (sw.match(/url:"[^"]+"/g) ?? []).length;
-    record(`sw: manifiesto de precache (${entries} entradas)`, entries > 0, 'manifiesto vacío');
+async function checkApiSinSesion() {
+    for (const [path, expected] of API_SIN_SESION) {
+        const res = await fetch(`${BASE}${path}`, {
+            method: 'POST',
+            redirect: 'manual',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+        });
+        record(`api sin sesión ${path}`, res.status === expected, `esperado ${expected}, obtenido ${res.status}`);
+    }
+    const confirm = await fetch(`${BASE}/auth/confirm`, { redirect: 'manual' });
+    record(
+        'auth/confirm sin token redirige con error',
+        confirm.status === 307 && (confirm.headers.get('location') ?? '').endsWith('/onboarding?auth_error=enlace'),
+        `obtenido ${confirm.status} → ${confirm.headers.get('location')}`,
+    );
 }
 
 // ── Arranque del servidor ─────────────────────────────────────────────────────
@@ -166,7 +190,7 @@ async function main() {
     try {
         await checkRoutes();
         await checkAssets();
-        await checkServiceWorker();
+        await checkApiSinSesion();
     } finally {
         server?.kill();
     }

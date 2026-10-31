@@ -1,20 +1,19 @@
-'use client';
-
 /**
- * Root page — /
+ * Landing — /
  *
- * Routing is handled in two layers:
- *  1. middleware.ts  (server-side, Edge): redirects unauthenticated users to
- *     /onboarding before React loads, so they never see this spinner.
- *  2. AppShell route guard (client-side): once Zustand hydrates and the
- *     session is verified, it redirects to /cuidador (caregiver) or /chat (AAC).
- *
- * This page only renders briefly while the AppShell gate clears.
+ * Desde E.1.5 la app vive en mobile/ (Capacitor) y web/ sólo sirve esta página y
+ * las rutas de la API. Mínima a propósito (decidido el 2026-10-31): logo y qué es.
+ * Los enlaces a las tiendas y a lo legal (P0-4) se añaden cuando existan.
  */
-export default function RootPage() {
+export default function Landing() {
   return (
-    <div className="flex h-dvh items-center justify-center bg-white">
-      <div className="w-8 h-8 border-2 border-[#FF8844] border-t-transparent rounded-full animate-spin" />
-    </div>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-white px-6 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/icon-192.png" alt="" width={96} height={96} className="rounded-3xl shadow-xl" />
+      <h1 className="text-5xl font-black text-[#FF8844]">PictoLink</h1>
+      <p className="max-w-sm text-lg text-slate-600">
+        Comunicación aumentativa y alternativa con pictogramas.
+      </p>
+    </main>
   );
 }

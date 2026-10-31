@@ -458,6 +458,39 @@ falta entorno de riesgo.
 > - **Qué no prueba:** ningún flujo con sesión (chat, cuidador, ajustes) se ejerció; el bundle es un
 >   único JS de 978 kB (Next partía por ruta) — no afecta a la equivalencia, sí al arranque en E.2.
 
+> **`E.1.5` — hecha el 2026-10-31. `web/` es landing + las 7 rutas.** La landing es mínima
+> (decisión de Alejandro): logo y una línea; tiendas y legal (`P0-4`) cuando existan. **Verificación
+> del plan, medida antes y después:** las 7 rutas, sin sesión y por HTTP, contra `develop` y contra
+> la rama → **respuestas idénticas** en código, tipo, claves del JSON y destino de redirección
+> (`health-check` 200; `cloudinary/sign`, `cloudinary/delete`, `push/subscribe`, `push/send` 401;
+> `contacts/search` 400 — valida el cuerpo antes que la sesión; `/auth/confirm` 307). **Gate completo
+> de `web/` en verde:** 3 avisos, 14 tests, **smoke 21/21**.
+>
+> - **El smoke cambió de expectativas, a propósito:** las 6 pantallas, el manifest y `sw.js` pasan a
+>   esperar **404** — la prueba en ejecución de que salieron de `web/` — y entran las 5 rutas de API
+>   sin sesión con su código medido (un 200 ahí sería una ruta que dejó de pedir sesión). Las dos
+>   comprobaciones del service worker (no precachear el catálogo, CacheFirst de ARASAAC) **se van con
+>   él**: vuelven en `E.1.6` si la app conserva service worker.
+> - **`web/` pierde la PWA:** sin `next-pwa`, sin `app/manifest.ts`, sin cabeceras de `sw.js` en
+>   `vercel.json`. `worker/index.ts` (push y clic en la notificación) **se mudó a `mobile/worker/`**
+>   como insumo de `E.1.6`. Dependencias sin un solo import, quitadas: `@ducanh2912/next-pwa`, `clsx`,
+>   `tailwind-merge`, `zustand`.
+> - **Techo de lint de `web/`: de 88 a 3.** Los 85 avisos restantes se fueron con el código; dejar
+>   88 habría admitido 85 avisos nuevos sin rojo. **Con control negativo:** `--max-warnings=2` sale
+>   con 1. **`mobile/` todavía no tiene lint** — va antes de abrir el PR.
+> - **Copias compartidas (deuda de `E.1.3`), resuelto distinto de lo previsto:** en vez de recortar
+>   cada copia a lo que usa su lado, se quedan **idénticas y la CI falla si divergen** (`cmp`, primer
+>   paso del job `mobile`). Recortar habría dejado el test de `SEC-2` de `web/` probando un
+>   `extractPublicId` distinto del que corre en `mobile/`. **Con control negativo:** un byte de más en
+>   una copia da exit 1.
+> - **Consecuencia para `P0-7`, escrita en el ESTADO:** `/auth/confirm` redirige a `/onboarding`, que
+>   ya no existe en `web/`; el paso 6 pasa a depender del *deep link* de `E.5`.
+> - **Consecuencia de producto, aceptada por Alejandro:** cuando `E.1` llegue a `main`,
+>   `picto-link-app-movil.vercel.app` sirve la landing y deja de servir la app. Producción no tiene
+>   usuarios (última actividad en la base: 2026-07-29).
+> - **Efecto colateral mío, sin daño:** el worktree de referencia comparte `node_modules` con `web/`
+>   por un junction; al quitar `next-pwa` ya no puede volver a arrancar. Se midió antes de quitarlo.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide

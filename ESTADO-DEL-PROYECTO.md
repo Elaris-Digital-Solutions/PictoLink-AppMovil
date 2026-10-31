@@ -398,7 +398,12 @@ tiene vuelta atrás para los usuarios:
       deja fuera a las cuentas viejas; antes del 0, a todas las nuevas
 - [ ] 6. **Ejecutar el flujo real** con un correo **que no sea del equipo**: registrarse, recibir
       el correo, hacer clic. Es lo único que cierra `P0-7`. Nada de lo verificado hasta ahora
-      llamó a `verifyOtp` contra Supabase ni envió un correo
+      llamó a `verifyOtp` contra Supabase ni envió un correo.
+      **Desde `E.1.5` (2026-10-31) este paso depende de `E.5`:** `/auth/confirm` sigue en `web/`,
+      pero redirige a `/onboarding`, que ya no existe ahí — la app se mudó a `mobile/`. Medido:
+      sin token responde 307 → `/onboarding?auth_error=enlace`, idéntico a antes. En el teléfono
+      el enlace del correo tiene que abrir la app (*deep link*, `E.5`); hasta entonces el flujo sólo
+      se puede ejercer en el navegador con `mobile/` en modo dev, que hace de proxy de `/auth`
 
 ---
 

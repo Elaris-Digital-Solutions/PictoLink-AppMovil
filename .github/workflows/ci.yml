@@ -42,8 +42,9 @@ jobs:
         run: npm ci
 
       # Lo rápido va primero: el lint corta antes de gastar el build.
-      # El techo de avisos está en el propio script (--max-warnings=88), así
+      # El techo de avisos está en el propio script (--max-warnings), así
       # que un aviso nuevo pone el PR en rojo sin que haya que recordarlo.
+      # Bajó de 88 a 3 en E.1.5: los otros 85 se fueron con el código a mobile/.
       - name: Lint
         run: npm run lint
 
@@ -56,7 +57,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Levanta la app compilada y comprueba 27 cosas contra ella.
+      # Levanta web/ compilada (landing + API) y la interroga por HTTP.
       # No cubre flujos autenticados: eso sigue siendo verificación a mano.
       - name: Humo sobre la app corriendo
         run: npm run test:smoke
@@ -73,6 +74,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Copias que usan las dos apps (E.1.3). Idénticas o rojo: si divergen, el
+      # test de SEC-2 de web/ deja de probar el código que corre en mobile/.
+      - name: Copias compartidas idénticas
+        working-directory: .
+        run: |
+          for f in lib/cloudinary.ts lib/ai/picto-nlp.ts lib/ai/hf-client.ts types/index.ts; do
+            cmp "web/$f" "mobile/$f"
+          done
 
       - uses: actions/setup-node@v4
         with:
