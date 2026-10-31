@@ -501,7 +501,17 @@ falta entorno de riesgo.
 > **Hallazgo de paso que no es de esta tanda: `SEC-17`.** Al medir si los avisos de workbox se
 > habían ido con `next-pwa` (sí), `npm audit` mostró que **`next` 16.2.12 —la versión de
 > producción— tiene 6 avisos críticos de ejecución remota de código**, con corrección en 16.4.3.
-> Va por `hotfix/` desde `main`, no dentro de `E.1`.
+> Va por `hotfix/` desde `main`, no dentro de `E.1`. **Hecho el mismo día:** `hotfix/sec-17-next`
+> (`c52327b`), y la misma subida en esta rama para que la integración con `develop` no choque en el
+> lockfile.
+>
+> - **El smoke nuevo atrapó un service worker sobrante de verdad:** después de compilar `main` para
+>   el hotfix, `next-pwa` dejó `web/public/sw.js` y compañía (ignorados por git) y al volver a esta
+>   rama `/sw.js` respondía 200 → 20/21. Borrados, 21/21. En la CI, con checkout limpio, no pasa.
+> - **Costo conocido, no implementado:** los navegadores que ya instalaron el service worker de
+>   producción lo conservan aunque `/sw.js` pase a dar 404 — una actualización fallida no lo
+>   desinstala. El remedio estándar es servir un `sw.js` que se desregistre. Producción no tiene
+>   visitas desde 2026-07-29, así que se anota y no se hace.
 
 ---
 
