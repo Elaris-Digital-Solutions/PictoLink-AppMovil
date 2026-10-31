@@ -22,6 +22,24 @@ y este plan se corrige.
 >    teléfono del emisor con un `fetch` que, si falla, se traga en silencio (`BUG-9`), y eso choca
 >    con el requisito de producto «se notifica todo mensaje, en todo momento». `E.4.3` pasa a ser
 >    **push disparado por la base**.
+>
+> ### Correcciones al plan — 2026-10-31, al ejecutar `E.1.1`
+>
+> 3. **`E.1.3` mandaba mover `lib/` entero a `mobile/`, y eso rompe `web/`.** Medido: **5 de los 7
+>    route handlers** importan de `lib/` (`lib/supabase/server` los cinco, más `lib/auth-confirm`,
+>    `lib/cloudinary` y `lib/ai/picto-nlp`), y `lib/supabase/server.ts` importa `next/headers`, así
+>    que moverlo haría fallar la verificación de `E.1.4` («0 imports de `next/` en `mobile/`»).
+>    Además, 2 de los 3 archivos de test prueban código de servidor (`auth-confirm`, `cloudinary`).
+>    **`lib/` se reparte por quién lo importa**: lo que usan las rutas se queda en `web/`.
+> 4. **«Las 5 rutas API» eran 7 route handlers:** 6 en `app/api/` y `app/auth/confirm`. El número
+>    se escribió antes de `SEC-1`/`SEC-2` y `P0-7`.
+> 5. **`E.1.4` no contaba `process.env`:** 10 lecturas en 6 archivos de `lib/` y `components/`.
+>    Vite no define `process`, y `lib/api.ts` lo lee **al importarse**, así que el tablero no arranca
+>    sin cambiarlo por `import.meta.env`.
+> 6. **`next/font` → `@font-face` no hace falta: Inter se carga y no se usa.** Medido en el
+>    navegador: el `body` de producción se renderiza con la pila de sistema de Tailwind
+>    (`ui-sans-serif, system-ui, …`), porque nada conecta `--font-inter` con `font-sans`. Por
+>    equivalencia, `E.1` **la quita**; aplicar Inter sería un cambio visual y no le toca a esta tanda.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
@@ -350,6 +368,25 @@ falta entorno de riesgo.
 | E.1.6 | Reemplazar el service worker de `next-pwa` por el equivalente en Vite, o quitarlo si Capacitor lo cubre | Decisión registrada con su motivo |
 
 **Métrica que manda en esta tanda: líneas reescritas de `components/board/` = 0.**
+
+> **`E.1.1` — hecha el 2026-10-31, pasa. El grid no se rompe fuera de Next.** Un mismo arnés
+> (`SentenceBar` + `AACBoard`, con la disposición de `app/chat/page.tsx:848-856`) renderizado por
+> Next 16 y por Vite 8, importando `web/` sin mover nada, en un viewport de 844×390. Se extrajo de
+> cada uno la geometría y nueve propiedades calculadas (fondo, bordes, radio, fuente, tamaño, peso)
+> de las **45 celdas**, más la URL de cada imagen: **0 diferencias**. El comparador tiene **control
+> negativo**: un cambio de 1 px y uno de color en una copia dan 2 diferencias. **Comportamiento:**
+> tocar «yo» y luego «personas» da en los dos la misma barra de frase, el título «Personas» y las
+> mismas 45 celdas. El arnés no se commitea.
+>
+> **Lo que la prueba destapó y no estaba en el plan** (correcciones 3 a 6 de la cabecera):
+> - **Tailwind v4 escanea las clases desde el directorio de trabajo**, no desde el CSS: la prueba
+>   pasó porque Vite corrió desde `web/`. En `mobile/` hay que verificar que el CSS generado
+>   contiene las clases del tablero, o declarar `@source`.
+> - **4 de los 7 archivos de `components/board/` no los importa nadie** (`BoardHeader`,
+>   `CategoryNav`, `FolderRow`, `PredictionBar`: **368 de las 778 líneas**). Se mudan igual —
+>   borrarlos sería reescribir el tablero—, y queda anotado para `§10` del ESTADO.
+> - **Qué no prueba:** se midió en Chromium de escritorio, no en un dispositivo; no cubre
+>   `SentenceBar` con el TTS hablando ni el envío de mensajes, que necesitan sesión.
 
 ---
 
