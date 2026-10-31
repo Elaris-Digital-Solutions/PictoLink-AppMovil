@@ -60,3 +60,29 @@ jobs:
       # No cubre flujos autenticados: eso sigue siendo verificación a mano.
       - name: Humo sobre la app corriendo
         run: npm run test:smoke
+
+  # La SPA que va a Capacitor (Bloque E). Job aparte y no un paso más de
+  # `gate`: tiene su propio package.json, y si falla el nombre del job ya dice
+  # cuál de las dos apps se rompió. Si se activa la protección de rama, este
+  # check también tiene que ser obligatorio: uno que no bloquea es documentación.
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # `build` incluye el typecheck (tsc --noEmit && vite build).
+      - name: Build
+        run: npm run build

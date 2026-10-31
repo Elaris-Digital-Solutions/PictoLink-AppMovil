@@ -366,6 +366,7 @@ falta entorno de riesgo.
 | E.1.4 | Sustituir los imports de Next: `next/navigation` (7) y `next/link` (2) → router; `next/font` (1) → `@font-face`; `next/image` (1) → `<img>` | **0 imports de `next/` en `mobile/`** |
 | E.1.5 | `web/` queda con landing + las 5 rutas API. Sigue en Next, sigue en Vercel | Las 5 rutas responden igual que antes |
 | E.1.6 | Reemplazar el service worker de `next-pwa` por el equivalente en Vite, o quitarlo si Capacitor lo cubre | Decisión registrada con su motivo |
+| E.1.7 | *(Añadida el 2026-10-31, decisión de Alejandro.)* **Aplicar Inter empaquetada en la app**, no pedida a Google: que el texto se vea igual en todo dispositivo y funcione sin red. **Va la última y en commit propio**, después de medir la equivalencia: aplicada antes, la comparación no distinguiría el efecto de la fuente del de la mudanza | Las 45 celdas renderizan con Inter (fuente calculada) y **ninguna etiqueta se corta** (`scrollWidth ≤ clientWidth`) en 844×390 |
 
 **Métrica que manda en esta tanda: líneas reescritas de `components/board/` = 0.**
 
@@ -387,6 +388,16 @@ falta entorno de riesgo.
 >   borrarlos sería reescribir el tablero—, y queda anotado para `§10` del ESTADO.
 > - **Qué no prueba:** se midió en Chromium de escritorio, no en un dispositivo; no cubre
 >   `SentenceBar` con el TTS hablando ni el envío de mensajes, que necesitan sesión.
+
+> **`E.1.2` — hecha el 2026-10-31.** `mobile/` con Vite 8.3.5, React **19.2.3 exacto** (el mismo
+> que `web/`, para que la equivalencia compare el mismo React), TypeScript 5 y alias `@/` → raíz de
+> `mobile/`, igual que `web/tsconfig.json`. `npm ci` + `npm run build` → exit 0. **Con control
+> negativo:** un error de tipos en un archivo importado por `@/` hace fallar el build (exit 2,
+> `TS2322`); corregido, pasa y el bundle contiene el valor importado — así que el alias resuelve y
+> el typecheck corta. **Nuevo job `mobile` en `ci.yml`** (install + build): sin él, nada verificaba
+> `mobile/` en los PR. El lockfile, generado en Windows, trae el binario de Linux de rolldown
+> (`@rolldown/binding-linux-x64-gnu`); que `npm ci` funcione en `ubuntu-latest` se ve en el primer
+> run del PR. **Tailwind no se instala todavía:** llega en `E.1.3` con `globals.css`.
 
 ---
 
