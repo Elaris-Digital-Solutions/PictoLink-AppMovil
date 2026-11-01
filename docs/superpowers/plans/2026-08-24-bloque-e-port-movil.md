@@ -513,6 +513,22 @@ falta entorno de riesgo.
 >   desinstala. El remedio estándar es servir un `sw.js` que se desregistre. Producción no tiene
 >   visitas desde 2026-07-29, así que se anota y no se hace.
 
+> **Lint de `mobile/` — añadido el 2026-11-01, no estaba en el plan.** Sin él, los avisos que se
+> mudaron con el código quedaban sin ningún control. **Mismas reglas que `web/`**, armadas a mano:
+> `eslint-config-next` carga al importarse el parser de Babel del paquete `next`, y aquí no hay Next;
+> se instalaron sus mismas piezas **en las mismas versiones que `web/`** (`typescript-eslint` hubo que
+> fijarlo: npm traía 8.72.1 y `web/` usa 8.65.0). El plugin `@next/next` se carga porque el código
+> trae `eslint-disable … @next/next/no-img-element`.
+>
+> - **Predicción escrita antes de medir: 85** (88 − los 3 que se quedaron en las rutas de `web/`).
+>   **Medido: 86.** Comparado archivo por archivo y regla por regla contra el log de `develop`, la
+>   única diferencia real es **+1 `@next/next/no-img-element` en `OnboardingFlow.tsx`: el `<img>` de
+>   `E.1.4`**, que la predicción no contó. Techo **86**, con el motivo en `ci.yml`. **Control
+>   negativo:** `--max-warnings=85` sale con 1.
+> - El patrón de archivos suma `cjs` respecto de `eslint-config-next`: sin él, `postcss.config.cjs`
+>   rompía el lint (la política de avisos citaba un plugin no cargado para ese archivo).
+> - **Paso `Lint` en el job `mobile`**, antes de los tests: lo rápido primero.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide

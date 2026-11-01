@@ -93,6 +93,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # Techo 86 (E.1, 2026-10-31): los 85 avisos que se mudaron de web/ más 1
+      # de `@next/next/no-img-element` por el <img> que sustituyó a next/image.
+      - name: Lint
+        run: npm run lint
+
       - name: Tests unitarios
         run: npm run test:run
 
