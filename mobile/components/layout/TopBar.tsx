@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Link } from 'wouter';
+import { usePathname, useRouter } from '@/lib/navigation';
 import { MessageCircle, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChatNavStore } from '@/lib/store/useChatNavStore';

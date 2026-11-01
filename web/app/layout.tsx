@@ -1,51 +1,19 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-import { AppShell } from '@/components/layout/AppShell';
-import { StoreHydrator } from '@/components/StoreHydrator';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { PWARegistry } from '@/components/layout/PWARegistry';
-import { SessionTracker } from '@/components/layout/SessionTracker';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  weight: ['400', '500', '600', '700', '800', '900'],
-  display: 'swap',
-});
-
+// Desde E.1.5 web/ es la landing más las rutas de la API. La app vive en mobile/.
+// Sin manifest ni service worker: una landing no se instala.
 export const metadata: Metadata = {
-  title: 'PictoLink — AAC Communication Platform',
-  description: 'Augmentative and Alternative Communication via pictograms',
-  manifest: '/manifest.webmanifest',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'PictoLink',
-    startupImage: '/icon-512.png',
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  // Browser tab + bookmark icons are handled automatically by Next.js's file
-  // convention (app/icon.png → emits <link rel="icon" />). We only need to
-  // declare the Apple touch icons explicitly for iOS home screen.
-  icons: {
-    apple: [
-      { url: '/icon-192.png' },
-      { url: '/icon-512.png', sizes: '512x512' },
-    ],
-  },
+  title: 'PictoLink — Comunicación aumentativa y alternativa',
+  description: 'Comunicación aumentativa y alternativa con pictogramas.',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#000000',
-  viewportFit: 'cover',
+  themeColor: '#FF8844',
 };
 
 export default function RootLayout({
@@ -54,12 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={inter.variable}>
+    <html lang="es">
       <body className="font-sans antialiased">
-        <PWARegistry />
-        <StoreHydrator />
-        <SessionTracker />
-        <AppShell>{children}</AppShell>
+        {children}
         <Analytics />
         <SpeedInsights />
       </body>

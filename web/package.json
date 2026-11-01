@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
-    "lint": "eslint . --max-warnings=88",
+    "lint": "eslint . --max-warnings=3",
     "lint:fix": "eslint . --fix",
     "lint:report": "eslint . -f stylish",
     "format": "prettier --write .",
@@ -19,20 +19,16 @@
     "verify:full": "npm run verify && npm run build && npm run test:smoke"
   },
   "dependencies": {
-    "@ducanh2912/next-pwa": "10.2.9",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.111.0",
     "@types/web-push": "^3.6.4",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
     "next": "16.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "tailwind-merge": "^3.5.0",
-    "web-push": "^3.6.7",
-    "zustand": "^5.0.11"
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

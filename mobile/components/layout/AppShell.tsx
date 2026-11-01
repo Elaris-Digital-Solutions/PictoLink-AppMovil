@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/lib/navigation';
 import { BottomNav } from './TopBar';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { createClient } from '@/lib/supabase/client';

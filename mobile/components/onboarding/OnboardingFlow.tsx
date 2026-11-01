@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/lib/navigation';
 import { MessageSquare, Heart, Building2, ExternalLink, ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { trackEvent } from '@/lib/analytics';
@@ -259,13 +258,13 @@ export function OnboardingFlow() {
         {/* Hero */}
         <div className="flex-1 flex flex-col items-center justify-center gap-8">
           <div className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl border-2 border-[#FFE2D0] bg-[#FFF5EF]">
-            <Image
+            <img
               src={logoPng}
               alt="PictoLink"
               width={60}
               height={60}
-              priority
               className="select-none"
+              style={{ color: 'transparent' }}
             />
           </div>
 

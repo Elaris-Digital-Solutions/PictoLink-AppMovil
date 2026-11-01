@@ -12,7 +12,7 @@
  */
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/lib/navigation';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 
 interface RouteGuardProps {
