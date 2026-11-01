@@ -554,6 +554,72 @@ falta entorno de riesgo.
 > - **`BUG-10`** registra las 51 que siguen cortadas: problema previo al port, que se arregla con
 >   los terapeutas y no aquí. Quitado también el `--font-inter` que `globals.css` definía y nada usaba.
 
+#### Cierre de `E.1` — 2026-11-01, cerrada; se integra con su PR a `develop`
+
+**Alcance cumplido: 7 tareas de 7** (`E.1.1`→`E.1.7`; la 7 añadida en ejecución) **más 1 no
+planeada** (lint de `mobile/`). Queda funcionando de punta a punta: `mobile/` es una SPA de Vite que
+arranca, enruta con wouter, aplica el route guard y renderiza el tablero **idéntico al de Next**
+(medido contra un worktree de `develop`); `web/` es landing + las 7 rutas, que **responden idéntico**
+sin sesión. Las dos apps tienen gate en la CI.
+
+**Trazas:** rama `feature/e1-spa-fuera-de-next`, desde `develop` `1e281aa`. Commits `a079959`
+(E.1.1), `ceba6d6` (E.1.2), `87e58f0` + `e62e078` (E.1.3), `a2cabb3` (E.1.4), `ead6d19` (E.1.5),
+`22993e7` (E.1.6), `216e37f` + `eecf45d` (`SEC-17` y merge de `develop` con el hotfix), `52d6ed9`
+(cierre de `SEC-17`), `27ad827` (lint), `a81dbf6` (E.1.7). Verificación final en limpio: `web/`
+`verify:full` exit 0 (3 avisos, 14 tests, humo 21/21, Next 16.4.3); `mobile/` `npm ci`, lint (86),
+tests (13 + 1 todo) y build, exit 0 los cuatro.
+
+**Correcciones al plan: 10**, todas en este archivo. **6 numeradas:** 3→6 en la cabecera, la 7
+(mudar también las páginas) en el resultado de `E.1.3` y la 8 (la API con rutas relativas) en el de
+`E.1.4`. **4 sin número**, en los resultados: copias compartidas idénticas con `cmp` en vez de
+recortadas (`E.1.5`), el criterio imposible de `E.1.7`, Roboto en lugar de Inter (`E.1.7`) y el lint
+de `mobile/` como tarea nueva. (Las 1–2 de la cabecera son anteriores a `E.1`.)
+
+**Decisiones nuevas:** `DEC-11`→`DEC-12` en el ESTADO (sin service worker; tipografía, revisada a
+Roboto). En el plan: wouter como router. **Hallazgos nuevos en el ESTADO:** `SEC-17` (cerrada en el
+día por hotfix) y `BUG-10`.
+
+**Métricas (§6), antes → después.** Predichas por escrito antes de medir: **5 de 5 acertadas**; la
+de líneas de código no se predijo.
+
+| Métrica | Antes (`develop` `1e281aa`) | Después |
+|---|---|---|
+| Líneas reescritas de `components/board/` | 0 de 778 | **0 de 778** — 7 renombres al 100 % |
+| Imports de `next/` en el bundle móvil | 21 *(cifra del 2026-08-24)* | **0** |
+| Líneas de código de aplicación (`.ts`/`.tsx` sin tests ni config, `wc -l`) | `web/` 15 913 en 62 archivos | `web/` 1 429 en 17 + `mobile/` 14 969 en 51 = 16 398 en 68 |
+| Tests verdes | 27 + 1 todo | 27 + 1 todo (`web/` 14, `mobile/` 13 + 1) |
+| Techo de avisos de lint | 88 | `web/` **3** + `mobile/` **86** |
+| Workflows de CI | 1 (1 job) | 1 (**2 jobs**) |
+| Latencia tap→voz | sin medir | sin medir — es `E.2` |
+| PAT filtrados en el historial público | 3 | no medido en esta tanda |
+
+*El 9 346 de §6 se contó con un método que no quedó escrito; por eso la fila de líneas se re-midió
+en `develop` con el mismo método que el «después», en vez de compararse con él.*
+
+**Lo que deja sin hacer.**
+
+*Lo que el plan previó y se cumplió:* equivalencia del tablero, 0 imports de Next, `web/` reducida
+con las rutas intactas, decisión registrada sobre el service worker.
+
+*Lo que no previó y salió de ejecutar* — la lista que enseña a planificar `E.2`:
+- **La UI llama a la API con rutas relativas y sesión por cookie:** en el navegador lo cubre un
+  proxy de Vite; en el teléfono no funciona hasta `E.3`. **`E.2` va a correr la app en Android sin
+  poder iniciar sesión**: la medición tap→voz tiene que hacerse sin sesión (el tablero no la
+  necesita para hablar).
+- **`P0-7` paso 6 queda atado al *deep link* de `E.5`**: `/auth/confirm` redirige a una pantalla
+  que ya no está en `web/`.
+- **Notificaciones:** sin service worker, `notifyNewMessage` deja de notificar en el navegador
+  (espera sin límite); lo sustituye `E.4`.
+- **`BUG-10`:** 51 etiquetas cortadas con la mejor fuente; con terapeutas.
+- **El bundle de `mobile/` es un único JS de 978 kB.** No afecta a la equivalencia, sí al arranque
+  que mide `E.2`.
+- **Deuda anotada:** 4 copias compartidas entre `web/` y `mobile/` (las sostiene el `cmp` de la CI);
+  `eslint-disable … @next/next` en un proyecto sin Next; `hooks/useSpeech.ts` muerto; 4 de los 7
+  archivos del tablero sin importar (368 líneas); el `sw.js` instalado en navegadores viejos no se
+  desregistra; `vite.config.ts` lee el `.env` de `web/`.
+- **Entorno:** en `mobile/`, agregar dependencias exige `npx npm@11 install` (bug de npm 10.9.2 con
+  Vite 8); el `npm ci` de la CI no cambia.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide
