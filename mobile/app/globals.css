@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
+/* ─── Tipografía (DEC-12, E.1.7) ─────────────────────────────────────────────
+   Roboto empaquetada en la app (@fontsource-variable/roboto, importada en main.tsx):
+   la misma forma y el mismo ancho de letra en todo dispositivo, y sin red. Roboto y
+   no Inter porque, medido sobre las 2 939 etiquetas del tablero, Inter corta más del
+   doble (DEC-12). Antes había un `--font-inter` que nada usaba (quitado): la app salía
+   en la fuente del sistema. La pila de respaldo es la que Tailwind trae por defecto. */
+@theme {
+  --font-sans: 'Roboto Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
 /* ─── CSS Variables ──────────────────────────────────────────────────────── */
 :root {
-  --font-inter: 'Inter', sans-serif;
   --shadow-card: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-card-active: 0 4px 16px rgba(59,130,246,0.18), 0 1px 3px rgba(59,130,246,0.12);
   --shadow-nav: 0 -1px 0 rgba(0,0,0,0.05), 0 -6px 24px rgba(0,0,0,0.04);

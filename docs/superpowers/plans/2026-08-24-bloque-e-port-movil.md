@@ -366,7 +366,7 @@ falta entorno de riesgo.
 | E.1.4 | Sustituir los imports de Next: `next/navigation` (7) y `next/link` (2) → router; `next/font` (1) → `@font-face`; `next/image` (1) → `<img>` | **0 imports de `next/` en `mobile/`** |
 | E.1.5 | `web/` queda con landing + las 5 rutas API. Sigue en Next, sigue en Vercel | Las 5 rutas responden igual que antes |
 | E.1.6 | Reemplazar el service worker de `next-pwa` por el equivalente en Vite, o quitarlo si Capacitor lo cubre | Decisión registrada con su motivo |
-| E.1.7 | *(Añadida el 2026-10-31, decisión de Alejandro.)* **Aplicar Inter empaquetada en la app**, no pedida a Google: que el texto se vea igual en todo dispositivo y funcione sin red. **Va la última y en commit propio**, después de medir la equivalencia: aplicada antes, la comparación no distinguiría el efecto de la fuente del de la mudanza | Las 45 celdas renderizan con Inter (fuente calculada) y **ninguna etiqueta se corta** (`scrollWidth ≤ clientWidth`) en 844×390 |
+| E.1.7 | *(Añadida el 2026-10-31, decisión de Alejandro. **Corregida al ejecutarla, 2026-11-01: Roboto, no Inter** — ver el resultado de `E.1.7` y `DEC-12`.)* ~~**Aplicar Inter empaquetada en la app**, no pedida a Google: que el texto se vea igual en todo dispositivo y funcione sin red. **Va la última y en commit propio**, después de medir la equivalencia: aplicada antes, la comparación no distinguiría el efecto de la fuente del de la mudanza~~ | ~~Las 45 celdas renderizan con Inter (fuente calculada) y **ninguna etiqueta se corta** (`scrollWidth ≤ clientWidth`) en 844×390~~ — imposible con cualquier fuente: ver el resultado |
 
 **Métrica que manda en esta tanda: líneas reescritas de `components/board/` = 0.**
 
@@ -528,6 +528,31 @@ falta entorno de riesgo.
 > - El patrón de archivos suma `cjs` respecto de `eslint-config-next`: sin él, `postcss.config.cjs`
 >   rompía el lint (la política de avisos citaba un plugin no cargado para ese archivo).
 > - **Paso `Lint` en el job `mobile`**, antes de los tests: lo rápido primero.
+
+> **`E.1.7` — hecha el 2026-11-01, y con otra fuente que la planeada: Roboto empaquetada.**
+> **Medición, no impresión:** un recorrido automático de las **95 páginas** del tablero (2 939
+> celdas con texto) marca cada etiqueta cuya palabra no cabe en el ancho de la celda o cuyo texto se
+> sale del botón, en dos tamaños:
+>
+> | Fuente | 844×390 | 740×360 |
+> |---|---|---|
+> | Segoe UI (sistema, Windows — la línea base medible aquí) | 93 | 69 |
+> | Inter empaquetada (lo planeado) | **112** | **82** |
+> | Roboto (sistema en Android) | 51 | 30 |
+> | **Roboto empaquetada (lo aplicado)** | **51** | **30** |
+>
+> - **El criterio del plan era imposible:** antes de tocar nada ya había 93 cortadas. Se cambió a
+>   «no cortar más que la fuente del sistema»; Inter no lo cumplía (+20 nuevas, −1 en 844×390).
+>   Alejandro eligió Roboto empaquetada: mismo aspecto en todo dispositivo (el objetivo de
+>   `DEC-12`) y la que menos corta. Todas las cortadas lo son por ancho, ninguna por líneas.
+> - **Verificado por el efecto:** la fuente calculada es `"Roboto Variable"`, `document.fonts`
+>   la da por cargada, y la única petición de fuente es el `woff2` latino **local** (43 kB) — nada
+>   a Google. El paquete lleva 9 subconjuntos, 231 kB; el navegador sólo baja el que necesita.
+> - **Guionado automático (`hyphens: auto`, `lang="es"`): no concluyente.** Se aplicó (estilo
+>   calculado `auto`) y no cambió nada; lo probable es que el Chromium de escritorio de Playwright
+>   no traiga diccionarios de guionado. Queda como opción para `BUG-10`, a medir en Android.
+> - **`BUG-10`** registra las 51 que siguen cortadas: problema previo al port, que se arregla con
+>   los terapeutas y no aquí. Quitado también el `--font-inter` que `globals.css` definía y nada usaba.
 
 ---
 
