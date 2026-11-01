@@ -620,6 +620,16 @@ con las rutas intactas, decisión registrada sobre el service worker.
 - **Entorno:** en `mobile/`, agregar dependencias exige `npx npm@11 install` (bug de npm 10.9.2 con
   Vite 8); el `npm ci` de la CI no cambia.
 
+> **Corrección después del cierre, 2026-11-01 — el primer CI del PR falló en `gate`.** Las 4
+> comprobaciones nuevas de «API sin sesión» de `E.1.5` daban **500 en vez de 401**: la CI corre sin
+> variables de entorno, el cliente de Supabase no se construye y la ruta revienta antes de mirar la
+> sesión. En local daban 401 porque `next start` carga `web/.env.local` — **la medición «antes y
+> después» se hizo con mi entorno, no con el de la CI**. Reproducido apartando `.env.local` (17/21,
+> los mismos 4 × 500) y corregido con una URL y una clave **de relleno** a nivel del job `gate`
+> (21/21): sin sesión, `getUser()` no llama a la red. A nivel de job porque Next incrusta
+> `NEXT_PUBLIC_*` al compilar. **El job `mobile` pasó a la primera**: el lockfile de npm 11 instala
+> con el `npm ci` de npm 10 en Linux.
+
 ---
 
 ### E.2 — Cáscara Android y la medición que decide

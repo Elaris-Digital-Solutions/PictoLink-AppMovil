@@ -5,6 +5,11 @@
 # Medido el 2026-08-28 apartando `.env.local`: build y humo pasan con el
 # entorno vacío, así que este workflow no necesita secrets. Eso también lo
 # hace válido en PRs desde forks, que en un repo público es el caso normal.
+# Desde E.1.5 (2026-11-01) el humo comprueba que las rutas de API den 401 sin
+# sesión, y para eso el cliente de Supabase tiene que poder construirse: el job
+# `gate` lleva una URL y una clave de RELLENO (no son secretos, no apuntan a
+# ningún proyecto). Sin ellas esas 4 rutas dan 500. Sin sesión, getUser() no
+# hace ninguna llamada de red, así que el relleno basta.
 
 name: CI
 
@@ -28,6 +33,11 @@ jobs:
     defaults:
       run:
         working-directory: web
+    # A nivel de job y no del paso de humo: Next incrusta NEXT_PUBLIC_* al compilar,
+    # también en el código de servidor, así que el build tiene que verlas.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: clave-de-relleno-no-es-un-secreto
 
     steps:
       - uses: actions/checkout@v4

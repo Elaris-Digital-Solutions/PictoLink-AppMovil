@@ -60,6 +60,9 @@ const ROUTES = [
  * Las rutas de la API sin sesión. Medidas el 2026-10-31 antes de E.1.5 contra
  * `develop` y después, con respuestas idénticas: un 200 aquí sería una ruta que
  * dejó de exigir sesión. `contacts/search` valida el cuerpo antes que la sesión.
+ * Necesitan NEXT_PUBLIC_SUPABASE_URL y _ANON_KEY definidas, aunque sean de relleno:
+ * sin ellas el cliente no se construye y estas rutas dan 500 (así falló la CI la
+ * primera vez, 2026-11-01). En la CI las pone el job `gate`.
  */
 const API_SIN_SESION = [
     ['/api/cloudinary/sign', 401],
