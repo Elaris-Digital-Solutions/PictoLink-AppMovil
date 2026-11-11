@@ -725,6 +725,17 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
 > es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.
 
+> **Método de `E.2.3`, escrito el 2026-11-11 antes de medir** (y aprobado por Alejandro).
+> **Toque:** `adb shell input tap` en el centro de celdas de `root` que hablan (no carpetas); la
+> marca es el `event.timeStamp` del `pointerdown`, capturado en el `document`. **Voz:** el primer
+> `onRangeStart` del plugin de TTS después de ese toque, con `performance.now()` (mismo reloj).
+> Llega a JS después del puente nativo, así que el error infla el número, no lo achica.
+> **Muestra:** 30 toques en caliente, uno cada 3 s para que la frase anterior termine, más el
+> **primer toque tras abrir en frío**, aparte, 3 veces. Se reportan mediana, p90, máximo y cuántos
+> pasan de 150 ms. Los listeners se instalan por DevTools, **sin cambiar código de la app**.
+> **Lo que NO mide:** la latencia del táctil (`input tap` la saltea) ni la del audio entre el motor
+> y el parlante; las dos suman al número real y ninguna la decide el WebView.
+
 **Predicción escrita antes de medir** (se compara al cerrar, y se cuenta el acierto):
 
 | Predicción | Valor |
@@ -732,6 +743,35 @@ con las rutas intactas, decisión registrada sobre el service worker.
 | Latencia tap→voz con imágenes locales | **< 150 ms** |
 | Líneas del tablero reescritas para llegar aquí | **0** |
 | Imports de `next/` en `mobile/` | **0** |
+
+> **`E.2.3` — medida el 2026-11-11 en el teléfono de `DEC-13`, con el método de arriba.**
+> Las 31 celdas de `root` que hablan, sacadas de los datos con la misma regla que
+> `AACBoard.tsx:67-68`; en cada toque se comprobó que la palabra dicha fuera la de la celda (0
+> emparejamientos dudosos).
+>
+> | Tramo (30 toques en caliente) | mín | mediana | p90 | máx | > 150 ms |
+> |---|---|---|---|---|---|
+> | Toque → `speak` sale por el puente (**WebView + React**) | 26 | **30 ms** | 33 | 36 | 0 |
+> | Puente → primera palabra (**Capacitor nativo + motor de voz**) | 190 | **209 ms** | 223 | 255 | 30 |
+> | **Total tap→voz** | 220 | **239 ms** | 256 | 285 | **30** |
+>
+> **Una primera corrida** de 30 toques, sin partir en tramos, dio mediana **282**, p90 302, máx
+> 524, con 30/30 sobre 150 ms; la diferencia con la segunda es variación entre corridas, y por eso
+> quedan las dos. **Controles para repartir los ~209 ms del lado nativo:** el puente de Capacitor,
+> ida y vuelta sin sintetizar (`isLanguageSupported`), da mediana **18.7 ms** (máx 22), así que
+> **unos 190 ms son del motor de voz de Android**; `speak()` llamado directo, sin toque ni React,
+> da mediana **205 ms** (mín 158, máx 284). **Primer toque tras abrir la app en frío**, 3 veces:
+> **393, 305 y 332 ms**. Fuera del método, una sola vez: **1 363 ms** en el primer `speak` después
+> de varios minutos con la app en segundo plano, de causa desconocida.
+>
+> **Contra las predicciones:** latencia < 150 ms, **fallada** (30/30 por encima); 0 líneas del
+> tablero reescritas, **acertada** (`git diff 7321d79` sobre `components/board/` y
+> `aac-grid-layout.ts` → vacío; del código de la app sólo cambió `useSpeech.ts`); 0 imports de
+> `next/`, **acertada** (control negativo: el mismo patrón da 10 en `web/`). **Lo que la cifra
+> dice:** el umbral se pasa, **pero el WebView aporta ~30 ms**; el resto es el motor de voz del
+> sistema, que una app en React Native usaría igual. El umbral de ~150 ms se escribió suponiendo
+> que la latencia sería del WebView. **Decisión de Alejandro, el mismo día: `DEC-1` confirmada,
+> el stack se queda.** La latencia del motor sigue como `PERF-10` en el ESTADO.
 
 ---
 
