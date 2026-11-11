@@ -80,6 +80,17 @@ y este plan se corrige.
 >     y después) y la app vuelve sola a `/chat`. Lo que queda de `E.3.2` es **dónde** se guarda el
 >     token (cookie del WebView o almacenamiento seguro nativo), no **que** se guarde. Sin control
 >     negativo en esta medición: no se probó que con la cookie borrada la app expulse.
+> 12. **El preview de Vercel no sirve como API para el APK, y E.3 se desarrolla contra `web/` en la
+>     PC.** El preview de `develop` responde `302` «Protected by Vercel Authentication», y el alias
+>     `…-git-develop-…` no resuelve. **Decisión de Alejandro, 2026-11-11:** `web/` con `npm run dev`
+>     en la PC y `adb reverse tcp:3000 tcp:3000`; a qué servidor apunta el APK que se reparte se
+>     decide con el release. Medido al probarlo: Android bloquea HTTP sin cifrar
+>     (`net::ERR_CLEARTEXT_NOT_PERMITTED`), así que el APK de **debug** lleva una
+>     `network_security_config` que lo permite sólo hacia `localhost` y `127.0.0.1`
+>     (`android/app/src/debug/`). Control: antes llegaban al servidor **0 de 4** peticiones de la
+>     app; después, **4 de 4**. Y aparece lo que el plan no tenía: **las rutas no responden CORS**
+>     (`fetch` con `mode: 'cors'` falla aunque el servidor contestó 200), así que E.3 también tiene
+>     que contestar CORS al origen `https://localhost`, preflight de `Authorization` incluido.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
