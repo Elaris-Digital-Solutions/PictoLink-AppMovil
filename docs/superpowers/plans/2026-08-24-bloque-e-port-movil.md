@@ -650,6 +650,24 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > meses) por un problema que no es del WebView. **La medición sin E.2.2 hecha no vale y no se
 > registra.**
 
+> **`E.2.1` — hecha el 2026-11-11. La app abre en el emulador.** Capacitor **8.6.0** exacto
+> (`core` y `android` en dependencias, `cli` en desarrollo; el CLI pide Node ≥ 22 y el CI usa 22),
+> `appId` **`com.elaris.pictolink`** (decisión de Alejandro, irreversible tras publicar: §7.4 del
+> ESTADO), `webDir: 'dist'`. `cap add android` genera `mobile/android/` con **53 archivos
+> versionados**, ninguno de `assets/public` ni `build/`: los excluye su propio `.gitignore`. La
+> plantilla pide `minSdk 24`, `compileSdk`/`targetSdk 36`, AGP 8.13.0 y Gradle 8.14.3, y el primer
+> `assembleDebug` bajó solo Build-Tools 35 y Platform 36: **`BUILD SUCCESSFUL in 9m 12s`**, APK
+> debug de **4 799 594 bytes**. En el emulador (`Medium_Phone_API_37.0`), el logcat da
+> `Loading app at https://localhost` → `App started` y la captura muestra la bienvenida con Roboto.
+> **Lo que cambió fuera de lo planeado:** `eslint .` empezó a recorrer `android/` y dio **exit 1,
+> 2 669 problemas (114 errores)**, todos en JS generado; con `android/**` en los `ignores` vuelve a
+> **86 avisos, exit 0**, la cifra predicha. **Visto y no investigado:** el logcat repite 3 veces
+> `Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')`,
+> que viene del lado de Capacitor y no de nuestro código; puede afectar los márgenes de la barra de
+> estado en Android 15. El arranque en frío de 15,9 s **no es una cifra del WebView**: el emulador
+> llevaba segundos arrancado, con Gradle compilando en la misma PC, y el sistema mostró dos avisos
+> de «no responde» (lanzador y System UI), ninguno de la app.
+
 > **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
 > SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
 > es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.

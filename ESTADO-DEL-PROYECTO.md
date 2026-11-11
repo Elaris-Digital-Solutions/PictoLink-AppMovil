@@ -804,7 +804,11 @@ de CSS suele quedar en 100–250 ms; nativo baja de 50 ms.
 ### 7.4 Trabajo de empaquetado (cualquier camino)
 
 - [ ] Iconos y splash para ambas plataformas
-- [ ] `bundleId` (iOS) / `applicationId` (Android)
+- [x] `bundleId` (iOS) / `applicationId` (Android) — **`com.elaris.pictolink`**, decidido el 2026-11-11
+  (Alejandro), en `mobile/capacitor.config.ts` desde `E.2.1`. **No se puede cambiar una vez publicada
+  la app.** Sale del nombre de la organización y no del dominio del producto, porque el dominio propio
+  sigue sin comprarse (`DEC-10`). **Alternativa descartada:** `app.pictolink`, que ataba el
+  identificador a un dominio que puede no ser el que se compre. iOS lo hereda en `E.6`
 - [ ] Keystore de Android
 - [ ] Perfiles de aprovisionamiento de iOS
 - [ ] Esquema de versionado

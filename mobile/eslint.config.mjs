@@ -13,7 +13,8 @@ import prettierCompat from 'eslint-config-prettier/flat';
 // mobile/ es .ts/.tsx y lo parsea typescript-eslint, igual que en web/.
 // El plugin @next/next se carga porque el código trae `eslint-disable … @next/next/…`.
 const eslintConfig = [
-    { ignores: ['dist/**', 'node_modules/**'] },
+    // android/ es el proyecto nativo de Capacitor: el JS que trae es generado (copia de dist/ y el puente).
+    { ignores: ['dist/**', 'node_modules/**', 'android/**'] },
 
     {
         // + cjs respecto de eslint-config-next: aquí existe postcss.config.cjs.
