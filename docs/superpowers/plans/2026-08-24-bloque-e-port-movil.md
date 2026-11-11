@@ -62,6 +62,24 @@ y este plan se corrige.
 >    pública. Lo que sí depende de `/api` son contactos, Cloudinary y push. **Verificado por el
 >    efecto el mismo día:** Alejandro inició sesión en el APK y la app llegó a `/chat` con sus
 >    conversaciones cargadas desde Supabase. `E.3` sigue siendo necesaria para todo lo que llama a `/api`.
+>
+> ### Correcciones al plan — 2026-11-11, antes de ejecutar `E.3`
+>
+> Medido en el teléfono de `DEC-13`, por DevTools sobre el APK de debug, sesión iniciada.
+>
+> 10. **Las llamadas a `/api` no fallan por falta de cookie: no salen del teléfono.** El origen de
+>     la app es `https://localhost`, y `fetch('/api/…')` lo atiende el servidor local de Capacitor,
+>     que devuelve su `index.html` (540 bytes, `text/html`) con **200**. Así en las **5 rutas** que
+>     llama `mobile/`: `contacts/search`, `cloudinary/sign`, `cloudinary/delete`, `push/subscribe` y
+>     `push/send`. Efecto: `res.ok` da `true` y `res.json()` lanza `SyntaxError` (buscar contacto y
+>     subir imagen fallan con ese error; borrar imagen y push lo tragan). **Lo primero que necesita
+>     `E.3` es una URL base absoluta para la API**, y recién después que las rutas acepten
+>     `Authorization: Bearer`: la cookie vive en `https://localhost` y no viaja a otro origen.
+> 11. **La verificación de `E.3.2` («la sesión sobrevive al cierre de la app») ya se cumple hoy.**
+>     Tras `am force-stop` y reabrir, la cookie `sb-…-auth-token` sigue igual (2 966 caracteres antes
+>     y después) y la app vuelve sola a `/chat`. Lo que queda de `E.3.2` es **dónde** se guarda el
+>     token (cookie del WebView o almacenamiento seguro nativo), no **que** se guarde. Sin control
+>     negativo en esta medición: no se probó que con la cookie borrada la app expulse.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
