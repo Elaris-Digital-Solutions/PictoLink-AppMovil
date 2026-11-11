@@ -625,9 +625,11 @@ con las rutas intactas, decisión registrada sobre el service worker.
 
 *Lo que no previó y salió de ejecutar* — la lista que enseña a planificar `E.2`:
 - **La UI llama a la API con rutas relativas y sesión por cookie:** en el navegador lo cubre un
-  proxy de Vite; en el teléfono no funciona hasta `E.3`. **`E.2` va a correr la app en Android sin
+  proxy de Vite; en el teléfono no funciona hasta `E.3`. ~~**`E.2` va a correr la app en Android sin
   poder iniciar sesión**: la medición tap→voz tiene que hacerse sin sesión (el tablero no la
-  necesita para hablar).
+  necesita para hablar).~~ *(Falso en sus dos mitades; corregido el 2026-11-11 al ejecutar `E.2`,
+  correcciones 8 y 9 de la cabecera. El login no pasa por `/api` y funcionó en el APK, y el tablero
+  sí necesita sesión: sólo se monta en `/chat`. Lo que espera a `E.3` es lo que llama a `/api`.)*
 - **`P0-7` paso 6 queda atado al *deep link* de `E.5`**: `/auth/confirm` redirige a una pantalla
   que ya no está en `web/`.
 - **Notificaciones:** sin service worker, `notifyNewMessage` deja de notificar en el navegador
@@ -772,6 +774,72 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > sistema, que una app en React Native usaría igual. El umbral de ~150 ms se escribió suponiendo
 > que la latencia sería del WebView. **Decisión de Alejandro, el mismo día: `DEC-1` confirmada,
 > el stack se queda.** La latencia del motor sigue como `PERF-10` en el ESTADO.
+
+#### Cierre de `E.2` — 2026-11-11, cerrada; se integra con su PR a `develop`
+
+**Alcance cumplido: 3 tareas de 3** (`E.2.1`→`E.2.3`) **más 1 adelantada** (`E.5.1`, TTS nativo,
+sin la cual no había voz que medir). Queda funcionando de punta a punta, en un teléfono real: la
+app se instala como APK, inicia sesión contra Supabase, muestra el tablero, sirve sin red las 44
+imágenes de `root` y **habla** con el TTS del sistema. Y el número que decidía `DEC-1` está medido.
+
+**Trazas:** rama `feature/e2-capacitor-android`, desde `develop` `7321d79`. Commits `e69f1bc`
+(`DEC-13`), `7da3a62` (E.2.1), `662b624` (E.2.2), `1614fc2` + `6566f6f` (TTS nativo y su registro
+en Gradle), `012a367` (E.2.3). Verificación final en limpio: `web/` `verify:full` exit 0 (3 avisos,
+14 tests, humo 21/21, Next 16.4.3); `mobile/` `npm ci`, lint (86), tests (13 + 1 todo) y build,
+exit 0 los cuatro, con bundle de 986.47 kB.
+
+**Correcciones al plan: 5**, todas en este archivo. **3 numeradas** (7→9 en la cabecera): el WebView
+sin `speechSynthesis`, el tablero que sí necesita sesión y el login que no necesitaba `E.3`. **2 sin
+número:** la premisa «el dispositivo más lento del piloto», que no se podía verificar con un único
+teléfono (`DEC-13`), y el lint de `mobile/`, que empezó a recorrer `android/` (resultado de `E.2.1`).
+Además se tachó con fecha la frase del cierre de `E.1` que decía que `E.2` correría sin sesión.
+
+**Decisiones nuevas:** `DEC-13`→`DEC-14` en el ESTADO (dispositivo de la medición; preset del
+tablero original, reorganización y vertical en teléfonos), **`DEC-1` confirmada** por la medición, y
+el `appId` `com.elaris.pictolink` en §7.4. **Hallazgos nuevos en el ESTADO:** `BUG-11` y `PERF-10`.
+
+**Métricas (§6), antes → después.** Predichas por escrito antes de medir: **6 de 6 acertadas** en
+el cierre. Entre las 3 del plan, **la latencia falló**: era la única estimada sin medir nada.
+
+| Métrica | Antes (`develop` `7321d79`) | Después |
+|---|---|---|
+| Líneas reescritas de `components/board/` | 0 de 778 | **0 de 778** (`git diff` vacío, también en `aac-grid-layout.ts`) |
+| Imports de `next/` en el bundle móvil | 0 | **0** (control: el mismo patrón da 10 en `web/`) |
+| Líneas de código de aplicación (`.ts`/`.tsx` de `mobile/` sin tests ni config, `wc -l`) | 14 969 en 51 | **14 988 en 51**; aparte, `MainActivity.java` 55 y `scripts/precargar-pictos.mjs` 29 |
+| Tests verdes | `web/` 14, `mobile/` 13 + 1 todo | igual |
+| Techo de avisos de lint | `web/` 3 + `mobile/` 86 | igual |
+| Workflows de CI | 1 (2 jobs) | igual: **la CI no compila Android** |
+| Latencia tap→voz | sin medir | **mediana 239 ms** (282 en otra corrida); WebView + React ~30 |
+| PAT filtrados en el historial público | no medido | no medido en esta tanda |
+
+*El método de conteo de líneas se validó reproduciendo el «antes» exacto (14 969 en 51) sobre
+`7321d79` antes de medir el «después».*
+
+**Lo que deja sin hacer.**
+
+*Lo que el plan previó y se cumplió:* cáscara Android que abre en el emulador, celdas que cargan sin
+red, el número tap→voz con imágenes locales, 0 líneas del tablero tocadas, 0 imports de `next/`.
+
+*Lo que no previó y salió de ejecutar* — la lista que enseña a planificar lo que sigue:
+- **Sin TTS nativo no había voz.** `E.5.1` se adelantó y quedó a medias: en el teléfono no se
+  aplica la voz que el usuario elige en Ajustes (`ponytail:` en `useSpeech.ts`).
+- **`BUG-11`:** abrir la app sin red manda a `/onboarding`. Choca de frente con «el tablero funciona
+  sin red», y no se arregla aquí.
+- **`DEC-14`:** el tablero horizontal no entra en la altura de un teléfono (51 px en el APK, 0 en
+  Chrome, ya antes del port). Va después de esta tanda.
+- **`PERF-10`:** ~190 ms del motor de voz, que ningún stack quita.
+- **Sólo `root` está precargada:** 44 de los 1 813 ids. Las demás páginas siguen usando la red.
+- **Instrumentos que mintieron en este teléfono:** `logcat -d` sin ninguna línea, `screencap` en
+  negro, `navigator.onLine` en `true` con modo avión. En PowerShell 5.1, el `>` rompe binarios y
+  agrega BOM, y las comillas dobles se pierden en los argumentos de `node`. **La medición se hizo
+  entera por DevTools (CDP)**, y así se repite.
+- **`gradlew` entró sin bit de ejecución** (`100644`): un job de Android en `ubuntu-latest`
+  fallaría con *Permission denied*.
+- **`ANDROID_HOME` sigue vacío:** cada comando de Gradle lo define en línea.
+- **Lo que la medición no cubre:** el táctil y el audio hasta el parlante; y que el teléfono sea de
+  verdad el más lento del piloto (`DEC-13`).
+- **Visto en el emulador y no investigado:** `Error injecting safe area CSS` en el logcat. En el
+  teléfono los márgenes seguros llegan bien (37 px arriba y a la izquierda).
 
 ---
 
