@@ -707,6 +707,20 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > `BUG-11`:** abrir la app sin red manda a `/onboarding`, así que la prueba no pudo hacerse
 > reabriendo la app.
 
+> **`E.5.1` adelantada a `E.2` (corrección 7) — hecha el 2026-11-11. La app habla en el
+> teléfono.** `@capacitor-community/text-to-speech` **8.0.2** exacto (pide `@capacitor/core >=8`).
+> `useSpeech.ts` usa el TTS del sistema cuando `Capacitor.isNativePlatform()`, y en el navegador
+> sigue con `speechSynthesis` sin cambios; **0 líneas del tablero tocadas**. `isSupported` se partió
+> en `esNativo || webTTS`, porque el efecto que carga voces llama a `window.speechSynthesis` y
+> reventaría en el teléfono. En nativo no se llama a `stop()` antes de hablar:
+> `QueueStrategy.Flush` ya corta lo anterior, y un `stop()` asíncrono podría cortar la frase nueva.
+> **Verificado en el teléfono:** español soportado (`es-ES`, `es-US`); `speak()` de una frase de
+> prueba resolvió en **4 036 ms** y en **3 911 ms**, la duración real de la frase, y **Alejandro
+> la escuchó** (la primera no, por volumen bajo). Bundle 976.71 → **986.47 kB**, más 1.68 kB de la
+> implementación web del plugin en un fragmento aparte. Lint en 86, tests 13 + 1 todo.
+> **Queda de `E.5.1`:** en el teléfono no se aplica la voz elegida en Ajustes (`tts_voice` es un
+> `voiceURI` de la Web Speech API), marcado con `ponytail:` en el código.
+
 > **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
 > SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
 > es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.
