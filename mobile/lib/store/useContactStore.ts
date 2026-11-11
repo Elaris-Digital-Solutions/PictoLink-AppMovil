@@ -1,7 +1,9 @@
 'use client';
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { getSupabase } from '@/lib/supabase/client';
+import { useProfileStore } from '@/lib/store/useProfileStore';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Contact {
@@ -30,7 +32,9 @@ interface ContactStore {
     _contactsChannel: RealtimeChannel | null;
 }
 
-export const useContactStore = create<ContactStore>()((set, get) => ({
+// BUG-11: los contactos se guardan en el teléfono porque sin ellos no hay conversación y sin
+// conversación no hay tablero; sin red, loadContacts falla y conserva los guardados.
+export const useContactStore = create<ContactStore>()(persist((set, get) => ({
     contacts: [],
     isLoading: false,
     _contactsChannel: null,
@@ -212,4 +216,15 @@ export const useContactStore = create<ContactStore>()((set, get) => ({
         if (_contactsChannel) getSupabase().removeChannel(_contactsChannel);
         set({ _contactsChannel: null });
     },
+}), {
+    name: 'pictolink-contacts',
+    skipHydration: true, // lo rehidrata StoreHydrator, como el resto
+    partialize: (s) => ({ contacts: s.contacts }),
 }));
+
+// Todo camino que cierra la sesión deja el perfil en null (los tres «Cerrar sesión» y la
+// sesión inválida de AppShell): ahí se borran los contactos guardados, para que en un
+// dispositivo compartido el próximo usuario no vea los del anterior.
+useProfileStore.subscribe((s, prev) => {
+    if (prev.profile && !s.profile) useContactStore.setState({ contacts: [] });
+});
