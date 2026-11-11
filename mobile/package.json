@@ -10,7 +10,8 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest",
     "test:run": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "precargar:pictos": "node --experimental-strip-types scripts/precargar-pictos.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",

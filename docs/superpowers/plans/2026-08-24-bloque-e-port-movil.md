@@ -40,6 +40,28 @@ y este plan se corrige.
 >    navegador: el `body` de producción se renderiza con la pila de sistema de Tailwind
 >    (`ui-sans-serif, system-ui, …`), porque nada conecta `--font-inter` con `font-sans`. Por
 >    equivalencia, `E.1` **la quita**; aplicar Inter sería un cambio visual y no le toca a esta tanda.
+>
+> ### Correcciones al plan — 2026-11-11, al ejecutar `E.2.2`
+>
+> 7. **El WebView de Android no tiene `speechSynthesis`, así que `E.2.3` no podía medir voz.**
+>    Medido en el teléfono de `DEC-13` por DevTools sobre el APK: `'speechSynthesis' in window` →
+>    **`false`** y `SpeechSynthesisUtterance` → `undefined` (UA `wv`, Chrome 157). `speak()` vuelve en
+>    silencio (`useSpeech.ts:53`): **la app no habla en el teléfono**. El plan dejaba el TTS nativo en
+>    `E.5.1`, **después** de la medición que decide `DEC-1`. **Decisión de Alejandro, 2026-11-11:
+>    `E.5.1` se adelanta a `E.2`**, para que se mida la voz que de verdad va a usar la app. Y el
+>    «con fallback a `speechSynthesis`» de `E.5.1` **no existe en Android**: sólo sirve para el
+>    navegador.
+> 8. **«El tablero habla sin login» era cierto sólo en el arnés de `E.1.1`.** En la app, `AACBoard`
+>    se monta únicamente en `/chat` (`chat/page.tsx:855` y `:935`), y `AppShell.tsx:220-223` manda
+>    a `/onboarding` a quien no completó el onboarding. **Decisión de Alejandro, 2026-11-11:** se
+>    llega al tablero **iniciando sesión en el teléfono con una cuenta existente**, y no con un arnés,
+>    para medir la página real.
+> 9. **«En el teléfono la app no puede iniciar sesión hasta `E.3`» tenía un supuesto sin
+>    verificar.** El login no pasa por `/api`: `OnboardingFlow.tsx:316` llama a
+>    `signInWithPassword` directo contra Supabase, y el bundle del APK lleva la URL y la clave
+>    pública. Lo que sí depende de `/api` son contactos, Cloudinary y push. **Verificado por el
+>    efecto el mismo día:** Alejandro inició sesión en el APK y la app llegó a `/chat` con sus
+>    conversaciones cargadas desde Supabase. `E.3` sigue siendo necesaria para todo lo que llama a `/api`.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
@@ -667,6 +689,23 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > estado en Android 15. El arranque en frío de 15,9 s **no es una cifra del WebView**: el emulador
 > llevaba segundos arrancado, con Gradle compilando en la misma PC, y el sistema mostró dos avisos
 > de «no responde» (lanzador y System UI), ninguno de la app.
+
+> **`E.2.2` — hecha el 2026-11-11. Las 44 celdas de `root` cargan sin red.** `root` tiene 45
+> celdas: 44 con `pictogramId` (44 ids únicos) y 1 de navegación sin imagen. **No se usó
+> `PICTO_OVERRIDES`:** se indexa por etiqueta, y 20 de esas 44 etiquetas llevan otro id en otras
+> páginas, así que cambiaría imágenes fuera de `root`. En su lugar, `MainActivity` intercepta las
+> peticiones a `static.arasaac.org` y responde con `assets/arasaac/{id}.png` si existe; si no, sigue
+> por red (decisión de Alejandro). **0 líneas del tablero tocadas.** Los PNG los baja
+> `npm run precargar:pictos` (44/44, 637 295 bytes, comprobando la cabecera PNG) y **quedan fuera
+> de git** (ARASAAC es CC BY-NC-SA, el repo es público). **Verificado por el efecto en el
+> teléfono**, con imágenes nuevas con parámetro anti-caché y la caché HTTP del WebView vaciada por
+> DevTools: sin red (modo avión, `ping` → *unknown host*), **44/44** de `root` y **0/5** del
+> control (ids de otras páginas); con red, 44/44 y **5/5**. **Instrumentos que mintieron, y
+> cómo se vio:** en este HONOR `logcat -d` da **0 líneas en total**, así que el `Logger.debug` del
+> interceptor no sirve para contar (se vio mirando el total y no sólo las líneas nuestras);
+> `navigator.onLine` da `true` en modo avión; `adb screencap` da una imagen negra. **Destapó
+> `BUG-11`:** abrir la app sin red manda a `/onboarding`, así que la prueba no pudo hacerse
+> reabriendo la app.
 
 > **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
 > SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:

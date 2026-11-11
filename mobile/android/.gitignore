@@ -95,6 +95,9 @@ capacitor-cordova-android-plugins
 # Copied web assets
 app/src/main/assets/public
 
+# PNG de ARASAAC precargados para E.2.2 (CC BY-NC-SA, no se versionan): npm run precargar:pictos
+app/src/main/assets/arasaac
+
 # Generated Config files
 app/src/main/assets/capacitor.config.json
 app/src/main/assets/capacitor.plugins.json
