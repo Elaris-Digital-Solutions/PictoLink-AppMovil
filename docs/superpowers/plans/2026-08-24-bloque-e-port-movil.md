@@ -832,7 +832,8 @@ red, el número tap→voz con imágenes locales, 0 líneas del tablero tocadas, 
 - **Instrumentos que mintieron en este teléfono:** `logcat -d` sin ninguna línea, `screencap` en
   negro, `navigator.onLine` en `true` con modo avión. En PowerShell 5.1, el `>` rompe binarios y
   agrega BOM, y las comillas dobles se pierden en los argumentos de `node`. **La medición se hizo
-  entera por DevTools (CDP)**, y así se repite.
+  entera por DevTools (CDP)**, y así se repite: los scripts quedaron en `mobile/scripts/cdp/`,
+  con un README (agregados el mismo día, en `feature/scripts-cdp`).
 - **`gradlew` entró sin bit de ejecución** (`100644`): un job de Android en `ubuntu-latest`
   fallaría con *Permission denied*.
 - **`ANDROID_HOME` sigue vacío:** cada comando de Gradle lo define en línea.
