@@ -5,6 +5,7 @@ import { usePathname, useRouter } from '@/lib/navigation';
 import { BottomNav } from './TopBar';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { createClient } from '@/lib/supabase/client';
+import { classifyGetUser } from '@/lib/sessionCheck';
 import { subscribeToPush } from '@/lib/notifications';
 
 // ─── AppShell ───────────────────────────────────────────────────────────────────
@@ -62,9 +63,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             // • Online + valid session  → user object returned
             // • Online + expired token  → Supabase auto-refreshes, user returned
             // • Online + invalid token  → null user, we clear localStorage
-            // • Offline                 → network error, .catch() fires,
-            //                            localStorage is preserved (PWA offline use)
-            const { data: { user } } = await supabase.auth.getUser();
+            // • Offline / Supabase caído → getUser() NO lanza: devuelve user null con un
+            //                            AuthRetryableFetchError. Se conserva el estado local
+            //                            para que el tablero funcione sin red (BUG-11).
+            const { data: { user }, error } = await supabase.auth.getUser();
+
+            if (classifyGetUser(user, error) === 'offline') {
+                setSessionVerified(true);
+                return;
+            }
 
             if (!user) {
                 // No valid session — clear any stale local state and send to onboarding.

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useBoardStore } from '@/lib/store/useBoardStore';
+import { useContactStore } from '@/lib/store/useContactStore';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { usePhraseLogStore } from '@/lib/store/usePhraseLogStore';
 
@@ -14,6 +15,7 @@ export function StoreHydrator() {
     useEffect(() => {
         useBoardStore.persist.rehydrate();
         useProfileStore.persist.rehydrate();
+        useContactStore.persist.rehydrate();
         usePhraseLogStore.persist.rehydrate();
     }, []);
 
