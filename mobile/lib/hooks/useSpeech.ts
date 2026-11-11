@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import type { PictoNode } from '@/types';
 import { useProfileStore } from '@/lib/store/useProfileStore';
 import { translateText } from '@/lib/utils/translate';
@@ -28,24 +30,32 @@ export function useSpeech(): UseSpeechReturn {
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-    const isSupported =
-        typeof window !== 'undefined' && 'speechSynthesis' in window;
+    // El WebView de Android no trae speechSynthesis (medido, corrección 7 del plan del Bloque E):
+    // en la app nativa habla el TTS del sistema; en el navegador, la Web Speech API como antes.
+    const esNativo = Capacitor.isNativePlatform();
+    const webTTS = typeof window !== 'undefined' && 'speechSynthesis' in window;
+    const isSupported = esNativo || webTTS;
 
     // Load ALL available system voices (no language filter)
+    // ponytail: en nativo la lista queda vacía y no se aplica profile.tts_voice (es un voiceURI
+    // de la Web Speech API); mapear a getSupportedVoices() del plugin cuando se cierre E.5.1.
     useEffect(() => {
-        if (!isSupported) return;
+        if (!webTTS) return;
 
         const load = () => setVoices(window.speechSynthesis.getVoices());
         load();
         window.speechSynthesis.addEventListener('voiceschanged', load);
         return () => window.speechSynthesis.removeEventListener('voiceschanged', load);
-    }, [isSupported]);
+    }, [webTTS]);
 
     const stop = useCallback(() => {
-        if (!isSupported) return;
-        window.speechSynthesis.cancel();
+        if (esNativo) {
+            TextToSpeech.stop().catch((e) => console.error('[tts] stop nativo falló', e));
+        } else if (webTTS) {
+            window.speechSynthesis.cancel();
+        }
         setIsSpeaking(false);
-    }, [isSupported]);
+    }, [esNativo, webTTS]);
 
     const speak = useCallback(
         (input: PictoNode[] | string) => {
@@ -68,8 +78,17 @@ export function useSpeech(): UseSpeechReturn {
 
             // Fire async: translate then speak
             const doSpeak = async () => {
-                stop();
+                // En nativo no hace falta: QueueStrategy.Flush (por defecto) corta lo que suena.
+                if (!esNativo) stop();
                 const text = await translateText(spanishText, targetLang);
+
+                if (esNativo) {
+                    setIsSpeaking(true);
+                    TextToSpeech.speak({ text, lang: targetLang, rate: profile?.tts_rate ?? 1.0 })
+                        .catch((e) => console.error('[tts] speak nativo falló', e))
+                        .finally(() => setIsSpeaking(false));
+                    return;
+                }
 
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = profile?.tts_rate ?? 1.0;
@@ -86,7 +105,7 @@ export function useSpeech(): UseSpeechReturn {
 
             void doSpeak();
         },
-        [isSupported, stop, profile, voices]
+        [isSupported, esNativo, stop, profile, voices]
     );
 
     const setVoiceURI = useCallback(

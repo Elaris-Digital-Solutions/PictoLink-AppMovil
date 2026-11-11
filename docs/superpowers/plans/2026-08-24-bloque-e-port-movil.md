@@ -40,6 +40,28 @@ y este plan se corrige.
 >    navegador: el `body` de producción se renderiza con la pila de sistema de Tailwind
 >    (`ui-sans-serif, system-ui, …`), porque nada conecta `--font-inter` con `font-sans`. Por
 >    equivalencia, `E.1` **la quita**; aplicar Inter sería un cambio visual y no le toca a esta tanda.
+>
+> ### Correcciones al plan — 2026-11-11, al ejecutar `E.2.2`
+>
+> 7. **El WebView de Android no tiene `speechSynthesis`, así que `E.2.3` no podía medir voz.**
+>    Medido en el teléfono de `DEC-13` por DevTools sobre el APK: `'speechSynthesis' in window` →
+>    **`false`** y `SpeechSynthesisUtterance` → `undefined` (UA `wv`, Chrome 157). `speak()` vuelve en
+>    silencio (`useSpeech.ts:53`): **la app no habla en el teléfono**. El plan dejaba el TTS nativo en
+>    `E.5.1`, **después** de la medición que decide `DEC-1`. **Decisión de Alejandro, 2026-11-11:
+>    `E.5.1` se adelanta a `E.2`**, para que se mida la voz que de verdad va a usar la app. Y el
+>    «con fallback a `speechSynthesis`» de `E.5.1` **no existe en Android**: sólo sirve para el
+>    navegador.
+> 8. **«El tablero habla sin login» era cierto sólo en el arnés de `E.1.1`.** En la app, `AACBoard`
+>    se monta únicamente en `/chat` (`chat/page.tsx:855` y `:935`), y `AppShell.tsx:220-223` manda
+>    a `/onboarding` a quien no completó el onboarding. **Decisión de Alejandro, 2026-11-11:** se
+>    llega al tablero **iniciando sesión en el teléfono con una cuenta existente**, y no con un arnés,
+>    para medir la página real.
+> 9. **«En el teléfono la app no puede iniciar sesión hasta `E.3`» tenía un supuesto sin
+>    verificar.** El login no pasa por `/api`: `OnboardingFlow.tsx:316` llama a
+>    `signInWithPassword` directo contra Supabase, y el bundle del APK lleva la URL y la clave
+>    pública. Lo que sí depende de `/api` son contactos, Cloudinary y push. **Verificado por el
+>    efecto el mismo día:** Alejandro inició sesión en el APK y la app llegó a `/chat` con sus
+>    conversaciones cargadas desde Supabase. `E.3` sigue siendo necesaria para todo lo que llama a `/api`.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
@@ -603,9 +625,11 @@ con las rutas intactas, decisión registrada sobre el service worker.
 
 *Lo que no previó y salió de ejecutar* — la lista que enseña a planificar `E.2`:
 - **La UI llama a la API con rutas relativas y sesión por cookie:** en el navegador lo cubre un
-  proxy de Vite; en el teléfono no funciona hasta `E.3`. **`E.2` va a correr la app en Android sin
+  proxy de Vite; en el teléfono no funciona hasta `E.3`. ~~**`E.2` va a correr la app en Android sin
   poder iniciar sesión**: la medición tap→voz tiene que hacerse sin sesión (el tablero no la
-  necesita para hablar).
+  necesita para hablar).~~ *(Falso en sus dos mitades; corregido el 2026-11-11 al ejecutar `E.2`,
+  correcciones 8 y 9 de la cabecera. El login no pasa por `/api` y funcionó en el APK, y el tablero
+  sí necesita sesión: sólo se monta en `/chat`. Lo que espera a `E.3` es lo que llama a `/api`.)*
 - **`P0-7` paso 6 queda atado al *deep link* de `E.5`**: `/auth/confirm` redirige a una pantalla
   que ya no está en `web/`.
 - **Notificaciones:** sin service worker, `notifyNewMessage` deja de notificar en el navegador
@@ -650,6 +674,70 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > meses) por un problema que no es del WebView. **La medición sin E.2.2 hecha no vale y no se
 > registra.**
 
+> **`E.2.1` — hecha el 2026-11-11. La app abre en el emulador.** Capacitor **8.6.0** exacto
+> (`core` y `android` en dependencias, `cli` en desarrollo; el CLI pide Node ≥ 22 y el CI usa 22),
+> `appId` **`com.elaris.pictolink`** (decisión de Alejandro, irreversible tras publicar: §7.4 del
+> ESTADO), `webDir: 'dist'`. `cap add android` genera `mobile/android/` con **53 archivos
+> versionados**, ninguno de `assets/public` ni `build/`: los excluye su propio `.gitignore`. La
+> plantilla pide `minSdk 24`, `compileSdk`/`targetSdk 36`, AGP 8.13.0 y Gradle 8.14.3, y el primer
+> `assembleDebug` bajó solo Build-Tools 35 y Platform 36: **`BUILD SUCCESSFUL in 9m 12s`**, APK
+> debug de **4 799 594 bytes**. En el emulador (`Medium_Phone_API_37.0`), el logcat da
+> `Loading app at https://localhost` → `App started` y la captura muestra la bienvenida con Roboto.
+> **Lo que cambió fuera de lo planeado:** `eslint .` empezó a recorrer `android/` y dio **exit 1,
+> 2 669 problemas (114 errores)**, todos en JS generado; con `android/**` en los `ignores` vuelve a
+> **86 avisos, exit 0**, la cifra predicha. **Visto y no investigado:** el logcat repite 3 veces
+> `Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')`,
+> que viene del lado de Capacitor y no de nuestro código; puede afectar los márgenes de la barra de
+> estado en Android 15. El arranque en frío de 15,9 s **no es una cifra del WebView**: el emulador
+> llevaba segundos arrancado, con Gradle compilando en la misma PC, y el sistema mostró dos avisos
+> de «no responde» (lanzador y System UI), ninguno de la app.
+
+> **`E.2.2` — hecha el 2026-11-11. Las 44 celdas de `root` cargan sin red.** `root` tiene 45
+> celdas: 44 con `pictogramId` (44 ids únicos) y 1 de navegación sin imagen. **No se usó
+> `PICTO_OVERRIDES`:** se indexa por etiqueta, y 20 de esas 44 etiquetas llevan otro id en otras
+> páginas, así que cambiaría imágenes fuera de `root`. En su lugar, `MainActivity` intercepta las
+> peticiones a `static.arasaac.org` y responde con `assets/arasaac/{id}.png` si existe; si no, sigue
+> por red (decisión de Alejandro). **0 líneas del tablero tocadas.** Los PNG los baja
+> `npm run precargar:pictos` (44/44, 637 295 bytes, comprobando la cabecera PNG) y **quedan fuera
+> de git** (ARASAAC es CC BY-NC-SA, el repo es público). **Verificado por el efecto en el
+> teléfono**, con imágenes nuevas con parámetro anti-caché y la caché HTTP del WebView vaciada por
+> DevTools: sin red (modo avión, `ping` → *unknown host*), **44/44** de `root` y **0/5** del
+> control (ids de otras páginas); con red, 44/44 y **5/5**. **Instrumentos que mintieron, y
+> cómo se vio:** en este HONOR `logcat -d` da **0 líneas en total**, así que el `Logger.debug` del
+> interceptor no sirve para contar (se vio mirando el total y no sólo las líneas nuestras);
+> `navigator.onLine` da `true` en modo avión; `adb screencap` da una imagen negra. **Destapó
+> `BUG-11`:** abrir la app sin red manda a `/onboarding`, así que la prueba no pudo hacerse
+> reabriendo la app.
+
+> **`E.5.1` adelantada a `E.2` (corrección 7) — hecha el 2026-11-11. La app habla en el
+> teléfono.** `@capacitor-community/text-to-speech` **8.0.2** exacto (pide `@capacitor/core >=8`).
+> `useSpeech.ts` usa el TTS del sistema cuando `Capacitor.isNativePlatform()`, y en el navegador
+> sigue con `speechSynthesis` sin cambios; **0 líneas del tablero tocadas**. `isSupported` se partió
+> en `esNativo || webTTS`, porque el efecto que carga voces llama a `window.speechSynthesis` y
+> reventaría en el teléfono. En nativo no se llama a `stop()` antes de hablar:
+> `QueueStrategy.Flush` ya corta lo anterior, y un `stop()` asíncrono podría cortar la frase nueva.
+> **Verificado en el teléfono:** español soportado (`es-ES`, `es-US`); `speak()` de una frase de
+> prueba resolvió en **4 036 ms** y en **3 911 ms**, la duración real de la frase, y **Alejandro
+> la escuchó** (la primera no, por volumen bajo). Bundle 976.71 → **986.47 kB**, más 1.68 kB de la
+> implementación web del plugin en un fragmento aparte. Lint en 86, tests 13 + 1 todo.
+> **Queda de `E.5.1`:** en el teléfono no se aplica la voz elegida en Ajustes (`tts_voice` es un
+> `voiceURI` de la Web Speech API), marcado con `ponytail:` en el código.
+
+> **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
+> SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
+> es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.
+
+> **Método de `E.2.3`, escrito el 2026-11-11 antes de medir** (y aprobado por Alejandro).
+> **Toque:** `adb shell input tap` en el centro de celdas de `root` que hablan (no carpetas); la
+> marca es el `event.timeStamp` del `pointerdown`, capturado en el `document`. **Voz:** el primer
+> `onRangeStart` del plugin de TTS después de ese toque, con `performance.now()` (mismo reloj).
+> Llega a JS después del puente nativo, así que el error infla el número, no lo achica.
+> **Muestra:** 30 toques en caliente, uno cada 3 s para que la frase anterior termine, más el
+> **primer toque tras abrir en frío**, aparte, 3 veces. Se reportan mediana, p90, máximo y cuántos
+> pasan de 150 ms. Los listeners se instalan por DevTools, **sin cambiar código de la app**.
+> **Lo que NO mide:** la latencia del táctil (`input tap` la saltea) ni la del audio entre el motor
+> y el parlante; las dos suman al número real y ninguna la decide el WebView.
+
 **Predicción escrita antes de medir** (se compara al cerrar, y se cuenta el acierto):
 
 | Predicción | Valor |
@@ -657,6 +745,101 @@ con las rutas intactas, decisión registrada sobre el service worker.
 | Latencia tap→voz con imágenes locales | **< 150 ms** |
 | Líneas del tablero reescritas para llegar aquí | **0** |
 | Imports de `next/` en `mobile/` | **0** |
+
+> **`E.2.3` — medida el 2026-11-11 en el teléfono de `DEC-13`, con el método de arriba.**
+> Las 31 celdas de `root` que hablan, sacadas de los datos con la misma regla que
+> `AACBoard.tsx:67-68`; en cada toque se comprobó que la palabra dicha fuera la de la celda (0
+> emparejamientos dudosos).
+>
+> | Tramo (30 toques en caliente) | mín | mediana | p90 | máx | > 150 ms |
+> |---|---|---|---|---|---|
+> | Toque → `speak` sale por el puente (**WebView + React**) | 26 | **30 ms** | 33 | 36 | 0 |
+> | Puente → primera palabra (**Capacitor nativo + motor de voz**) | 190 | **209 ms** | 223 | 255 | 30 |
+> | **Total tap→voz** | 220 | **239 ms** | 256 | 285 | **30** |
+>
+> **Una primera corrida** de 30 toques, sin partir en tramos, dio mediana **282**, p90 302, máx
+> 524, con 30/30 sobre 150 ms; la diferencia con la segunda es variación entre corridas, y por eso
+> quedan las dos. **Controles para repartir los ~209 ms del lado nativo:** el puente de Capacitor,
+> ida y vuelta sin sintetizar (`isLanguageSupported`), da mediana **18.7 ms** (máx 22), así que
+> **unos 190 ms son del motor de voz de Android**; `speak()` llamado directo, sin toque ni React,
+> da mediana **205 ms** (mín 158, máx 284). **Primer toque tras abrir la app en frío**, 3 veces:
+> **393, 305 y 332 ms**. Fuera del método, una sola vez: **1 363 ms** en el primer `speak` después
+> de varios minutos con la app en segundo plano, de causa desconocida.
+>
+> **Contra las predicciones:** latencia < 150 ms, **fallada** (30/30 por encima); 0 líneas del
+> tablero reescritas, **acertada** (`git diff 7321d79` sobre `components/board/` y
+> `aac-grid-layout.ts` → vacío; del código de la app sólo cambió `useSpeech.ts`); 0 imports de
+> `next/`, **acertada** (control negativo: el mismo patrón da 10 en `web/`). **Lo que la cifra
+> dice:** el umbral se pasa, **pero el WebView aporta ~30 ms**; el resto es el motor de voz del
+> sistema, que una app en React Native usaría igual. El umbral de ~150 ms se escribió suponiendo
+> que la latencia sería del WebView. **Decisión de Alejandro, el mismo día: `DEC-1` confirmada,
+> el stack se queda.** La latencia del motor sigue como `PERF-10` en el ESTADO.
+
+#### Cierre de `E.2` — 2026-11-11, cerrada; se integra con su PR a `develop`
+
+**Alcance cumplido: 3 tareas de 3** (`E.2.1`→`E.2.3`) **más 1 adelantada** (`E.5.1`, TTS nativo,
+sin la cual no había voz que medir). Queda funcionando de punta a punta, en un teléfono real: la
+app se instala como APK, inicia sesión contra Supabase, muestra el tablero, sirve sin red las 44
+imágenes de `root` y **habla** con el TTS del sistema. Y el número que decidía `DEC-1` está medido.
+
+**Trazas:** rama `feature/e2-capacitor-android`, desde `develop` `7321d79`. Commits `e69f1bc`
+(`DEC-13`), `7da3a62` (E.2.1), `662b624` (E.2.2), `1614fc2` + `6566f6f` (TTS nativo y su registro
+en Gradle), `012a367` (E.2.3). Verificación final en limpio: `web/` `verify:full` exit 0 (3 avisos,
+14 tests, humo 21/21, Next 16.4.3); `mobile/` `npm ci`, lint (86), tests (13 + 1 todo) y build,
+exit 0 los cuatro, con bundle de 986.47 kB.
+
+**Correcciones al plan: 5**, todas en este archivo. **3 numeradas** (7→9 en la cabecera): el WebView
+sin `speechSynthesis`, el tablero que sí necesita sesión y el login que no necesitaba `E.3`. **2 sin
+número:** la premisa «el dispositivo más lento del piloto», que no se podía verificar con un único
+teléfono (`DEC-13`), y el lint de `mobile/`, que empezó a recorrer `android/` (resultado de `E.2.1`).
+Además se tachó con fecha la frase del cierre de `E.1` que decía que `E.2` correría sin sesión.
+
+**Decisiones nuevas:** `DEC-13`→`DEC-14` en el ESTADO (dispositivo de la medición; preset del
+tablero original, reorganización y vertical en teléfonos), **`DEC-1` confirmada** por la medición, y
+el `appId` `com.elaris.pictolink` en §7.4. **Hallazgos nuevos en el ESTADO:** `BUG-11` y `PERF-10`.
+
+**Métricas (§6), antes → después.** Predichas por escrito antes de medir: **6 de 6 acertadas** en
+el cierre. Entre las 3 del plan, **la latencia falló**: era la única estimada sin medir nada.
+
+| Métrica | Antes (`develop` `7321d79`) | Después |
+|---|---|---|
+| Líneas reescritas de `components/board/` | 0 de 778 | **0 de 778** (`git diff` vacío, también en `aac-grid-layout.ts`) |
+| Imports de `next/` en el bundle móvil | 0 | **0** (control: el mismo patrón da 10 en `web/`) |
+| Líneas de código de aplicación (`.ts`/`.tsx` de `mobile/` sin tests ni config, `wc -l`) | 14 969 en 51 | **14 988 en 51**; aparte, `MainActivity.java` 55 y `scripts/precargar-pictos.mjs` 29 |
+| Tests verdes | `web/` 14, `mobile/` 13 + 1 todo | igual |
+| Techo de avisos de lint | `web/` 3 + `mobile/` 86 | igual |
+| Workflows de CI | 1 (2 jobs) | igual: **la CI no compila Android** |
+| Latencia tap→voz | sin medir | **mediana 239 ms** (282 en otra corrida); WebView + React ~30 |
+| PAT filtrados en el historial público | no medido | no medido en esta tanda |
+
+*El método de conteo de líneas se validó reproduciendo el «antes» exacto (14 969 en 51) sobre
+`7321d79` antes de medir el «después».*
+
+**Lo que deja sin hacer.**
+
+*Lo que el plan previó y se cumplió:* cáscara Android que abre en el emulador, celdas que cargan sin
+red, el número tap→voz con imágenes locales, 0 líneas del tablero tocadas, 0 imports de `next/`.
+
+*Lo que no previó y salió de ejecutar* — la lista que enseña a planificar lo que sigue:
+- **Sin TTS nativo no había voz.** `E.5.1` se adelantó y quedó a medias: en el teléfono no se
+  aplica la voz que el usuario elige en Ajustes (`ponytail:` en `useSpeech.ts`).
+- **`BUG-11`:** abrir la app sin red manda a `/onboarding`. Choca de frente con «el tablero funciona
+  sin red», y no se arregla aquí.
+- **`DEC-14`:** el tablero horizontal no entra en la altura de un teléfono (51 px en el APK, 0 en
+  Chrome, ya antes del port). Va después de esta tanda.
+- **`PERF-10`:** ~190 ms del motor de voz, que ningún stack quita.
+- **Sólo `root` está precargada:** 44 de los 1 813 ids. Las demás páginas siguen usando la red.
+- **Instrumentos que mintieron en este teléfono:** `logcat -d` sin ninguna línea, `screencap` en
+  negro, `navigator.onLine` en `true` con modo avión. En PowerShell 5.1, el `>` rompe binarios y
+  agrega BOM, y las comillas dobles se pierden en los argumentos de `node`. **La medición se hizo
+  entera por DevTools (CDP)**, y así se repite.
+- **`gradlew` entró sin bit de ejecución** (`100644`): un job de Android en `ubuntu-latest`
+  fallaría con *Permission denied*.
+- **`ANDROID_HOME` sigue vacío:** cada comando de Gradle lo define en línea.
+- **Lo que la medición no cubre:** el táctil y el audio hasta el parlante; y que el teléfono sea de
+  verdad el más lento del piloto (`DEC-13`).
+- **Visto en el emulador y no investigado:** `Error injecting safe area CSS` en el logcat. En el
+  teléfono los márgenes seguros llegan bien (37 px arriba y a la izquierda).
 
 ---
 
