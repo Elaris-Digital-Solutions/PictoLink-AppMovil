@@ -650,6 +650,10 @@ con las rutas intactas, decisión registrada sobre el service worker.
 > meses) por un problema que no es del WebView. **La medición sin E.2.2 hecha no vale y no se
 > registra.**
 
+> **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
+> SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
+> es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.
+
 **Predicción escrita antes de medir** (se compara al cerrar, y se cuenta el acierto):
 
 | Predicción | Valor |
