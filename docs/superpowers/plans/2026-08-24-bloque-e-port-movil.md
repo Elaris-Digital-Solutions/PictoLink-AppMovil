@@ -982,8 +982,8 @@ lo que dice la cabecera del test para uso local), VAPID generadas en cada corrid
 Reproducido en local paso por paso, con el mismo bloque de bash para las variables: arranque de
 Supabase 68 s (sobre un volumen que ya existía: en el runner baja imágenes, **no medido**),
 `npm ci` 300 s, build 105 s y servidor listo en 3 s; `test:auth` **8/8**. **Control negativo** con
-la regex del Bearer rota y recompilado: **3/8, exit 1**. La duración en GitHub queda por medir en
-la primera corrida. Con esto se apagó `agentUpgrade` (corrección 14) y el reemplazo es
+la regex del Bearer rota y recompilado: **3/8, exit 1**. ~~La duración en GitHub queda por medir en
+la primera corrida.~~ **Medida en GitHub el 2026-11-20:** `test-auth` 2 min 27 s (PR #20, 8/8) y 3 min 3 s (PR #21, 9/9, con las 2 migraciones aplicadas sobre un Postgres limpio), contra 1 min 28 s y 1 min 22 s del `gate`: no hace falta filtrarlo por rutas. Con esto se apagó `agentUpgrade` (corrección 14) y el reemplazo es
 `npm audit --omit=dev --audit-level=moderate` como paso bloqueante en los jobs `gate` y `mobile`
 de `ci.yml` (los dos dan 0 hoy).
 
