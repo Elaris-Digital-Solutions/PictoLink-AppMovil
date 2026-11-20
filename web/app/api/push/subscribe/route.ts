@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
         console.error('[push/subscribe]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'No se pudo guardar la suscripción' }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });

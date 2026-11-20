@@ -61,7 +61,7 @@ jobs:
       # Lo rápido va primero: el lint corta antes de gastar el build.
       # El techo de avisos está en el propio script (--max-warnings), así
       # que un aviso nuevo pone el PR en rojo sin que haya que recordarlo.
-      # Bajó de 88 a 3 en E.1.5: los otros 85 se fueron con el código a mobile/.
+      # Bajó de 88 a 3 en E.1.5 (los otros 85 se fueron a mobile/) y a 1 con SEC-4 (2026-11-20).
       - name: Lint
         run: npm run lint
 

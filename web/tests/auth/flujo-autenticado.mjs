@@ -107,6 +107,18 @@ async function main() {
         // Control: un token alterado no puede pasar por bueno.
         const r6 = await post('/api/cloudinary/sign', `${token.slice(0, -4)}xxxx`);
         record('token alterado → 401', r6.status === 401, `status ${r6.status}`);
+
+        // SEC-4: la RPC que traduce correo → id sólo la llama la ruta (service role). Ni sin sesión
+        // ni con la sesión de A directo contra PostgREST, que no pasan por la ruta.
+        const rpc = (headers) => fetch(`${SUPABASE_URL}/rest/v1/rpc/get_user_id_by_email`, {
+            method: 'POST',
+            headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json', ...headers },
+            body: JSON.stringify({ lookup_email: b.email }),
+        });
+        const sinSesion = await rpc({});
+        const conSesion = await rpc({ Authorization: `Bearer ${token}` });
+        record('get_user_id_by_email cerrada a anon y authenticated (SEC-4)',
+            !sinSesion.ok && !conSesion.ok, `sin sesión ${sinSesion.status}, con sesión ${conSesion.status}`);
     } finally {
         await admin.auth.admin.deleteUser(a.id);
         await admin.auth.admin.deleteUser(b.id);

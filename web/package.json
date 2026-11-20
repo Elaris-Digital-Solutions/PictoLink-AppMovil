@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
-    "lint": "eslint . --max-warnings=3",
+    "lint": "eslint . --max-warnings=1",
     "lint:fix": "eslint . --fix",
     "lint:report": "eslint . -f stylish",
     "format": "prettier --write .",
