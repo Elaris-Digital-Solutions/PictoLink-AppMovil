@@ -975,6 +975,31 @@ firma es de relleno), ni se probó `push/*` desde el teléfono, ni el APK de **r
 >     cadenas, en las tres búsquedas, incluida la de control. Para contar en `dist/`, `grep`
 >     desde la herramienta Bash.
 
+**`test:auth` en el CI — 2026-11-20** (rama `fix/sec-19-next-y-ci-auth`). Workflow aparte,
+`.github/workflows/auth.yml`, en cada PR y bloqueante: Supabase local con sólo db, auth, kong y
+postgrest, variables fijadas **antes** del build (por eso `next start` y no `next dev`, al revés de
+lo que dice la cabecera del test para uso local), VAPID generadas en cada corrida, sin secrets.
+Reproducido en local paso por paso, con el mismo bloque de bash para las variables: arranque de
+Supabase 68 s (sobre un volumen que ya existía: en el runner baja imágenes, **no medido**),
+`npm ci` 300 s, build 105 s y servidor listo en 3 s; `test:auth` **8/8**. **Control negativo** con
+la regex del Bearer rota y recompilado: **3/8, exit 1**. La duración en GitHub queda por medir en
+la primera corrida. Con esto se apagó `agentUpgrade` (corrección 14) y el reemplazo es
+`npm audit --omit=dev --audit-level=moderate` como paso bloqueante en los jobs `gate` y `mobile`
+de `ci.yml` (los dos dan 0 hoy).
+
+> 19. **El primer control negativo dio 8/8 con la regex rota, y era falso.** En Git Bash, `kill`
+>     del PID de `npx next start` no mata el `node` hijo: el servidor de la corrida buena siguió en
+>     el puerto 3000, el nuevo murió con `EADDRINUSE` y el test le habló al viejo. Antes, otro
+>     intento no había roto nada porque el `sed` no coincidió (`git diff --stat` vacío). Para un
+>     control: comprobar que el cambio está en el build (`grep -rl` en `.next/server`), levantar con
+>     `node node_modules/next/dist/bin/next start` para que el PID sea el del servidor y mirar el
+>     log por `EADDRINUSE`. En el runner no pasa (máquina nueva, un solo arranque).
+> 20. **En PowerShell, `-x a,b,c` sin comillas no excluye nada.** La coma arma un array y la CLI de
+>     Supabase levantó los 13 contenedores (y cayó por health check a los 194 s). Con comillas,
+>     4 contenedores en 68 s. En el CI corre bash y la coma llega entera. De paso: el `maie-runtime`
+>     de la lista de E.3.1 no es un servicio de la CLI 3.1.0 (`start --help` lista 13) y se ignoraba
+>     sin aviso.
+
 ---
 
 ### E.4 — Push nativo APNs/FCM

@@ -1,0 +1,78 @@
+# Flujo autenticado (E.3.1): las 5 rutas de /api con una sesión de verdad, contra un Supabase
+# local levantado en el runner. Workflow aparte del gate porque es lo caro (Docker + build) y,
+# si falla, el nombre ya dice que se rompió la autenticación y no el lint.
+#
+# Bloquea: el humo del gate sólo prueba que SIN sesión se responde 401; con el login roto el gate
+# da verde igual (control negativo de E.3: 3/8 y exit 1 con la regex del Bearer rota).
+#
+# Sin secrets: las claves son las de demo que trae cualquier Supabase local, Cloudinary va de
+# relleno (ninguna comprobación llega a Cloudinary) y las VAPID se generan en cada corrida. Por eso
+# también corre en PRs desde forks. Ninguna variable apunta a producción.
+
+name: Auth
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: auth-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-auth:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: nube-de-prueba
+      CLOUDINARY_API_KEY: clave-de-prueba
+      CLOUDINARY_API_SECRET: secreto-de-prueba
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Sólo db, auth (gotrue), kong y postgrest: lo que usan las rutas. Aplica las migraciones de
+      # supabase/migrations, así que también prueba que corren sobre un Postgres limpio.
+      - name: Supabase local
+        working-directory: .
+        run: npx --yes supabase@3.1.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      # Antes del build: Next incrusta las NEXT_PUBLIC_* al compilar, también en el servidor.
+      - name: Variables del Supabase local y VAPID
+        working-directory: .
+        run: |
+          eval "$(npx --yes supabase@3.1.0 status -o env)"
+          VAPID=$(cd web && node -e "const k=require('web-push').generateVAPIDKeys();console.log(k.publicKey+' '+k.privateKey)")
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID% *}"
+            echo "VAPID_PRIVATE_KEY=${VAPID#* }"
+          } >> "$GITHUB_ENV"
+
+      - name: Build
+        run: npm run build
+
+      - name: Flujo autenticado
+        run: |
+          npx next start --port 3000 > next.log 2>&1 &
+          for i in $(seq 60); do curl -s -o /dev/null http://localhost:3000/ && break; sleep 1; done
+          npm run test:auth || { echo '--- next.log ---'; cat next.log; exit 1; }

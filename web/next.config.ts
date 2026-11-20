@@ -4,6 +4,10 @@ import type { NextConfig } from "next";
 // (push y caché de pictogramas) se mudó a mobile/worker y lo decide E.1.6.
 const nextConfig: NextConfig = {
   turbopack: {},
+  // Sin esto, `next dev` y `next build` corridos por un agente (y el CI de test:auth) terminan con
+  // exit 1 cuando la versión tiene avisos de seguridad. Los avisos los vigila `npm audit
+  // --omit=dev` como check bloqueante del CI (SEC-19, corrección 14 del plan del Bloque E).
+  experimental: { agentUpgrade: false },
   // E.3.3: la app de Android corre en el origen https://localhost y llama a /api con Bearer.
   // Sin Allow-Credentials: la cookie no viaja cross-origin, el token sí (lo pone la app).
   // ponytail: un solo origen fijo. iOS (E.6) usa capacitor://localhost y Allow-Origin admite un
