@@ -946,8 +946,23 @@ Así `lib/cloudinary.ts` sigue idéntica a la de `web/` (el `cmp` de la CI) y un
 puede olvidarse. Sin `VITE_API_URL` la ruta queda relativa (el navegador con el proxy de Vite).
 Test `tests/unit/api-fetch.test.ts`, 3 casos; **control negativo:** con el filtro de `/api/` quitado
 falla justo «el token NO sale hacia otros dominios». Gate de `mobile/` exit 0: 86 avisos, 25 passed
-+ 1 todo, `index-*.js` 987.11 kB. `allowBackup="false"` aplicado. **Falta la verificación en el
-teléfono** (no estaba conectado: `adb devices` vacío).
++ 1 todo, `index-*.js` 987.11 kB. `allowBackup="false"` aplicado. ~~**Falta la verificación en el
+teléfono** (no estaba conectado: `adb devices` vacío).~~
+
+**Verificado en el teléfono — 2026-11-19**, por el efecto, en el HONOR de `DEC-13`: APK de debug
+compilado contra el Supabase local y la API local (corrección 16), `adb reverse` de 3000 y 54521
+(desde el teléfono, `/system/bin/curl` da 200 en los dos), sesión iniciada por la UI con un usuario
+del Supabase local. Por CDP, con el mismo `fetch` que usan los llamadores: `contacts/search` → 200
+con el `contactId` de B; `cloudinary/sign` → 200 con `folder` = `users/{id de A}`. **Control:** la
+misma búsqueda por `XMLHttpRequest`, que no pasa por el envoltorio, devuelve 200 `text/html`, el
+`index.html` de Capacitor (la corrección 10, reproducida). Y por la UI de verdad (`ContactForm`:
+«Añadir el primero», email, «Buscar», «Registrar Contacto»): «Tel B» en pantalla y **1 fila** A→B en
+`contacts` de la base local. **Lo que no prueba:** no se subió una imagen real a Cloudinary (la
+firma es de relleno), ni se probó `push/*` desde el teléfono, ni el APK de **release**, ni que
+`allowBackup="false"` impida de verdad el backup.
+
+> 18. **`Measure-Object` cuenta como 1 la salida vacía de un ejecutable** (`adb forward --list`
+>     tras `--remove-all`). Para saber si una lista nativa está vacía, `-join` y mirarla.
 
 > 16. **El APK de la prueba tiene que apuntar al Supabase LOCAL, no sólo a la API local.** Vite
 >     toma `NEXT_PUBLIC_SUPABASE_URL` de `web/.env.local`, que es producción: el teléfono
