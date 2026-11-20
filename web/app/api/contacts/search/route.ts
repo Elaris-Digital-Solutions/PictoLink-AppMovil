@@ -1,4 +1,4 @@
-import { getRequestAuth } from '@/lib/supabase/server';
+import { getRequestAuth, getServiceClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -16,8 +16,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
 
-        // Buscar el UUID real del usuario por email usando la RPC SECURITY DEFINER
-        const { data: foundId, error: rpcError } = await (supabase as any)
+        // SEC-4: la RPC sólo la puede ejecutar service_role (migración sec4_revoke…). Esta ruta,
+        // que ya exigió sesión, es la única puerta. ponytail: sin límite de frecuencia todavía;
+        // un autenticado puede probar correos de a uno. Va aquí cuando haga falta.
+        const service = getServiceClient();
+        if (!service) {
+            console.error('[contacts/search] falta SUPABASE_SERVICE_ROLE_KEY');
+            return NextResponse.json({ error: 'Error al buscar usuario' }, { status: 500 });
+        }
+        const { data: foundId, error: rpcError } = await service
             .rpc('get_user_id_by_email', { lookup_email: email.trim().toLowerCase() });
 
         if (rpcError) {
@@ -62,7 +69,9 @@ export async function POST(req: NextRequest) {
             message: 'Usuario encontrado'
         });
 
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        // Nunca el mensaje crudo al cliente: puede traer detalles de la base.
+        console.error('[contacts/search]', error);
+        return NextResponse.json({ error: 'Error al buscar usuario' }, { status: 500 });
     }
 }

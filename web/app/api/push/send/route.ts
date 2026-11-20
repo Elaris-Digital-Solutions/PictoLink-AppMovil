@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
-import { getRequestAuth } from '@/lib/supabase/server';
+import { getRequestAuth, getServiceClient } from '@/lib/supabase/server';
 
 // This route depends on request cookies + runtime env — never statically render it.
 export const dynamic = 'force-dynamic';
@@ -15,16 +14,6 @@ function configureWebPush(): boolean {
     if (!pub || !priv) return false;
     webpush.setVapidDetails('mailto:pictolink@example.com', pub, priv);
     return true;
-}
-
-// Service-role client — bypasses RLS to read any user's push subscriptions and
-// prune expired endpoints. Created lazily so a missing key doesn't break the
-// build; returns null when the env var isn't configured.
-function getServiceClient() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key) return null;
-    return createClient(url, key);
 }
 
 export async function POST(req: NextRequest) {
