@@ -62,6 +62,35 @@ y este plan se corrige.
 >    pública. Lo que sí depende de `/api` son contactos, Cloudinary y push. **Verificado por el
 >    efecto el mismo día:** Alejandro inició sesión en el APK y la app llegó a `/chat` con sus
 >    conversaciones cargadas desde Supabase. `E.3` sigue siendo necesaria para todo lo que llama a `/api`.
+>
+> ### Correcciones al plan — 2026-11-11, antes de ejecutar `E.3`
+>
+> Medido en el teléfono de `DEC-13`, por DevTools sobre el APK de debug, sesión iniciada.
+>
+> 10. **Las llamadas a `/api` no fallan por falta de cookie: no salen del teléfono.** El origen de
+>     la app es `https://localhost`, y `fetch('/api/…')` lo atiende el servidor local de Capacitor,
+>     que devuelve su `index.html` (540 bytes, `text/html`) con **200**. Así en las **5 rutas** que
+>     llama `mobile/`: `contacts/search`, `cloudinary/sign`, `cloudinary/delete`, `push/subscribe` y
+>     `push/send`. Efecto: `res.ok` da `true` y `res.json()` lanza `SyntaxError` (buscar contacto y
+>     subir imagen fallan con ese error; borrar imagen y push lo tragan). **Lo primero que necesita
+>     `E.3` es una URL base absoluta para la API**, y recién después que las rutas acepten
+>     `Authorization: Bearer`: la cookie vive en `https://localhost` y no viaja a otro origen.
+> 11. **La verificación de `E.3.2` («la sesión sobrevive al cierre de la app») ya se cumple hoy.**
+>     Tras `am force-stop` y reabrir, la cookie `sb-…-auth-token` sigue igual (2 966 caracteres antes
+>     y después) y la app vuelve sola a `/chat`. Lo que queda de `E.3.2` es **dónde** se guarda el
+>     token (cookie del WebView o almacenamiento seguro nativo), no **que** se guarde. Sin control
+>     negativo en esta medición: no se probó que con la cookie borrada la app expulse.
+> 12. **El preview de Vercel no sirve como API para el APK, y E.3 se desarrolla contra `web/` en la
+>     PC.** El preview de `develop` responde `302` «Protected by Vercel Authentication», y el alias
+>     `…-git-develop-…` no resuelve. **Decisión de Alejandro, 2026-11-11:** `web/` con `npm run dev`
+>     en la PC y `adb reverse tcp:3000 tcp:3000`; a qué servidor apunta el APK que se reparte se
+>     decide con el release. Medido al probarlo: Android bloquea HTTP sin cifrar
+>     (`net::ERR_CLEARTEXT_NOT_PERMITTED`), así que el APK de **debug** lleva una
+>     `network_security_config` que lo permite sólo hacia `localhost` y `127.0.0.1`
+>     (`android/app/src/debug/`). Control: antes llegaban al servidor **0 de 4** peticiones de la
+>     app; después, **4 de 4**. Y aparece lo que el plan no tenía: **las rutas no responden CORS**
+>     (`fetch` con `mode: 'cors'` falla aunque el servidor contestó 200), así que E.3 también tiene
+>     que contestar CORS al origen `https://localhost`, preflight de `Authorization` incluido.
 
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
@@ -860,6 +889,91 @@ grave. Verificación completamente distinta a E.1, por eso no comparten PR.
 > **Esta dependencia está medida, no supuesta.** El registro del ESTADO (2026-07-28) dice, sobre
 > `@supabase/ssr`: *«el gate no cubre flujos autenticados — habría compilado, dado 200 en todas
 > las rutas y 27/27 con el login roto»*. Sin E.3.1, E.3.2 se verifica a ciegas.
+
+**Ejecución de `E.3.1` — 2026-11-11.** **Decisión de Alejandro:** el test corre contra **Supabase
+local en Docker**, no contra producción, para que pueda correr en la CI sin secretos. El esquema
+salió de `supabase db dump --linked` (sólo lectura; **no** `db pull`, que ofrece escribir el
+historial de migraciones remoto) y quedó como `supabase/migrations/20260603053137_esquema_base.sql`,
+con la versión de la única migración registrada en producción. Puertos en el rango **5452x**: los
+5432x y 5442x los ocupan otros proyectos locales. El test es `web/tests/auth/flujo-autenticado.mjs`
+(`npm run test:auth`): crea dos usuarios, inicia sesión y llama a las 5 rutas con `Bearer` desde el
+origen `https://localhost`, y en cada una comprueba que **llegó la identidad**, no sólo que no hubo
+401. **Primera corrida, antes de tocar las rutas: 1/8**, predicho por escrito: sólo pasa el
+control del token alterado. El control con el login roto a propósito queda para cuando esté verde.
+
+**Decisión de Alejandro, 2026-11-11, sobre `E.3.2`:** el token **se queda en la cookie del WebView**
+(ya persiste, corrección 11) y **no** se agrega almacenamiento seguro nativo. A cambio,
+`android:allowBackup` pasa de `true` a `false` (`AndroidManifest.xml:5`), para que los backups de
+Android no copien la sesión. ~~**Todavía no aplicado.**~~ **Aplicado el 2026-11-19** (sin compilar ni
+instalar todavía). Se revisa en `E.6`: en iOS la persistencia
+de cookies del WKWebView es menos fiable.
+
+**Ejecución de `E.3.3` — 2026-11-19.** `getRequestAuth()` en `web/lib/supabase/server.ts`: si
+llega `Authorization: Bearer`, arma el cliente con ese header global (RLS lo necesita:
+`push/subscribe` escribe con la sesión del usuario) y valida con `getUser(token)`; si no llega,
+sigue la cookie. **Un Bearer inválido es 401, no se cae a la cookie.** Las 5 rutas pasan por él
+(`push/subscribe` y `push/send` armaban su propio cliente con cookies). CORS con `headers()` en
+`web/next.config.ts` sobre `/api/:path*`, origen fijo `https://localhost`, sin
+`Allow-Credentials`; el `OPTIONS` lo implementa Next solo y **sí** lleva esas cabeceras (medido:
+pasa el preflight del test). **Medido:** `test:auth` **8/8**; **control negativo** (la regex del
+helper rota a propósito, así que el token se ignora) **3/8, exit 1**, y las 5 rutas dan 401, que es
+también la prueba de «rechazan sin él»; el humo no la da para `contacts/search`, que contesta 400
+antes de mirar la sesión. Revertido, 8/8 otra vez. Gate de web exit 0 (3 avisos, 14 tests, humo
+21/21).
+
+> **Correcciones que trajo ejecutarlo:**
+> 13. **El genérico `Database` no tipaba nada.** `lib/supabase/types.ts` está escrito a mano y no
+>     tiene la forma que exige supabase-js 2.111 (faltan `Relationships`, `Views`, `Functions`):
+>     todas las tablas resolvían a `never`, que es por qué `contacts/search` ya usaba casts y las
+>     rutas de push un cliente sin tipar. Se quitó el genérico de `server.ts` con un `ponytail:`;
+>     el arreglo real es `supabase gen types typescript --local`, ahora que hay Supabase local.
+> 14. **`next dev` y `next build` se cortan solos cuando los corre un agente.** Next 16.4 trae
+>     `experimental.agentUpgrade` (documentado en `node_modules/next/dist/docs`): si la versión
+>     tiene avisos de seguridad, el primer aviso termina el proceso con exit 1 y **el reintento sólo
+>     vale 5 minutos** (`RETRY_TTL`, recibo en `.next`: borrar `.next` entre medio lo pierde). Se
+>     apaga con `agentUpgrade: false`, decisión del mismo género que `web/AGENTS.md`.
+> 15. **iOS (`E.6`) necesita `proxy.ts`.** `Access-Control-Allow-Origin` admite un único valor y
+>     WKWebView usa `capacitor://localhost`: con dos orígenes, el origen fijo de `next.config.ts`
+>     deja de servir y hay que devolver el `Origin` si está en una lista (ejemplo en la doc de
+>     `proxy.md` de Next 16).
+
+**Ejecución de la mitad móvil — 2026-11-19.** En vez de tocar los 6 `fetch` (`ContactForm.tsx:79`,
+`lib/cloudinary.ts:72` y `:182`, `lib/notifications.ts:115`, `useChatStore.ts:250`,
+`useGroupStore.ts:340`, contados con grep), un envoltorio `conApi` en `mobile/lib/apiFetch.ts`,
+instalado en `main.tsx`: a lo que empieza por `/api/` le antepone `VITE_API_URL` y le agrega el
+Bearer de `getSession()`; **a nada más**, para que el token no llegue a Cloudinary ni a Hugging Face.
+Así `lib/cloudinary.ts` sigue idéntica a la de `web/` (el `cmp` de la CI) y un llamador nuevo no
+puede olvidarse. Sin `VITE_API_URL` la ruta queda relativa (el navegador con el proxy de Vite).
+Test `tests/unit/api-fetch.test.ts`, 3 casos; **control negativo:** con el filtro de `/api/` quitado
+falla justo «el token NO sale hacia otros dominios». Gate de `mobile/` exit 0: 86 avisos, 25 passed
++ 1 todo, `index-*.js` 987.11 kB. `allowBackup="false"` aplicado. ~~**Falta la verificación en el
+teléfono** (no estaba conectado: `adb devices` vacío).~~
+
+**Verificado en el teléfono — 2026-11-19**, por el efecto, en el HONOR de `DEC-13`: APK de debug
+compilado contra el Supabase local y la API local (corrección 16), `adb reverse` de 3000 y 54521
+(desde el teléfono, `/system/bin/curl` da 200 en los dos), sesión iniciada por la UI con un usuario
+del Supabase local. Por CDP, con el mismo `fetch` que usan los llamadores: `contacts/search` → 200
+con el `contactId` de B; `cloudinary/sign` → 200 con `folder` = `users/{id de A}`. **Control:** la
+misma búsqueda por `XMLHttpRequest`, que no pasa por el envoltorio, devuelve 200 `text/html`, el
+`index.html` de Capacitor (la corrección 10, reproducida). Y por la UI de verdad (`ContactForm`:
+«Añadir el primero», email, «Buscar», «Registrar Contacto»): «Tel B» en pantalla y **1 fila** A→B en
+`contacts` de la base local. **Lo que no prueba:** no se subió una imagen real a Cloudinary (la
+firma es de relleno), ni se probó `push/*` desde el teléfono, ni el APK de **release**, ni que
+`allowBackup="false"` impida de verdad el backup.
+
+> 18. **`Measure-Object` cuenta como 1 la salida vacía de un ejecutable** (`adb forward --list`
+>     tras `--remove-all`). Para saber si una lista nativa está vacía, `-join` y mirarla.
+
+> 16. **El APK de la prueba tiene que apuntar al Supabase LOCAL, no sólo a la API local.** Vite
+>     toma `NEXT_PUBLIC_SUPABASE_URL` de `web/.env.local`, que es producción: el teléfono
+>     iniciaría sesión allí y el `next dev` local rechazaría ese token. Las variables del proceso
+>     le ganan a `.env.local` al compilar (medido en `dist/`, con control: con
+>     `NEXT_PUBLIC_SUPABASE_URL=http://localhost:54521` aparece 2 veces y el host de producción 0;
+>     sin ella, 0 y 2). Hace falta además `adb reverse tcp:54521 tcp:54521`, la anon key local y un
+>     usuario creado en el Supabase local.
+> 17. **`Select-String -SimpleMatch` dio 0 sobre el bundle de 987 kB** donde `grep -o` encontró las
+>     cadenas, en las tres búsquedas, incluida la de control. Para contar en `dist/`, `grep`
+>     desde la herramienta Bash.
 
 ---
 

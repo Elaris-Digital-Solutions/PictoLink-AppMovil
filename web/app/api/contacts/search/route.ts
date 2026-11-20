@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getRequestAuth } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -10,10 +10,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Falta el email' }, { status: 400 });
         }
 
-        const supabase = await createSupabaseServerClient();
-
-        // Verificar si el usuario actual está logueado
-        const { data: { user } } = await supabase.auth.getUser();
+        // Verificar si el usuario actual está logueado (cookie o Bearer)
+        const { supabase, user } = await getRequestAuth();
         if (!user) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
