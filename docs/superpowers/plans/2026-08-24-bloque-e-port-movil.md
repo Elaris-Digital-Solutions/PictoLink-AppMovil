@@ -904,7 +904,8 @@ control del token alterado. El control con el login roto a propósito queda para
 **Decisión de Alejandro, 2026-11-11, sobre `E.3.2`:** el token **se queda en la cookie del WebView**
 (ya persiste, corrección 11) y **no** se agrega almacenamiento seguro nativo. A cambio,
 `android:allowBackup` pasa de `true` a `false` (`AndroidManifest.xml:5`), para que los backups de
-Android no copien la sesión. **Todavía no aplicado.** Se revisa en `E.6`: en iOS la persistencia
+Android no copien la sesión. ~~**Todavía no aplicado.**~~ **Aplicado el 2026-11-19** (sin compilar ni
+instalar todavía). Se revisa en `E.6`: en iOS la persistencia
 de cookies del WKWebView es menos fiable.
 
 **Ejecución de `E.3.3` — 2026-11-19.** `getRequestAuth()` en `web/lib/supabase/server.ts`: si
@@ -935,6 +936,29 @@ antes de mirar la sesión. Revertido, 8/8 otra vez. Gate de web exit 0 (3 avisos
 >     WKWebView usa `capacitor://localhost`: con dos orígenes, el origen fijo de `next.config.ts`
 >     deja de servir y hay que devolver el `Origin` si está en una lista (ejemplo en la doc de
 >     `proxy.md` de Next 16).
+
+**Ejecución de la mitad móvil — 2026-11-19.** En vez de tocar los 6 `fetch` (`ContactForm.tsx:79`,
+`lib/cloudinary.ts:72` y `:182`, `lib/notifications.ts:115`, `useChatStore.ts:250`,
+`useGroupStore.ts:340`, contados con grep), un envoltorio `conApi` en `mobile/lib/apiFetch.ts`,
+instalado en `main.tsx`: a lo que empieza por `/api/` le antepone `VITE_API_URL` y le agrega el
+Bearer de `getSession()`; **a nada más**, para que el token no llegue a Cloudinary ni a Hugging Face.
+Así `lib/cloudinary.ts` sigue idéntica a la de `web/` (el `cmp` de la CI) y un llamador nuevo no
+puede olvidarse. Sin `VITE_API_URL` la ruta queda relativa (el navegador con el proxy de Vite).
+Test `tests/unit/api-fetch.test.ts`, 3 casos; **control negativo:** con el filtro de `/api/` quitado
+falla justo «el token NO sale hacia otros dominios». Gate de `mobile/` exit 0: 86 avisos, 25 passed
++ 1 todo, `index-*.js` 987.11 kB. `allowBackup="false"` aplicado. **Falta la verificación en el
+teléfono** (no estaba conectado: `adb devices` vacío).
+
+> 16. **El APK de la prueba tiene que apuntar al Supabase LOCAL, no sólo a la API local.** Vite
+>     toma `NEXT_PUBLIC_SUPABASE_URL` de `web/.env.local`, que es producción: el teléfono
+>     iniciaría sesión allí y el `next dev` local rechazaría ese token. Las variables del proceso
+>     le ganan a `.env.local` al compilar (medido en `dist/`, con control: con
+>     `NEXT_PUBLIC_SUPABASE_URL=http://localhost:54521` aparece 2 veces y el host de producción 0;
+>     sin ella, 0 y 2). Hace falta además `adb reverse tcp:54521 tcp:54521`, la anon key local y un
+>     usuario creado en el Supabase local.
+> 17. **`Select-String -SimpleMatch` dio 0 sobre el bundle de 987 kB** donde `grep -o` encontró las
+>     cadenas, en las tres búsquedas, incluida la de control. Para contar en `dist/`, `grep`
+>     desde la herramienta Bash.
 
 ---
 
