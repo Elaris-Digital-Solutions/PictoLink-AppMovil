@@ -890,6 +890,23 @@ grave. Verificación completamente distinta a E.1, por eso no comparten PR.
 > `@supabase/ssr`: *«el gate no cubre flujos autenticados — habría compilado, dado 200 en todas
 > las rutas y 27/27 con el login roto»*. Sin E.3.1, E.3.2 se verifica a ciegas.
 
+**Ejecución de `E.3.1` — 2026-11-11.** **Decisión de Alejandro:** el test corre contra **Supabase
+local en Docker**, no contra producción, para que pueda correr en la CI sin secretos. El esquema
+salió de `supabase db dump --linked` (sólo lectura; **no** `db pull`, que ofrece escribir el
+historial de migraciones remoto) y quedó como `supabase/migrations/20260603053137_esquema_base.sql`,
+con la versión de la única migración registrada en producción. Puertos en el rango **5452x**: los
+5432x y 5442x los ocupan otros proyectos locales. El test es `web/tests/auth/flujo-autenticado.mjs`
+(`npm run test:auth`): crea dos usuarios, inicia sesión y llama a las 5 rutas con `Bearer` desde el
+origen `https://localhost`, y en cada una comprueba que **llegó la identidad**, no sólo que no hubo
+401. **Primera corrida, antes de tocar las rutas: 1/8**, predicho por escrito: sólo pasa el
+control del token alterado. El control con el login roto a propósito queda para cuando esté verde.
+
+**Decisión de Alejandro, 2026-11-11, sobre `E.3.2`:** el token **se queda en la cookie del WebView**
+(ya persiste, corrección 11) y **no** se agrega almacenamiento seguro nativo. A cambio,
+`android:allowBackup` pasa de `true` a `false` (`AndroidManifest.xml:5`), para que los backups de
+Android no copien la sesión. **Todavía no aplicado.** Se revisa en `E.6`: en iOS la persistencia
+de cookies del WKWebView es menos fiable.
+
 ---
 
 ### E.4 — Push nativo APNs/FCM
