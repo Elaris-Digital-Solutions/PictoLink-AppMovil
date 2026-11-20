@@ -19,8 +19,9 @@
  *      producción: NEXT_PUBLIC_SUPABASE_URL/_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY (del Supabase
  *      local), NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET (de
  *      relleno: ninguna comprobación llega a Cloudinary), y NEXT_PUBLIC_VAPID_PUBLIC_KEY y
- *      VAPID_PRIVATE_KEY (generadas con `web-push`, que valida su formato). Con `next start` no
- *      sirve: Next incrusta las NEXT_PUBLIC_* al compilar.
+ *      VAPID_PRIVATE_KEY (generadas con `web-push`, que valida su formato). `next start` sirve
+ *      sólo si esas variables ya estaban al hacer el build: Next incrusta las NEXT_PUBLIC_* al
+ *      compilar. Así lo corre el CI (.github/workflows/auth.yml).
  * Variables del test: BASE_URL (por defecto http://localhost:3000), SUPABASE_URL,
  * SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY, de `npx supabase@3.1.0 status -o env`.
  *

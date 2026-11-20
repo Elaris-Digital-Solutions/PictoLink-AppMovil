@@ -51,6 +51,13 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # SEC-19: next 16.4.3 llevaba 7 avisos moderados y nada lo decía. Sólo dependencias de
+      # producción (las de desarrollo no llegan al servidor) y desde moderado, que es el nivel que
+      # tenían esos 7. Puede ponerse rojo sin cambios en el código si sale un aviso nuevo: es a
+      # propósito. Reemplaza al corte de `agentUpgrade`, apagado en next.config.ts.
+      - name: Dependencias sin avisos de seguridad
+        run: npm audit --omit=dev --audit-level=moderate
+
       # Lo rápido va primero: el lint corta antes de gastar el build.
       # El techo de avisos está en el propio script (--max-warnings), así
       # que un aviso nuevo pone el PR en rojo sin que haya que recordarlo.
@@ -102,6 +109,10 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+
+      # Lo mismo que en `gate`: lo que va dentro del APK.
+      - name: Dependencias sin avisos de seguridad
+        run: npm audit --omit=dev --audit-level=moderate
 
       # Techo 86 (E.1, 2026-10-31): los 85 avisos que se mudaron de web/ más 1
       # de `@next/next/no-img-element` por el <img> que sustituyó a next/image.
