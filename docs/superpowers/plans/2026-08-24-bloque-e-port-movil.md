@@ -976,7 +976,8 @@ firma es de relleno), ni se probó `push/*` desde el teléfono, ni el APK de **r
 >     desde la herramienta Bash.
 
 **`test:auth` en el CI — 2026-11-20** (rama `fix/sec-19-next-y-ci-auth`). Workflow aparte,
-`.github/workflows/auth.yml`, en cada PR y bloqueante: Supabase local con sólo db, auth, kong y
+`.github/workflows/auth.yml`, en cada PR y ~~bloqueante~~ **rojo si falla, pero sin bloquear el
+merge (ver corrección 21)**: Supabase local con sólo db, auth, kong y
 postgrest, variables fijadas **antes** del build (por eso `next start` y no `next dev`, al revés de
 lo que dice la cabecera del test para uso local), VAPID generadas en cada corrida, sin secrets.
 Reproducido en local paso por paso, con el mismo bloque de bash para las variables: arranque de
@@ -999,6 +1000,14 @@ de `ci.yml` (los dos dan 0 hoy).
 >     4 contenedores en 68 s. En el CI corre bash y la coma llega entera. De paso: el `maie-runtime`
 >     de la lista de E.3.1 no es un servicio de la CLI 3.1.0 (`start --help` lista 13) y se ignoraba
 >     sin aviso.
+> 21. **«Bloqueante» era falso: ni `develop` ni `main` tienen protección de rama.** Medido el
+>     2026-11-20 con `gh api …/branches/{develop,main}/protection` → 404 *Branch not protected*, y
+>     `…/rulesets` → `[]`. `gate`, `mobile`, `test-auth` y el paso de `npm audit` ponen el PR en
+>     rojo, pero un PR en rojo se puede mergear igual. Pasan a bloquear cuando Alejandro active la
+>     protección con esos tres checks como obligatorios. #20 y #21 se mergearon con los tres en
+>     `SUCCESS` (`mergedAt` 11 min 59 s y 1 min 28 s después del último `completedAt`), y el push a `develop` (`0823e53`) también: `CI` 1 min 39 s y `Auth` 3 min 23 s,
+>     los dos `success` (runs `44687635879` y `44687635891`; los de `a75e870` se cancelaron por
+>     `concurrency` al llegar el merge de #21 10 s después).
 
 ---
 
