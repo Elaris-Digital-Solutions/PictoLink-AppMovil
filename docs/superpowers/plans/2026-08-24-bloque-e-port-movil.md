@@ -907,6 +907,35 @@ control del token alterado. El control con el login roto a propósito queda para
 Android no copien la sesión. **Todavía no aplicado.** Se revisa en `E.6`: en iOS la persistencia
 de cookies del WKWebView es menos fiable.
 
+**Ejecución de `E.3.3` — 2026-11-19.** `getRequestAuth()` en `web/lib/supabase/server.ts`: si
+llega `Authorization: Bearer`, arma el cliente con ese header global (RLS lo necesita:
+`push/subscribe` escribe con la sesión del usuario) y valida con `getUser(token)`; si no llega,
+sigue la cookie. **Un Bearer inválido es 401, no se cae a la cookie.** Las 5 rutas pasan por él
+(`push/subscribe` y `push/send` armaban su propio cliente con cookies). CORS con `headers()` en
+`web/next.config.ts` sobre `/api/:path*`, origen fijo `https://localhost`, sin
+`Allow-Credentials`; el `OPTIONS` lo implementa Next solo y **sí** lleva esas cabeceras (medido:
+pasa el preflight del test). **Medido:** `test:auth` **8/8**; **control negativo** (la regex del
+helper rota a propósito, así que el token se ignora) **3/8, exit 1**, y las 5 rutas dan 401, que es
+también la prueba de «rechazan sin él»; el humo no la da para `contacts/search`, que contesta 400
+antes de mirar la sesión. Revertido, 8/8 otra vez. Gate de web exit 0 (3 avisos, 14 tests, humo
+21/21).
+
+> **Correcciones que trajo ejecutarlo:**
+> 13. **El genérico `Database` no tipaba nada.** `lib/supabase/types.ts` está escrito a mano y no
+>     tiene la forma que exige supabase-js 2.111 (faltan `Relationships`, `Views`, `Functions`):
+>     todas las tablas resolvían a `never`, que es por qué `contacts/search` ya usaba casts y las
+>     rutas de push un cliente sin tipar. Se quitó el genérico de `server.ts` con un `ponytail:`;
+>     el arreglo real es `supabase gen types typescript --local`, ahora que hay Supabase local.
+> 14. **`next dev` y `next build` se cortan solos cuando los corre un agente.** Next 16.4 trae
+>     `experimental.agentUpgrade` (documentado en `node_modules/next/dist/docs`): si la versión
+>     tiene avisos de seguridad, el primer aviso termina el proceso con exit 1 y **el reintento sólo
+>     vale 5 minutos** (`RETRY_TTL`, recibo en `.next`: borrar `.next` entre medio lo pierde). Se
+>     apaga con `agentUpgrade: false`, decisión del mismo género que `web/AGENTS.md`.
+> 15. **iOS (`E.6`) necesita `proxy.ts`.** `Access-Control-Allow-Origin` admite un único valor y
+>     WKWebView usa `capacitor://localhost`: con dos orígenes, el origen fijo de `next.config.ts`
+>     deja de servir y hay que devolver el `Origin` si está en una lista (ejemplo en la doc de
+>     `proxy.md` de Next 16).
+
 ---
 
 ### E.4 — Push nativo APNs/FCM

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import webpush from 'web-push';
+import { getRequestAuth } from '@/lib/supabase/server';
 
 // This route depends on request cookies + runtime env — never statically render it.
 export const dynamic = 'force-dynamic';
@@ -29,22 +28,8 @@ function getServiceClient() {
 }
 
 export async function POST(req: NextRequest) {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll: () => cookieStore.getAll(),
-                setAll: (all) => all.forEach(({ name, value, options }) =>
-                    cookieStore.set(name, value, options)
-                ),
-            },
-        }
-    );
-
-    // Verify caller is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
+    // Verify caller is authenticated (cookie or Bearer)
+    const { supabase, user } = await getRequestAuth();
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

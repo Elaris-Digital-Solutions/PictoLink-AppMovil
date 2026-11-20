@@ -22,12 +22,11 @@
 
 import { createHash } from 'crypto';
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getRequestAuth } from '@/lib/supabase/server';
 import { userFolder } from '@/lib/cloudinary';
 
 export async function POST() {
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user } = await getRequestAuth();
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
