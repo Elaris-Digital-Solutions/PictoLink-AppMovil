@@ -1,0 +1,230 @@
+'use client';
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { getSupabase } from '@/lib/supabase/client';
+import { useProfileStore } from '@/lib/store/useProfileStore';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+
+export interface Contact {
+    id: string;           // ID de la relación
+    contact_id: string;   // uuid del destinatario en profiles
+    name: string;         // custom_name
+    role: string;         // Familia | Profesional | Escuela | Amigo
+    avatarUrl?: string;   // Cloudinary URL (puede ser null si no tiene foto)
+}
+
+interface ContactStore {
+    contacts: Contact[];
+    isLoading: boolean;
+    loadContacts: (userId: string) => Promise<void>;
+    addContact: (data: Omit<Contact, 'id'>, userId: string) => Promise<void>;
+    updateContact: (id: string, data: Partial<Omit<Contact, 'id' | 'contact_id'>>) => Promise<void>;
+    removeContact: (id: string) => Promise<void>;
+
+    /**
+     * Subscribe to INSERT events on the contacts table so auto-created contacts
+     * (from the DB trigger `auto_create_reverse_contact`) appear immediately
+     * without a manual page reload.
+     */
+    subscribeToContacts: (userId: string) => void;
+    unsubscribeFromContacts: () => void;
+    _contactsChannel: RealtimeChannel | null;
+}
+
+// BUG-11: los contactos se guardan en el teléfono porque sin ellos no hay conversación y sin
+// conversación no hay tablero; sin red, loadContacts falla y conserva los guardados.
+export const useContactStore = create<ContactStore>()(persist((set, get) => ({
+    contacts: [],
+    isLoading: false,
+    _contactsChannel: null,
+
+    loadContacts: async (userId: string) => {
+        set({ isLoading: true });
+        const supabase = getSupabase();
+
+        const { data, error } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (!error && data) {
+            // Fetch fresh avatars from profiles (contact.avatar_url may be stale or empty)
+            const contactIds = data.map((row: any) => row.contact_id);
+            let profileAvatars: Record<string, string | null> = {};
+            if (contactIds.length > 0) {
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, avatar_url')
+                    .in('id', contactIds);
+                profileAvatars = Object.fromEntries(
+                    (profiles ?? []).map((p: any) => [p.id, p.avatar_url ?? null])
+                );
+            }
+
+            const mapped: Contact[] = data.map((row: any) => ({
+                id: row.id,
+                contact_id: row.contact_id,
+                name: row.custom_name || 'Sin nombre',
+                role: row.role,
+                avatarUrl: profileAvatars[row.contact_id] ?? row.avatar_url ?? undefined,
+            }));
+            set({ contacts: mapped, isLoading: false });
+        } else {
+            console.error('[loadContacts Error]', error);
+            set({ isLoading: false });
+        }
+    },
+
+    addContact: async (data, userId) => {
+        // Use the Supabase client directly — it handles token refresh automatically,
+        // eliminating the stale-token risk of the previous raw-fetch approach.
+        // No optimistic append: loadContacts returns fully-enriched rows (with profile
+        // avatars), so we skip the intermediate add and rely on one authoritative update.
+        const payload = {
+            user_id: userId,
+            contact_id: data.contact_id,
+            custom_name: data.name || 'Sin nombre',
+            role: data.role,
+            avatar_url: data.avatarUrl ?? null,
+        };
+
+        try {
+            const { error } = await getSupabase()
+                .from('contacts')
+                .insert(payload);
+
+            if (error) {
+                if (error.code === '23505') {
+                    // Unique constraint violation — contact already exists; just reload
+                    console.warn('[addContact] Contacto ya existe, recargando...');
+                } else {
+                    console.error('[addContact] Error Supabase:', error.message);
+                    return;
+                }
+            }
+
+            // Always reload to get fresh data (avatars, canonical names, etc.)
+            await get().loadContacts(userId);
+        } catch (err: any) {
+            console.error('[addContact Error]', err);
+        }
+    },
+
+    updateContact: async (id, data) => {
+        // Atomic in-place update (replaces the old delete+re-insert pattern, which
+        // could permanently lose a contact if the re-insert failed mid-way).
+        const payload: Record<string, any> = {};
+        if (data.name !== undefined) payload.custom_name = data.name || 'Sin nombre';
+        if (data.role !== undefined) payload.role = data.role;
+        if (data.avatarUrl !== undefined) payload.avatar_url = data.avatarUrl ?? null;
+
+        // Snapshot for rollback, then optimistic local patch
+        const prev = get().contacts.find(c => c.id === id);
+        set(s => ({
+            contacts: s.contacts.map(c => c.id === id ? { ...c, ...data } : c),
+        }));
+
+        const { error } = await getSupabase().from('contacts').update(payload).eq('id', id);
+        if (error) {
+            console.error('[updateContact Error]', error.message);
+            // Roll back the optimistic patch
+            if (prev) set(s => ({ contacts: s.contacts.map(c => c.id === id ? prev : c) }));
+        }
+    },
+
+    removeContact: async (id) => {
+        const supabase = getSupabase();
+        const { error } = await supabase.from('contacts').delete().eq('id', id);
+
+        if (!error) {
+            set(s => ({ contacts: s.contacts.filter(c => c.id !== id) }));
+        } else {
+            console.error('[removeContact Error]', error);
+        }
+    },
+
+    subscribeToContacts: (userId: string) => {
+        const sb = getSupabase();
+
+        const channel = sb
+            .channel(`contacts:${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const row = payload.new as any;
+                    // Skip if already in the list (e.g. from an optimistic add)
+                    if (get().contacts.some(c => c.contact_id === row.contact_id)) return;
+                    // Reload all contacts to get fresh profile avatars
+                    get().loadContacts(userId);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    // A contact was renamed or its avatar/role changed (e.g. from
+                    // another device). Patch the matching row in place so the change
+                    // shows without a full reload.
+                    const row = payload.new as any;
+                    set(s => ({
+                        contacts: s.contacts.map(c =>
+                            c.id === row.id
+                                ? {
+                                    ...c,
+                                    name: row.custom_name || 'Sin nombre',
+                                    role: row.role,
+                                    avatarUrl: row.avatar_url ?? c.avatarUrl,
+                                }
+                                : c
+                        ),
+                    }));
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'contacts',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    // A contact was removed (e.g. from another device) — drop it locally.
+                    const row = payload.old as any;
+                    set(s => ({ contacts: s.contacts.filter(c => c.id !== row.id) }));
+                }
+            )
+            .subscribe();
+
+        set({ _contactsChannel: channel });
+    },
+
+    unsubscribeFromContacts: () => {
+        const { _contactsChannel } = get();
+        if (_contactsChannel) getSupabase().removeChannel(_contactsChannel);
+        set({ _contactsChannel: null });
+    },
+}), {
+    name: 'pictolink-contacts',
+    skipHydration: true, // lo rehidrata StoreHydrator, como el resto
+    partialize: (s) => ({ contacts: s.contacts }),
+}));
+
+// Todo camino que cierra la sesión deja el perfil en null (los tres «Cerrar sesión» y la
+// sesión inválida de AppShell): ahí se borran los contactos guardados, para que en un
+// dispositivo compartido el próximo usuario no vea los del anterior.
+useProfileStore.subscribe((s, prev) => {
+    if (prev.profile && !s.profile) useContactStore.setState({ contacts: [] });
+});

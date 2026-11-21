@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PictoLink</string>
+    <string name="title_activity_main">PictoLink</string>
+    <string name="package_name">com.elaris.pictolink</string>
+    <string name="custom_url_scheme">com.elaris.pictolink</string>
+</resources>

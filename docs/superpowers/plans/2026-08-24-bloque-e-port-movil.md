@@ -6,6 +6,92 @@
 [`ESTADO-DEL-PROYECTO.md`](../../../ESTADO-DEL-PROYECTO.md). Si los dos discrepan, manda el ESTADO,
 y este plan se corrige.
 
+> ### Correcciones al plan — 2026-10-31, antes de ejecutar `E.1`
+>
+> Las dos afectan a pasos **todavía no ejecutados**, así que se corrigen en su sitio y aquí queda
+> lo que decían.
+>
+> 1. **Los comandos de rama de `E.1`→`E.5` no seguían gitflow.** Decían
+>    `git checkout main; git pull; git checkout -b feat/eN-...`: salían de **`main`**, con prefijo
+>    **`feat/`**, y con tres comandos encadenados por `;` en un mismo bloque. En gitflow las ramas
+>    de trabajo salen de **`develop`** con prefijo **`feature/`**, y encadenar con `;` ya provocó
+>    un pegado duplicado que borró mal una rama. Ahora hay **un solo procedimiento** en §4,
+>    un comando por bloque, y cada tanda sólo nombra su rama. El de `E.0` se deja como estaba
+>    porque ya se ejecutó así.
+> 2. **`E.4` sustituía el transporte del push pero no quién lo dispara.** Hoy lo dispara el
+>    teléfono del emisor con un `fetch` que, si falla, se traga en silencio (`BUG-9`), y eso choca
+>    con el requisito de producto «se notifica todo mensaje, en todo momento». `E.4.3` pasa a ser
+>    **push disparado por la base**.
+>
+> ### Correcciones al plan — 2026-10-31, al ejecutar `E.1.1`
+>
+> 3. **`E.1.3` mandaba mover `lib/` entero a `mobile/`, y eso rompe `web/`.** Medido: **5 de los 7
+>    route handlers** importan de `lib/` (`lib/supabase/server` los cinco, más `lib/auth-confirm`,
+>    `lib/cloudinary` y `lib/ai/picto-nlp`), y `lib/supabase/server.ts` importa `next/headers`, así
+>    que moverlo haría fallar la verificación de `E.1.4` («0 imports de `next/` en `mobile/`»).
+>    Además, 2 de los 3 archivos de test prueban código de servidor (`auth-confirm`, `cloudinary`).
+>    **`lib/` se reparte por quién lo importa**: lo que usan las rutas se queda en `web/`.
+> 4. **«Las 5 rutas API» eran 7 route handlers:** 6 en `app/api/` y `app/auth/confirm`. El número
+>    se escribió antes de `SEC-1`/`SEC-2` y `P0-7`.
+> 5. **`E.1.4` no contaba `process.env`:** 10 lecturas en 6 archivos de `lib/` y `components/`.
+>    Vite no define `process`, y `lib/api.ts` lo lee **al importarse**, así que el tablero no arranca
+>    sin cambiarlo por `import.meta.env`.
+> 6. **`next/font` → `@font-face` no hace falta: Inter se carga y no se usa.** Medido en el
+>    navegador: el `body` de producción se renderiza con la pila de sistema de Tailwind
+>    (`ui-sans-serif, system-ui, …`), porque nada conecta `--font-inter` con `font-sans`. Por
+>    equivalencia, `E.1` **la quita**; aplicar Inter sería un cambio visual y no le toca a esta tanda.
+>
+> ### Correcciones al plan — 2026-11-11, al ejecutar `E.2.2`
+>
+> 7. **El WebView de Android no tiene `speechSynthesis`, así que `E.2.3` no podía medir voz.**
+>    Medido en el teléfono de `DEC-13` por DevTools sobre el APK: `'speechSynthesis' in window` →
+>    **`false`** y `SpeechSynthesisUtterance` → `undefined` (UA `wv`, Chrome 157). `speak()` vuelve en
+>    silencio (`useSpeech.ts:53`): **la app no habla en el teléfono**. El plan dejaba el TTS nativo en
+>    `E.5.1`, **después** de la medición que decide `DEC-1`. **Decisión de Alejandro, 2026-11-11:
+>    `E.5.1` se adelanta a `E.2`**, para que se mida la voz que de verdad va a usar la app. Y el
+>    «con fallback a `speechSynthesis`» de `E.5.1` **no existe en Android**: sólo sirve para el
+>    navegador.
+> 8. **«El tablero habla sin login» era cierto sólo en el arnés de `E.1.1`.** En la app, `AACBoard`
+>    se monta únicamente en `/chat` (`chat/page.tsx:855` y `:935`), y `AppShell.tsx:220-223` manda
+>    a `/onboarding` a quien no completó el onboarding. **Decisión de Alejandro, 2026-11-11:** se
+>    llega al tablero **iniciando sesión en el teléfono con una cuenta existente**, y no con un arnés,
+>    para medir la página real.
+> 9. **«En el teléfono la app no puede iniciar sesión hasta `E.3`» tenía un supuesto sin
+>    verificar.** El login no pasa por `/api`: `OnboardingFlow.tsx:316` llama a
+>    `signInWithPassword` directo contra Supabase, y el bundle del APK lleva la URL y la clave
+>    pública. Lo que sí depende de `/api` son contactos, Cloudinary y push. **Verificado por el
+>    efecto el mismo día:** Alejandro inició sesión en el APK y la app llegó a `/chat` con sus
+>    conversaciones cargadas desde Supabase. `E.3` sigue siendo necesaria para todo lo que llama a `/api`.
+>
+> ### Correcciones al plan — 2026-11-11, antes de ejecutar `E.3`
+>
+> Medido en el teléfono de `DEC-13`, por DevTools sobre el APK de debug, sesión iniciada.
+>
+> 10. **Las llamadas a `/api` no fallan por falta de cookie: no salen del teléfono.** El origen de
+>     la app es `https://localhost`, y `fetch('/api/…')` lo atiende el servidor local de Capacitor,
+>     que devuelve su `index.html` (540 bytes, `text/html`) con **200**. Así en las **5 rutas** que
+>     llama `mobile/`: `contacts/search`, `cloudinary/sign`, `cloudinary/delete`, `push/subscribe` y
+>     `push/send`. Efecto: `res.ok` da `true` y `res.json()` lanza `SyntaxError` (buscar contacto y
+>     subir imagen fallan con ese error; borrar imagen y push lo tragan). **Lo primero que necesita
+>     `E.3` es una URL base absoluta para la API**, y recién después que las rutas acepten
+>     `Authorization: Bearer`: la cookie vive en `https://localhost` y no viaja a otro origen.
+> 11. **La verificación de `E.3.2` («la sesión sobrevive al cierre de la app») ya se cumple hoy.**
+>     Tras `am force-stop` y reabrir, la cookie `sb-…-auth-token` sigue igual (2 966 caracteres antes
+>     y después) y la app vuelve sola a `/chat`. Lo que queda de `E.3.2` es **dónde** se guarda el
+>     token (cookie del WebView o almacenamiento seguro nativo), no **que** se guarde. Sin control
+>     negativo en esta medición: no se probó que con la cookie borrada la app expulse.
+> 12. **El preview de Vercel no sirve como API para el APK, y E.3 se desarrolla contra `web/` en la
+>     PC.** El preview de `develop` responde `302` «Protected by Vercel Authentication», y el alias
+>     `…-git-develop-…` no resuelve. **Decisión de Alejandro, 2026-11-11:** `web/` con `npm run dev`
+>     en la PC y `adb reverse tcp:3000 tcp:3000`; a qué servidor apunta el APK que se reparte se
+>     decide con el release. Medido al probarlo: Android bloquea HTTP sin cifrar
+>     (`net::ERR_CLEARTEXT_NOT_PERMITTED`), así que el APK de **debug** lleva una
+>     `network_security_config` que lo permite sólo hacia `localhost` y `127.0.0.1`
+>     (`android/app/src/debug/`). Control: antes llegaban al servidor **0 de 4** peticiones de la
+>     app; después, **4 de 4**. Y aparece lo que el plan no tenía: **las rutas no responden CORS**
+>     (`fetch` con `mode: 'cors'` falla aunque el servidor contestó 200), así que E.3 también tiene
+>     que contestar CORS al origen `https://localhost`, preflight de `Authorization` incluido.
+
 > **Numeración por continuidad.** El Bloque E ya existe en el roadmap del ESTADO (§9) y estaba
 > bloqueado por `DEC-1`. Esto **no abre una fase nueva**: desglosa el bloque que ya estaba escrito.
 > Si el trabajo termina mereciendo fase propia, se renombra entonces.
@@ -125,6 +211,27 @@ dentro de la tanda no está terminado.
 
 **Y antes de cada tarea se relee lo que la ejecución ya desmintió** — no al cerrar la tanda. Una
 corrección anterior puede haber dejado muerto un paso que todavía no se ejecutó.
+
+**Cómo se abre cada tanda (gitflow).** Las ramas salen de `develop`, nunca de `main`, y el PR va
+contra `develop`. Un comando por bloque; `<rama>` es la que nombra cada tanda.
+
+Ir a `develop`:
+
+```powershell
+git checkout develop
+```
+
+Traer lo último del remoto a la rama local (`git fetch` solo no la mueve):
+
+```powershell
+git pull
+```
+
+Crear la rama de la tanda:
+
+```powershell
+git checkout -b <rama>
+```
 
 ---
 
@@ -300,9 +407,7 @@ git checkout main; git pull; git checkout -b chore/e0-andamiaje-y-contencion
 archivos y cambia quién los compila. Por eso se puede verificar por **equivalencia** y no hace
 falta entorno de riesgo.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e1-spa-fuera-de-next
-```
+**Rama:** `feature/e1-spa-fuera-de-next` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -312,8 +417,271 @@ git checkout main; git pull; git checkout -b feat/e1-spa-fuera-de-next
 | E.1.4 | Sustituir los imports de Next: `next/navigation` (7) y `next/link` (2) → router; `next/font` (1) → `@font-face`; `next/image` (1) → `<img>` | **0 imports de `next/` en `mobile/`** |
 | E.1.5 | `web/` queda con landing + las 5 rutas API. Sigue en Next, sigue en Vercel | Las 5 rutas responden igual que antes |
 | E.1.6 | Reemplazar el service worker de `next-pwa` por el equivalente en Vite, o quitarlo si Capacitor lo cubre | Decisión registrada con su motivo |
+| E.1.7 | *(Añadida el 2026-10-31, decisión de Alejandro. **Corregida al ejecutarla, 2026-11-01: Roboto, no Inter** — ver el resultado de `E.1.7` y `DEC-12`.)* ~~**Aplicar Inter empaquetada en la app**, no pedida a Google: que el texto se vea igual en todo dispositivo y funcione sin red. **Va la última y en commit propio**, después de medir la equivalencia: aplicada antes, la comparación no distinguiría el efecto de la fuente del de la mudanza~~ | ~~Las 45 celdas renderizan con Inter (fuente calculada) y **ninguna etiqueta se corta** (`scrollWidth ≤ clientWidth`) en 844×390~~ — imposible con cualquier fuente: ver el resultado |
 
 **Métrica que manda en esta tanda: líneas reescritas de `components/board/` = 0.**
+
+> **`E.1.1` — hecha el 2026-10-31, pasa. El grid no se rompe fuera de Next.** Un mismo arnés
+> (`SentenceBar` + `AACBoard`, con la disposición de `app/chat/page.tsx:848-856`) renderizado por
+> Next 16 y por Vite 8, importando `web/` sin mover nada, en un viewport de 844×390. Se extrajo de
+> cada uno la geometría y nueve propiedades calculadas (fondo, bordes, radio, fuente, tamaño, peso)
+> de las **45 celdas**, más la URL de cada imagen: **0 diferencias**. El comparador tiene **control
+> negativo**: un cambio de 1 px y uno de color en una copia dan 2 diferencias. **Comportamiento:**
+> tocar «yo» y luego «personas» da en los dos la misma barra de frase, el título «Personas» y las
+> mismas 45 celdas. El arnés no se commitea.
+>
+> **Lo que la prueba destapó y no estaba en el plan** (correcciones 3 a 6 de la cabecera):
+> - **Tailwind v4 escanea las clases desde el directorio de trabajo**, no desde el CSS: la prueba
+>   pasó porque Vite corrió desde `web/`. En `mobile/` hay que verificar que el CSS generado
+>   contiene las clases del tablero, o declarar `@source`.
+> - **4 de los 7 archivos de `components/board/` no los importa nadie** (`BoardHeader`,
+>   `CategoryNav`, `FolderRow`, `PredictionBar`: **368 de las 778 líneas**). Se mudan igual —
+>   borrarlos sería reescribir el tablero—, y queda anotado para `§10` del ESTADO.
+> - **Qué no prueba:** se midió en Chromium de escritorio, no en un dispositivo; no cubre
+>   `SentenceBar` con el TTS hablando ni el envío de mensajes, que necesitan sesión.
+
+> **`E.1.2` — hecha el 2026-10-31.** `mobile/` con Vite 8.3.5, React **19.2.3 exacto** (el mismo
+> que `web/`, para que la equivalencia compare el mismo React), TypeScript 5 y alias `@/` → raíz de
+> `mobile/`, igual que `web/tsconfig.json`. `npm ci` + `npm run build` → exit 0. **Con control
+> negativo:** un error de tipos en un archivo importado por `@/` hace fallar el build (exit 2,
+> `TS2322`); corregido, pasa y el bundle contiene el valor importado — así que el alias resuelve y
+> el typecheck corta. **Nuevo job `mobile` en `ci.yml`** (install + build): sin él, nada verificaba
+> `mobile/` en los PR. El lockfile, generado en Windows, trae el binario de Linux de rolldown
+> (`@rolldown/binding-linux-x64-gnu`); que `npm ci` funcione en `ubuntu-latest` se ve en el primer
+> run del PR. **Tailwind no se instala todavía:** llega en `E.1.3` con `globals.css`.
+
+> **`E.1.3` — hecha el 2026-10-31.** Commit `87e58f0`, **51 renombres al 100 %** (contenido
+> intacto: `git diff -M` no marca ningún cambio). Se mudaron `components/`, `data/`, `hooks/`,
+> `lib/` salvo lo de servidor, **las 8 páginas de la interfaz** (`app/chat`, `cuidador`,
+> `cuidador/settings`, `dashboard`, `offline`, `onboarding`, `settings`, `settings/aac`),
+> `app/globals.css`, `public/pictos/` y el test de catálogo. **Verificación: 13 passed + 1 todo
+> desde `mobile/`**; en `web/` quedan 2 archivos con 14 passed — 13 + 14 = los 27 de antes.
+>
+> - **El reparto de `lib/` (corrección 3), medido por quién importa cada archivo:** sólo `web/`
+>   → `supabase/server.ts`, `supabase/types.ts`, `auth-confirm.ts`. **Los dos**, copiados →
+>   `cloudinary.ts` (mixto: la UI sube y borra, las rutas usan `userFolder`/`ownsPublicId` de
+>   `SEC-2`), `ai/picto-nlp.ts` + `ai/hf-client.ts` (`cuidador` y `health-check`) y `types/index.ts`
+>   (lo importa `supabase/types.ts`). **Deuda:** las copias pueden divergir; en `E.1.5` cada lado
+>   se queda con lo que usa.
+> - **Corrección 7: el plan no movía las páginas**, y sin ellas `E.1.4` no tiene dónde sustituir
+>   `next/navigation`. Se mudaron con la misma estructura de carpetas para que el renombre sea puro.
+> - **`web/` queda en rojo hasta `E.1.5`**, a propósito y sólo en local: el typecheck da 4 errores,
+>   todos en `app/layout.tsx` (importa `AppShell`, `StoreHydrator`, `PWARegistry`,
+>   `SessionTracker`). El PR no se abre hasta que las dos apps estén en verde.
+> - **`hooks/useSpeech.ts` no lo importa nadie** (todos usan `lib/hooks/useSpeech.ts`, que es otra
+>   versión: 185 contra 108 líneas). Se mudó igual; a `§10` del ESTADO.
+> - **Rodeo de entorno, medido aislado:** `npm install` de vitest 4.1.10 (y 5.0.5) junto a Vite
+>   8.3.5 revienta en npm 10.9.2 (`Cannot read properties of null (reading 'edgesOut')`, en
+>   `#loadPeerSet`); con **npm 11.19.1** instala, y el `npm ci` de npm 10 acepta ese lockfile. **En
+>   `mobile/`, agregar dependencias se hace con `npx npm@11 install`**; la CI no cambia.
+> - **El job `mobile` corre ahora los tests** antes del build.
+
+> **`E.1.4` — hecha el 2026-10-31. Router: wouter 3.13.0** (decisión de Alejandro, entre wouter,
+> React Router y TanStack Router: la app usa 15 `replace`, 1 `push`, 1 `back`, 2 `usePathname` y
+> 2 `<Link>`, sin parámetros dinámicos). **0 imports de `next/` en `mobile/`**; build y 13 tests
+> en verde. **Métrica de la tanda: 0 líneas cambiadas en `components/board/`** respecto de
+> `develop` (7 renombres puros).
+>
+> - **Cómo se sustituyó:** `lib/navigation.ts` (25 líneas) da `useRouter()` y `usePathname()` con
+>   la forma de Next sobre wouter, así que en 6 archivos cambió **sólo la línea del import**;
+>   `<Link>` de wouter acepta `href` igual. Total en páginas y componentes: 11 líneas. `next/image`
+>   → `<img>` con `color: transparent`, que es lo que ponía Next. `App.tsx` hace lo de
+>   `app/layout.tsx`: mismo orden de montaje, `app/error.tsx` como error boundary, StrictMode como
+>   el App Router. **Fuera a propósito:** `PWARegistry` (no hacía nada) y Analytics/SpeedInsights
+>   de Vercel (esta app no se sirve desde Vercel).
+> - **Corrección 5 resuelta sin tocar código:** `process.env.NEXT_PUBLIC_*` se sustituye en el build
+>   con `define`, leyendo **sólo** las `NEXT_PUBLIC_` de `web/.env.local`. **Verificado en el
+>   bundle, no en la config:** las 4 públicas con valor aparecen y los 5 secretos no. Una alarma
+>   (`HF_API_URL`) resultó tener el mismo valor que la pública y que la URL escrita en el código.
+> - **Corrección 8, no estaba en el plan: la UI llama a la API con rutas relativas** (6 llamadas a
+>   `/api/...`, todas con sesión por cookie). En el navegador lo resuelve un proxy de Vite hacia el
+>   Next de `web/`; **en el teléfono no funciona y es exactamente `E.3`**. Y una omisión de `E.1.3`:
+>   `assets/favicon.png` (el logo del onboarding) se mudó aquí.
+> - **Equivalencia medida contra el original**, con un worktree de `develop` (`1e281aa`) corriendo
+>   Next: **tablero dentro de la app real, 0 diferencias** en las 45 celdas, incluido el tamaño de
+>   cada imagen cargada, y el mismo comportamiento («yo» → barra; «personas» → título y 45 celdas).
+>   **Onboarding, página entera:** 16 elementos, la única diferencia es el logo, 60×60.72 contra
+>   60×60.94 — Next lo sirve reescalado a 64×65 y redondea la proporción; Vite usa el original
+>   (332×336). **El route guard funciona:** `/chat` sin sesión redirige a `/onboarding`.
+> - **Error de medición, corregido en el momento:** la primera medida del logo en Next se tomó antes
+>   de que cargara (daba 60×60, el tamaño de los atributos). Las medidas esperan ahora a que todas
+>   las imágenes estén completas.
+> - **Qué no prueba:** ningún flujo con sesión (chat, cuidador, ajustes) se ejerció; el bundle es un
+>   único JS de 978 kB (Next partía por ruta) — no afecta a la equivalencia, sí al arranque en E.2.
+
+> **`E.1.5` — hecha el 2026-10-31. `web/` es landing + las 7 rutas.** La landing es mínima
+> (decisión de Alejandro): logo y una línea; tiendas y legal (`P0-4`) cuando existan. **Verificación
+> del plan, medida antes y después:** las 7 rutas, sin sesión y por HTTP, contra `develop` y contra
+> la rama → **respuestas idénticas** en código, tipo, claves del JSON y destino de redirección
+> (`health-check` 200; `cloudinary/sign`, `cloudinary/delete`, `push/subscribe`, `push/send` 401;
+> `contacts/search` 400 — valida el cuerpo antes que la sesión; `/auth/confirm` 307). **Gate completo
+> de `web/` en verde:** 3 avisos, 14 tests, **smoke 21/21**.
+>
+> - **El smoke cambió de expectativas, a propósito:** las 6 pantallas, el manifest y `sw.js` pasan a
+>   esperar **404** — la prueba en ejecución de que salieron de `web/` — y entran las 5 rutas de API
+>   sin sesión con su código medido (un 200 ahí sería una ruta que dejó de pedir sesión). Las dos
+>   comprobaciones del service worker (no precachear el catálogo, CacheFirst de ARASAAC) **se van con
+>   él**: vuelven en `E.1.6` si la app conserva service worker.
+> - **`web/` pierde la PWA:** sin `next-pwa`, sin `app/manifest.ts`, sin cabeceras de `sw.js` en
+>   `vercel.json`. `worker/index.ts` (push y clic en la notificación) **se mudó a `mobile/worker/`**
+>   como insumo de `E.1.6`. Dependencias sin un solo import, quitadas: `@ducanh2912/next-pwa`, `clsx`,
+>   `tailwind-merge`, `zustand`.
+> - **Techo de lint de `web/`: de 88 a 3.** Los 85 avisos restantes se fueron con el código; dejar
+>   88 habría admitido 85 avisos nuevos sin rojo. **Con control negativo:** `--max-warnings=2` sale
+>   con 1. **`mobile/` todavía no tiene lint** — va antes de abrir el PR.
+> - **Copias compartidas (deuda de `E.1.3`), resuelto distinto de lo previsto:** en vez de recortar
+>   cada copia a lo que usa su lado, se quedan **idénticas y la CI falla si divergen** (`cmp`, primer
+>   paso del job `mobile`). Recortar habría dejado el test de `SEC-2` de `web/` probando un
+>   `extractPublicId` distinto del que corre en `mobile/`. **Con control negativo:** un byte de más en
+>   una copia da exit 1.
+> - **Consecuencia para `P0-7`, escrita en el ESTADO:** `/auth/confirm` redirige a `/onboarding`, que
+>   ya no existe en `web/`; el paso 6 pasa a depender del *deep link* de `E.5`.
+> - **Consecuencia de producto, aceptada por Alejandro:** cuando `E.1` llegue a `main`,
+>   `picto-link-app-movil.vercel.app` sirve la landing y deja de servir la app. Producción no tiene
+>   usuarios (última actividad en la base: 2026-07-29).
+> - **Efecto colateral mío, sin daño:** el worktree de referencia comparte `node_modules` con `web/`
+>   por un junction; al quitar `next-pwa` ya no puede volver a arrancar. Se midió antes de quitarlo.
+
+> **`E.1.6` — hecha el 2026-10-31: la app no conserva service worker (`DEC-11` en el ESTADO, con
+> motivo, alternativa descartada y costo).** Borrados `mobile/worker/index.ts` y la página
+> `/offline`, que sólo existía como respaldo del service worker. El push lo sustituye `E.4`; los
+> pictogramas sin red, el set propio empaquetado de `P0-1`. **Costo nuevo leído en el código:**
+> `notifyNewMessage` espera `navigator.serviceWorker.ready` sin límite de tiempo y, sin service
+> worker, deja de notificar en el navegador — queda para `E.4`.
+>
+> **Hallazgo de paso que no es de esta tanda: `SEC-17`.** Al medir si los avisos de workbox se
+> habían ido con `next-pwa` (sí), `npm audit` mostró que **`next` 16.2.12 —la versión de
+> producción— tiene 6 avisos críticos de ejecución remota de código**, con corrección en 16.4.3.
+> Va por `hotfix/` desde `main`, no dentro de `E.1`. **Hecho el mismo día:** `hotfix/sec-17-next`
+> (`c52327b`), y la misma subida en esta rama para que la integración con `develop` no choque en el
+> lockfile.
+>
+> - **El smoke nuevo atrapó un service worker sobrante de verdad:** después de compilar `main` para
+>   el hotfix, `next-pwa` dejó `web/public/sw.js` y compañía (ignorados por git) y al volver a esta
+>   rama `/sw.js` respondía 200 → 20/21. Borrados, 21/21. En la CI, con checkout limpio, no pasa.
+> - **Costo conocido, no implementado:** los navegadores que ya instalaron el service worker de
+>   producción lo conservan aunque `/sw.js` pase a dar 404 — una actualización fallida no lo
+>   desinstala. El remedio estándar es servir un `sw.js` que se desregistre. Producción no tiene
+>   visitas desde 2026-07-29, así que se anota y no se hace.
+
+> **Lint de `mobile/` — añadido el 2026-11-01, no estaba en el plan.** Sin él, los avisos que se
+> mudaron con el código quedaban sin ningún control. **Mismas reglas que `web/`**, armadas a mano:
+> `eslint-config-next` carga al importarse el parser de Babel del paquete `next`, y aquí no hay Next;
+> se instalaron sus mismas piezas **en las mismas versiones que `web/`** (`typescript-eslint` hubo que
+> fijarlo: npm traía 8.72.1 y `web/` usa 8.65.0). El plugin `@next/next` se carga porque el código
+> trae `eslint-disable … @next/next/no-img-element`.
+>
+> - **Predicción escrita antes de medir: 85** (88 − los 3 que se quedaron en las rutas de `web/`).
+>   **Medido: 86.** Comparado archivo por archivo y regla por regla contra el log de `develop`, la
+>   única diferencia real es **+1 `@next/next/no-img-element` en `OnboardingFlow.tsx`: el `<img>` de
+>   `E.1.4`**, que la predicción no contó. Techo **86**, con el motivo en `ci.yml`. **Control
+>   negativo:** `--max-warnings=85` sale con 1.
+> - El patrón de archivos suma `cjs` respecto de `eslint-config-next`: sin él, `postcss.config.cjs`
+>   rompía el lint (la política de avisos citaba un plugin no cargado para ese archivo).
+> - **Paso `Lint` en el job `mobile`**, antes de los tests: lo rápido primero.
+
+> **`E.1.7` — hecha el 2026-11-01, y con otra fuente que la planeada: Roboto empaquetada.**
+> **Medición, no impresión:** un recorrido automático de las **95 páginas** del tablero (2 939
+> celdas con texto) marca cada etiqueta cuya palabra no cabe en el ancho de la celda o cuyo texto se
+> sale del botón, en dos tamaños:
+>
+> | Fuente | 844×390 | 740×360 |
+> |---|---|---|
+> | Segoe UI (sistema, Windows — la línea base medible aquí) | 93 | 69 |
+> | Inter empaquetada (lo planeado) | **112** | **82** |
+> | Roboto (sistema en Android) | 51 | 30 |
+> | **Roboto empaquetada (lo aplicado)** | **51** | **30** |
+>
+> - **El criterio del plan era imposible:** antes de tocar nada ya había 93 cortadas. Se cambió a
+>   «no cortar más que la fuente del sistema»; Inter no lo cumplía (+20 nuevas, −1 en 844×390).
+>   Alejandro eligió Roboto empaquetada: mismo aspecto en todo dispositivo (el objetivo de
+>   `DEC-12`) y la que menos corta. Todas las cortadas lo son por ancho, ninguna por líneas.
+> - **Verificado por el efecto:** la fuente calculada es `"Roboto Variable"`, `document.fonts`
+>   la da por cargada, y la única petición de fuente es el `woff2` latino **local** (43 kB) — nada
+>   a Google. El paquete lleva 9 subconjuntos, 231 kB; el navegador sólo baja el que necesita.
+> - **Guionado automático (`hyphens: auto`, `lang="es"`): no concluyente.** Se aplicó (estilo
+>   calculado `auto`) y no cambió nada; lo probable es que el Chromium de escritorio de Playwright
+>   no traiga diccionarios de guionado. Queda como opción para `BUG-10`, a medir en Android.
+> - **`BUG-10`** registra las 51 que siguen cortadas: problema previo al port, que se arregla con
+>   los terapeutas y no aquí. Quitado también el `--font-inter` que `globals.css` definía y nada usaba.
+
+#### Cierre de `E.1` — 2026-11-01, cerrada; se integra con su PR a `develop`
+
+**Alcance cumplido: 7 tareas de 7** (`E.1.1`→`E.1.7`; la 7 añadida en ejecución) **más 1 no
+planeada** (lint de `mobile/`). Queda funcionando de punta a punta: `mobile/` es una SPA de Vite que
+arranca, enruta con wouter, aplica el route guard y renderiza el tablero **idéntico al de Next**
+(medido contra un worktree de `develop`); `web/` es landing + las 7 rutas, que **responden idéntico**
+sin sesión. Las dos apps tienen gate en la CI.
+
+**Trazas:** rama `feature/e1-spa-fuera-de-next`, desde `develop` `1e281aa`. Commits `a079959`
+(E.1.1), `ceba6d6` (E.1.2), `87e58f0` + `e62e078` (E.1.3), `a2cabb3` (E.1.4), `ead6d19` (E.1.5),
+`22993e7` (E.1.6), `216e37f` + `eecf45d` (`SEC-17` y merge de `develop` con el hotfix), `52d6ed9`
+(cierre de `SEC-17`), `27ad827` (lint), `a81dbf6` (E.1.7). Verificación final en limpio: `web/`
+`verify:full` exit 0 (3 avisos, 14 tests, humo 21/21, Next 16.4.3); `mobile/` `npm ci`, lint (86),
+tests (13 + 1 todo) y build, exit 0 los cuatro.
+
+**Correcciones al plan: 10**, todas en este archivo. **6 numeradas:** 3→6 en la cabecera, la 7
+(mudar también las páginas) en el resultado de `E.1.3` y la 8 (la API con rutas relativas) en el de
+`E.1.4`. **4 sin número**, en los resultados: copias compartidas idénticas con `cmp` en vez de
+recortadas (`E.1.5`), el criterio imposible de `E.1.7`, Roboto en lugar de Inter (`E.1.7`) y el lint
+de `mobile/` como tarea nueva. (Las 1–2 de la cabecera son anteriores a `E.1`.)
+
+**Decisiones nuevas:** `DEC-11`→`DEC-12` en el ESTADO (sin service worker; tipografía, revisada a
+Roboto). En el plan: wouter como router. **Hallazgos nuevos en el ESTADO:** `SEC-17` (cerrada en el
+día por hotfix) y `BUG-10`.
+
+**Métricas (§6), antes → después.** Predichas por escrito antes de medir: **5 de 5 acertadas**; la
+de líneas de código no se predijo.
+
+| Métrica | Antes (`develop` `1e281aa`) | Después |
+|---|---|---|
+| Líneas reescritas de `components/board/` | 0 de 778 | **0 de 778** — 7 renombres al 100 % |
+| Imports de `next/` en el bundle móvil | 21 *(cifra del 2026-08-24)* | **0** |
+| Líneas de código de aplicación (`.ts`/`.tsx` sin tests ni config, `wc -l`) | `web/` 15 913 en 62 archivos | `web/` 1 429 en 17 + `mobile/` 14 969 en 51 = 16 398 en 68 |
+| Tests verdes | 27 + 1 todo | 27 + 1 todo (`web/` 14, `mobile/` 13 + 1) |
+| Techo de avisos de lint | 88 | `web/` **3** + `mobile/` **86** |
+| Workflows de CI | 1 (1 job) | 1 (**2 jobs**) |
+| Latencia tap→voz | sin medir | sin medir — es `E.2` |
+| PAT filtrados en el historial público | 3 | no medido en esta tanda |
+
+*El 9 346 de §6 se contó con un método que no quedó escrito; por eso la fila de líneas se re-midió
+en `develop` con el mismo método que el «después», en vez de compararse con él.*
+
+**Lo que deja sin hacer.**
+
+*Lo que el plan previó y se cumplió:* equivalencia del tablero, 0 imports de Next, `web/` reducida
+con las rutas intactas, decisión registrada sobre el service worker.
+
+*Lo que no previó y salió de ejecutar* — la lista que enseña a planificar `E.2`:
+- **La UI llama a la API con rutas relativas y sesión por cookie:** en el navegador lo cubre un
+  proxy de Vite; en el teléfono no funciona hasta `E.3`. ~~**`E.2` va a correr la app en Android sin
+  poder iniciar sesión**: la medición tap→voz tiene que hacerse sin sesión (el tablero no la
+  necesita para hablar).~~ *(Falso en sus dos mitades; corregido el 2026-11-11 al ejecutar `E.2`,
+  correcciones 8 y 9 de la cabecera. El login no pasa por `/api` y funcionó en el APK, y el tablero
+  sí necesita sesión: sólo se monta en `/chat`. Lo que espera a `E.3` es lo que llama a `/api`.)*
+- **`P0-7` paso 6 queda atado al *deep link* de `E.5`**: `/auth/confirm` redirige a una pantalla
+  que ya no está en `web/`.
+- **Notificaciones:** sin service worker, `notifyNewMessage` deja de notificar en el navegador
+  (espera sin límite); lo sustituye `E.4`.
+- **`BUG-10`:** 51 etiquetas cortadas con la mejor fuente; con terapeutas.
+- **El bundle de `mobile/` es un único JS de 978 kB.** No afecta a la equivalencia, sí al arranque
+  que mide `E.2`.
+- **Deuda anotada:** 4 copias compartidas entre `web/` y `mobile/` (las sostiene el `cmp` de la CI);
+  `eslint-disable … @next/next` en un proyecto sin Next; `hooks/useSpeech.ts` muerto; 4 de los 7
+  archivos del tablero sin importar (368 líneas); el `sw.js` instalado en navegadores viejos no se
+  desregistra; `vite.config.ts` lee el `.env` de `web/`.
+- **Entorno:** en `mobile/`, agregar dependencias exige `npx npm@11 install` (bug de npm 10.9.2 con
+  Vite 8); el `npm ci` de la CI no cambia.
+
+> **Corrección después del cierre, 2026-11-01 — el primer CI del PR falló en `gate`.** Las 4
+> comprobaciones nuevas de «API sin sesión» de `E.1.5` daban **500 en vez de 401**: la CI corre sin
+> variables de entorno, el cliente de Supabase no se construye y la ruta revienta antes de mirar la
+> sesión. En local daban 401 porque `next start` carga `web/.env.local` — **la medición «antes y
+> después» se hizo con mi entorno, no con el de la CI**. Reproducido apartando `.env.local` (17/21,
+> los mismos 4 × 500) y corregido con una URL y una clave **de relleno** a nivel del job `gate`
+> (21/21): sin sesión, `getUser()` no llama a la red. A nivel de job porque Next incrusta
+> `NEXT_PUBLIC_*` al compilar. **El job `mobile` pasó a la primera**: el lockfile de npm 11 instala
+> con el `npm ci` de npm 10 en Linux.
 
 ---
 
@@ -321,9 +689,7 @@ git checkout main; git pull; git checkout -b feat/e1-spa-fuera-de-next
 
 **Esta tanda existe para producir un número.** Todo lo que no haga falta para medir, no entra.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e2-capacitor-android
-```
+**Rama:** `feature/e2-capacitor-android` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -337,6 +703,70 @@ git checkout main; git pull; git checkout -b feat/e2-capacitor-android
 > meses) por un problema que no es del WebView. **La medición sin E.2.2 hecha no vale y no se
 > registra.**
 
+> **`E.2.1` — hecha el 2026-11-11. La app abre en el emulador.** Capacitor **8.6.0** exacto
+> (`core` y `android` en dependencias, `cli` en desarrollo; el CLI pide Node ≥ 22 y el CI usa 22),
+> `appId` **`com.elaris.pictolink`** (decisión de Alejandro, irreversible tras publicar: §7.4 del
+> ESTADO), `webDir: 'dist'`. `cap add android` genera `mobile/android/` con **53 archivos
+> versionados**, ninguno de `assets/public` ni `build/`: los excluye su propio `.gitignore`. La
+> plantilla pide `minSdk 24`, `compileSdk`/`targetSdk 36`, AGP 8.13.0 y Gradle 8.14.3, y el primer
+> `assembleDebug` bajó solo Build-Tools 35 y Platform 36: **`BUILD SUCCESSFUL in 9m 12s`**, APK
+> debug de **4 799 594 bytes**. En el emulador (`Medium_Phone_API_37.0`), el logcat da
+> `Loading app at https://localhost` → `App started` y la captura muestra la bienvenida con Roboto.
+> **Lo que cambió fuera de lo planeado:** `eslint .` empezó a recorrer `android/` y dio **exit 1,
+> 2 669 problemas (114 errores)**, todos en JS generado; con `android/**` en los `ignores` vuelve a
+> **86 avisos, exit 0**, la cifra predicha. **Visto y no investigado:** el logcat repite 3 veces
+> `Error injecting safe area CSS: TypeError: Cannot read properties of null (reading 'style')`,
+> que viene del lado de Capacitor y no de nuestro código; puede afectar los márgenes de la barra de
+> estado en Android 15. El arranque en frío de 15,9 s **no es una cifra del WebView**: el emulador
+> llevaba segundos arrancado, con Gradle compilando en la misma PC, y el sistema mostró dos avisos
+> de «no responde» (lanzador y System UI), ninguno de la app.
+
+> **`E.2.2` — hecha el 2026-11-11. Las 44 celdas de `root` cargan sin red.** `root` tiene 45
+> celdas: 44 con `pictogramId` (44 ids únicos) y 1 de navegación sin imagen. **No se usó
+> `PICTO_OVERRIDES`:** se indexa por etiqueta, y 20 de esas 44 etiquetas llevan otro id en otras
+> páginas, así que cambiaría imágenes fuera de `root`. En su lugar, `MainActivity` intercepta las
+> peticiones a `static.arasaac.org` y responde con `assets/arasaac/{id}.png` si existe; si no, sigue
+> por red (decisión de Alejandro). **0 líneas del tablero tocadas.** Los PNG los baja
+> `npm run precargar:pictos` (44/44, 637 295 bytes, comprobando la cabecera PNG) y **quedan fuera
+> de git** (ARASAAC es CC BY-NC-SA, el repo es público). **Verificado por el efecto en el
+> teléfono**, con imágenes nuevas con parámetro anti-caché y la caché HTTP del WebView vaciada por
+> DevTools: sin red (modo avión, `ping` → *unknown host*), **44/44** de `root` y **0/5** del
+> control (ids de otras páginas); con red, 44/44 y **5/5**. **Instrumentos que mintieron, y
+> cómo se vio:** en este HONOR `logcat -d` da **0 líneas en total**, así que el `Logger.debug` del
+> interceptor no sirve para contar (se vio mirando el total y no sólo las líneas nuestras);
+> `navigator.onLine` da `true` en modo avión; `adb screencap` da una imagen negra. **Destapó
+> `BUG-11`:** abrir la app sin red manda a `/onboarding`, así que la prueba no pudo hacerse
+> reabriendo la app.
+
+> **`E.5.1` adelantada a `E.2` (corrección 7) — hecha el 2026-11-11. La app habla en el
+> teléfono.** `@capacitor-community/text-to-speech` **8.0.2** exacto (pide `@capacitor/core >=8`).
+> `useSpeech.ts` usa el TTS del sistema cuando `Capacitor.isNativePlatform()`, y en el navegador
+> sigue con `speechSynthesis` sin cambios; **0 líneas del tablero tocadas**. `isSupported` se partió
+> en `esNativo || webTTS`, porque el efecto que carga voces llama a `window.speechSynthesis` y
+> reventaría en el teléfono. En nativo no se llama a `stop()` antes de hablar:
+> `QueueStrategy.Flush` ya corta lo anterior, y un `stop()` asíncrono podría cortar la frase nueva.
+> **Verificado en el teléfono:** español soportado (`es-ES`, `es-US`); `speak()` de una frase de
+> prueba resolvió en **4 036 ms** y en **3 911 ms**, la duración real de la frase, y **Alejandro
+> la escuchó** (la primera no, por volumen bajo). Bundle 976.71 → **986.47 kB**, más 1.68 kB de la
+> implementación web del plugin en un fragmento aparte. Lint en 86, tests 13 + 1 todo.
+> **Queda de `E.5.1`:** en el teléfono no se aplica la voz elegida en Ajustes (`tts_voice` es un
+> `voiceURI` de la Web Speech API), marcado con `ponytail:` en el código.
+
+> **Dispositivo de `E.2.3` — `DEC-13`, 2026-11-11.** Se mide en un HONOR `ALT-NX3` (Android 15,
+> SoC `SM4450`, WebView 157.0.8103.38). Se trata como «el más lento del piloto» **por supuesto**:
+> es el único teléfono disponible. Motivo, alternativa descartada y costo, en `DEC-13` del ESTADO.
+
+> **Método de `E.2.3`, escrito el 2026-11-11 antes de medir** (y aprobado por Alejandro).
+> **Toque:** `adb shell input tap` en el centro de celdas de `root` que hablan (no carpetas); la
+> marca es el `event.timeStamp` del `pointerdown`, capturado en el `document`. **Voz:** el primer
+> `onRangeStart` del plugin de TTS después de ese toque, con `performance.now()` (mismo reloj).
+> Llega a JS después del puente nativo, así que el error infla el número, no lo achica.
+> **Muestra:** 30 toques en caliente, uno cada 3 s para que la frase anterior termine, más el
+> **primer toque tras abrir en frío**, aparte, 3 veces. Se reportan mediana, p90, máximo y cuántos
+> pasan de 150 ms. Los listeners se instalan por DevTools, **sin cambiar código de la app**.
+> **Lo que NO mide:** la latencia del táctil (`input tap` la saltea) ni la del audio entre el motor
+> y el parlante; las dos suman al número real y ninguna la decide el WebView.
+
 **Predicción escrita antes de medir** (se compara al cerrar, y se cuenta el acierto):
 
 | Predicción | Valor |
@@ -345,6 +775,102 @@ git checkout main; git pull; git checkout -b feat/e2-capacitor-android
 | Líneas del tablero reescritas para llegar aquí | **0** |
 | Imports de `next/` en `mobile/` | **0** |
 
+> **`E.2.3` — medida el 2026-11-11 en el teléfono de `DEC-13`, con el método de arriba.**
+> Las 31 celdas de `root` que hablan, sacadas de los datos con la misma regla que
+> `AACBoard.tsx:67-68`; en cada toque se comprobó que la palabra dicha fuera la de la celda (0
+> emparejamientos dudosos).
+>
+> | Tramo (30 toques en caliente) | mín | mediana | p90 | máx | > 150 ms |
+> |---|---|---|---|---|---|
+> | Toque → `speak` sale por el puente (**WebView + React**) | 26 | **30 ms** | 33 | 36 | 0 |
+> | Puente → primera palabra (**Capacitor nativo + motor de voz**) | 190 | **209 ms** | 223 | 255 | 30 |
+> | **Total tap→voz** | 220 | **239 ms** | 256 | 285 | **30** |
+>
+> **Una primera corrida** de 30 toques, sin partir en tramos, dio mediana **282**, p90 302, máx
+> 524, con 30/30 sobre 150 ms; la diferencia con la segunda es variación entre corridas, y por eso
+> quedan las dos. **Controles para repartir los ~209 ms del lado nativo:** el puente de Capacitor,
+> ida y vuelta sin sintetizar (`isLanguageSupported`), da mediana **18.7 ms** (máx 22), así que
+> **unos 190 ms son del motor de voz de Android**; `speak()` llamado directo, sin toque ni React,
+> da mediana **205 ms** (mín 158, máx 284). **Primer toque tras abrir la app en frío**, 3 veces:
+> **393, 305 y 332 ms**. Fuera del método, una sola vez: **1 363 ms** en el primer `speak` después
+> de varios minutos con la app en segundo plano, de causa desconocida.
+>
+> **Contra las predicciones:** latencia < 150 ms, **fallada** (30/30 por encima); 0 líneas del
+> tablero reescritas, **acertada** (`git diff 7321d79` sobre `components/board/` y
+> `aac-grid-layout.ts` → vacío; del código de la app sólo cambió `useSpeech.ts`); 0 imports de
+> `next/`, **acertada** (control negativo: el mismo patrón da 10 en `web/`). **Lo que la cifra
+> dice:** el umbral se pasa, **pero el WebView aporta ~30 ms**; el resto es el motor de voz del
+> sistema, que una app en React Native usaría igual. El umbral de ~150 ms se escribió suponiendo
+> que la latencia sería del WebView. **Decisión de Alejandro, el mismo día: `DEC-1` confirmada,
+> el stack se queda.** La latencia del motor sigue como `PERF-10` en el ESTADO.
+
+#### Cierre de `E.2` — 2026-11-11, cerrada; se integra con su PR a `develop`
+
+**Alcance cumplido: 3 tareas de 3** (`E.2.1`→`E.2.3`) **más 1 adelantada** (`E.5.1`, TTS nativo,
+sin la cual no había voz que medir). Queda funcionando de punta a punta, en un teléfono real: la
+app se instala como APK, inicia sesión contra Supabase, muestra el tablero, sirve sin red las 44
+imágenes de `root` y **habla** con el TTS del sistema. Y el número que decidía `DEC-1` está medido.
+
+**Trazas:** rama `feature/e2-capacitor-android`, desde `develop` `7321d79`. Commits `e69f1bc`
+(`DEC-13`), `7da3a62` (E.2.1), `662b624` (E.2.2), `1614fc2` + `6566f6f` (TTS nativo y su registro
+en Gradle), `012a367` (E.2.3). Verificación final en limpio: `web/` `verify:full` exit 0 (3 avisos,
+14 tests, humo 21/21, Next 16.4.3); `mobile/` `npm ci`, lint (86), tests (13 + 1 todo) y build,
+exit 0 los cuatro, con bundle de 986.47 kB.
+
+**Correcciones al plan: 5**, todas en este archivo. **3 numeradas** (7→9 en la cabecera): el WebView
+sin `speechSynthesis`, el tablero que sí necesita sesión y el login que no necesitaba `E.3`. **2 sin
+número:** la premisa «el dispositivo más lento del piloto», que no se podía verificar con un único
+teléfono (`DEC-13`), y el lint de `mobile/`, que empezó a recorrer `android/` (resultado de `E.2.1`).
+Además se tachó con fecha la frase del cierre de `E.1` que decía que `E.2` correría sin sesión.
+
+**Decisiones nuevas:** `DEC-13`→`DEC-14` en el ESTADO (dispositivo de la medición; preset del
+tablero original, reorganización y vertical en teléfonos), **`DEC-1` confirmada** por la medición, y
+el `appId` `com.elaris.pictolink` en §7.4. **Hallazgos nuevos en el ESTADO:** `BUG-11` y `PERF-10`.
+
+**Métricas (§6), antes → después.** Predichas por escrito antes de medir: **6 de 6 acertadas** en
+el cierre. Entre las 3 del plan, **la latencia falló**: era la única estimada sin medir nada.
+
+| Métrica | Antes (`develop` `7321d79`) | Después |
+|---|---|---|
+| Líneas reescritas de `components/board/` | 0 de 778 | **0 de 778** (`git diff` vacío, también en `aac-grid-layout.ts`) |
+| Imports de `next/` en el bundle móvil | 0 | **0** (control: el mismo patrón da 10 en `web/`) |
+| Líneas de código de aplicación (`.ts`/`.tsx` de `mobile/` sin tests ni config, `wc -l`) | 14 969 en 51 | **14 988 en 51**; aparte, `MainActivity.java` 55 y `scripts/precargar-pictos.mjs` 29 |
+| Tests verdes | `web/` 14, `mobile/` 13 + 1 todo | igual |
+| Techo de avisos de lint | `web/` 3 + `mobile/` 86 | igual |
+| Workflows de CI | 1 (2 jobs) | igual: **la CI no compila Android** |
+| Latencia tap→voz | sin medir | **mediana 239 ms** (282 en otra corrida); WebView + React ~30 |
+| PAT filtrados en el historial público | no medido | no medido en esta tanda |
+
+*El método de conteo de líneas se validó reproduciendo el «antes» exacto (14 969 en 51) sobre
+`7321d79` antes de medir el «después».*
+
+**Lo que deja sin hacer.**
+
+*Lo que el plan previó y se cumplió:* cáscara Android que abre en el emulador, celdas que cargan sin
+red, el número tap→voz con imágenes locales, 0 líneas del tablero tocadas, 0 imports de `next/`.
+
+*Lo que no previó y salió de ejecutar* — la lista que enseña a planificar lo que sigue:
+- **Sin TTS nativo no había voz.** `E.5.1` se adelantó y quedó a medias: en el teléfono no se
+  aplica la voz que el usuario elige en Ajustes (`ponytail:` en `useSpeech.ts`).
+- **`BUG-11`:** abrir la app sin red manda a `/onboarding`. Choca de frente con «el tablero funciona
+  sin red», y no se arregla aquí.
+- **`DEC-14`:** el tablero horizontal no entra en la altura de un teléfono (51 px en el APK, 0 en
+  Chrome, ya antes del port). Va después de esta tanda.
+- **`PERF-10`:** ~190 ms del motor de voz, que ningún stack quita.
+- **Sólo `root` está precargada:** 44 de los 1 813 ids. Las demás páginas siguen usando la red.
+- **Instrumentos que mintieron en este teléfono:** `logcat -d` sin ninguna línea, `screencap` en
+  negro, `navigator.onLine` en `true` con modo avión. En PowerShell 5.1, el `>` rompe binarios y
+  agrega BOM, y las comillas dobles se pierden en los argumentos de `node`. **La medición se hizo
+  entera por DevTools (CDP)**, y así se repite: los scripts quedaron en `mobile/scripts/cdp/`,
+  con un README (agregados el mismo día, en `feature/scripts-cdp`).
+- **`gradlew` entró sin bit de ejecución** (`100644`): un job de Android en `ubuntu-latest`
+  fallaría con *Permission denied*.
+- **`ANDROID_HOME` sigue vacío:** cada comando de Gradle lo define en línea.
+- **Lo que la medición no cubre:** el táctil y el audio hasta el parlante; y que el teléfono sea de
+  verdad el más lento del piloto (`DEC-13`).
+- **Visto en el emulador y no investigado:** `Error injecting safe area CSS` en el logcat. En el
+  teléfono los márgenes seguros llegan bien (37 px arriba y a la izquierda).
+
 ---
 
 ### E.3 — Auth por tokens
@@ -352,9 +878,7 @@ git checkout main; git pull; git checkout -b feat/e2-capacitor-android
 **Forma del daño: deja a usuarios reales fuera de su cuenta.** Superficie pequeña, consecuencia
 grave. Verificación completamente distinta a E.1, por eso no comparten PR.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e3-auth-por-tokens
-```
+**Rama:** `feature/e3-auth-por-tokens` (se abre como dice §4).
 
 | # | Tarea | Verificación |
 |---|---|---|
@@ -366,6 +890,125 @@ git checkout main; git pull; git checkout -b feat/e3-auth-por-tokens
 > `@supabase/ssr`: *«el gate no cubre flujos autenticados — habría compilado, dado 200 en todas
 > las rutas y 27/27 con el login roto»*. Sin E.3.1, E.3.2 se verifica a ciegas.
 
+**Ejecución de `E.3.1` — 2026-11-11.** **Decisión de Alejandro:** el test corre contra **Supabase
+local en Docker**, no contra producción, para que pueda correr en la CI sin secretos. El esquema
+salió de `supabase db dump --linked` (sólo lectura; **no** `db pull`, que ofrece escribir el
+historial de migraciones remoto) y quedó como `supabase/migrations/20260603053137_esquema_base.sql`,
+con la versión de la única migración registrada en producción. Puertos en el rango **5452x**: los
+5432x y 5442x los ocupan otros proyectos locales. El test es `web/tests/auth/flujo-autenticado.mjs`
+(`npm run test:auth`): crea dos usuarios, inicia sesión y llama a las 5 rutas con `Bearer` desde el
+origen `https://localhost`, y en cada una comprueba que **llegó la identidad**, no sólo que no hubo
+401. **Primera corrida, antes de tocar las rutas: 1/8**, predicho por escrito: sólo pasa el
+control del token alterado. El control con el login roto a propósito queda para cuando esté verde.
+
+**Decisión de Alejandro, 2026-11-11, sobre `E.3.2`:** el token **se queda en la cookie del WebView**
+(ya persiste, corrección 11) y **no** se agrega almacenamiento seguro nativo. A cambio,
+`android:allowBackup` pasa de `true` a `false` (`AndroidManifest.xml:5`), para que los backups de
+Android no copien la sesión. ~~**Todavía no aplicado.**~~ **Aplicado el 2026-11-19** (sin compilar ni
+instalar todavía). Se revisa en `E.6`: en iOS la persistencia
+de cookies del WKWebView es menos fiable.
+
+**Ejecución de `E.3.3` — 2026-11-19.** `getRequestAuth()` en `web/lib/supabase/server.ts`: si
+llega `Authorization: Bearer`, arma el cliente con ese header global (RLS lo necesita:
+`push/subscribe` escribe con la sesión del usuario) y valida con `getUser(token)`; si no llega,
+sigue la cookie. **Un Bearer inválido es 401, no se cae a la cookie.** Las 5 rutas pasan por él
+(`push/subscribe` y `push/send` armaban su propio cliente con cookies). CORS con `headers()` en
+`web/next.config.ts` sobre `/api/:path*`, origen fijo `https://localhost`, sin
+`Allow-Credentials`; el `OPTIONS` lo implementa Next solo y **sí** lleva esas cabeceras (medido:
+pasa el preflight del test). **Medido:** `test:auth` **8/8**; **control negativo** (la regex del
+helper rota a propósito, así que el token se ignora) **3/8, exit 1**, y las 5 rutas dan 401, que es
+también la prueba de «rechazan sin él»; el humo no la da para `contacts/search`, que contesta 400
+antes de mirar la sesión. Revertido, 8/8 otra vez. Gate de web exit 0 (3 avisos, 14 tests, humo
+21/21).
+
+> **Correcciones que trajo ejecutarlo:**
+> 13. **El genérico `Database` no tipaba nada.** `lib/supabase/types.ts` está escrito a mano y no
+>     tiene la forma que exige supabase-js 2.111 (faltan `Relationships`, `Views`, `Functions`):
+>     todas las tablas resolvían a `never`, que es por qué `contacts/search` ya usaba casts y las
+>     rutas de push un cliente sin tipar. Se quitó el genérico de `server.ts` con un `ponytail:`;
+>     el arreglo real es `supabase gen types typescript --local`, ahora que hay Supabase local.
+> 14. **`next dev` y `next build` se cortan solos cuando los corre un agente.** Next 16.4 trae
+>     `experimental.agentUpgrade` (documentado en `node_modules/next/dist/docs`): si la versión
+>     tiene avisos de seguridad, el primer aviso termina el proceso con exit 1 y **el reintento sólo
+>     vale 5 minutos** (`RETRY_TTL`, recibo en `.next`: borrar `.next` entre medio lo pierde). Se
+>     apaga con `agentUpgrade: false`, decisión del mismo género que `web/AGENTS.md`.
+> 15. **iOS (`E.6`) necesita `proxy.ts`.** `Access-Control-Allow-Origin` admite un único valor y
+>     WKWebView usa `capacitor://localhost`: con dos orígenes, el origen fijo de `next.config.ts`
+>     deja de servir y hay que devolver el `Origin` si está en una lista (ejemplo en la doc de
+>     `proxy.md` de Next 16).
+
+**Ejecución de la mitad móvil — 2026-11-19.** En vez de tocar los 6 `fetch` (`ContactForm.tsx:79`,
+`lib/cloudinary.ts:72` y `:182`, `lib/notifications.ts:115`, `useChatStore.ts:250`,
+`useGroupStore.ts:340`, contados con grep), un envoltorio `conApi` en `mobile/lib/apiFetch.ts`,
+instalado en `main.tsx`: a lo que empieza por `/api/` le antepone `VITE_API_URL` y le agrega el
+Bearer de `getSession()`; **a nada más**, para que el token no llegue a Cloudinary ni a Hugging Face.
+Así `lib/cloudinary.ts` sigue idéntica a la de `web/` (el `cmp` de la CI) y un llamador nuevo no
+puede olvidarse. Sin `VITE_API_URL` la ruta queda relativa (el navegador con el proxy de Vite).
+Test `tests/unit/api-fetch.test.ts`, 3 casos; **control negativo:** con el filtro de `/api/` quitado
+falla justo «el token NO sale hacia otros dominios». Gate de `mobile/` exit 0: 86 avisos, 25 passed
++ 1 todo, `index-*.js` 987.11 kB. `allowBackup="false"` aplicado. ~~**Falta la verificación en el
+teléfono** (no estaba conectado: `adb devices` vacío).~~
+
+**Verificado en el teléfono — 2026-11-19**, por el efecto, en el HONOR de `DEC-13`: APK de debug
+compilado contra el Supabase local y la API local (corrección 16), `adb reverse` de 3000 y 54521
+(desde el teléfono, `/system/bin/curl` da 200 en los dos), sesión iniciada por la UI con un usuario
+del Supabase local. Por CDP, con el mismo `fetch` que usan los llamadores: `contacts/search` → 200
+con el `contactId` de B; `cloudinary/sign` → 200 con `folder` = `users/{id de A}`. **Control:** la
+misma búsqueda por `XMLHttpRequest`, que no pasa por el envoltorio, devuelve 200 `text/html`, el
+`index.html` de Capacitor (la corrección 10, reproducida). Y por la UI de verdad (`ContactForm`:
+«Añadir el primero», email, «Buscar», «Registrar Contacto»): «Tel B» en pantalla y **1 fila** A→B en
+`contacts` de la base local. **Lo que no prueba:** no se subió una imagen real a Cloudinary (la
+firma es de relleno), ni se probó `push/*` desde el teléfono, ni el APK de **release**, ni que
+`allowBackup="false"` impida de verdad el backup.
+
+> 18. **`Measure-Object` cuenta como 1 la salida vacía de un ejecutable** (`adb forward --list`
+>     tras `--remove-all`). Para saber si una lista nativa está vacía, `-join` y mirarla.
+
+> 16. **El APK de la prueba tiene que apuntar al Supabase LOCAL, no sólo a la API local.** Vite
+>     toma `NEXT_PUBLIC_SUPABASE_URL` de `web/.env.local`, que es producción: el teléfono
+>     iniciaría sesión allí y el `next dev` local rechazaría ese token. Las variables del proceso
+>     le ganan a `.env.local` al compilar (medido en `dist/`, con control: con
+>     `NEXT_PUBLIC_SUPABASE_URL=http://localhost:54521` aparece 2 veces y el host de producción 0;
+>     sin ella, 0 y 2). Hace falta además `adb reverse tcp:54521 tcp:54521`, la anon key local y un
+>     usuario creado en el Supabase local.
+> 17. **`Select-String -SimpleMatch` dio 0 sobre el bundle de 987 kB** donde `grep -o` encontró las
+>     cadenas, en las tres búsquedas, incluida la de control. Para contar en `dist/`, `grep`
+>     desde la herramienta Bash.
+
+**`test:auth` en el CI — 2026-11-20** (rama `fix/sec-19-next-y-ci-auth`). Workflow aparte,
+`.github/workflows/auth.yml`, en cada PR y ~~bloqueante~~ **rojo si falla, pero sin bloquear el
+merge (ver corrección 21)**: Supabase local con sólo db, auth, kong y
+postgrest, variables fijadas **antes** del build (por eso `next start` y no `next dev`, al revés de
+lo que dice la cabecera del test para uso local), VAPID generadas en cada corrida, sin secrets.
+Reproducido en local paso por paso, con el mismo bloque de bash para las variables: arranque de
+Supabase 68 s (sobre un volumen que ya existía: en el runner baja imágenes, **no medido**),
+`npm ci` 300 s, build 105 s y servidor listo en 3 s; `test:auth` **8/8**. **Control negativo** con
+la regex del Bearer rota y recompilado: **3/8, exit 1**. ~~La duración en GitHub queda por medir en
+la primera corrida.~~ **Medida en GitHub el 2026-11-20:** `test-auth` 2 min 27 s (PR #20, 8/8) y 3 min 3 s (PR #21, 9/9, con las 2 migraciones aplicadas sobre un Postgres limpio), contra 1 min 28 s y 1 min 22 s del `gate`: no hace falta filtrarlo por rutas. Con esto se apagó `agentUpgrade` (corrección 14) y el reemplazo es
+`npm audit --omit=dev --audit-level=moderate` como paso bloqueante en los jobs `gate` y `mobile`
+de `ci.yml` (los dos dan 0 hoy).
+
+> 19. **El primer control negativo dio 8/8 con la regex rota, y era falso.** En Git Bash, `kill`
+>     del PID de `npx next start` no mata el `node` hijo: el servidor de la corrida buena siguió en
+>     el puerto 3000, el nuevo murió con `EADDRINUSE` y el test le habló al viejo. Antes, otro
+>     intento no había roto nada porque el `sed` no coincidió (`git diff --stat` vacío). Para un
+>     control: comprobar que el cambio está en el build (`grep -rl` en `.next/server`), levantar con
+>     `node node_modules/next/dist/bin/next start` para que el PID sea el del servidor y mirar el
+>     log por `EADDRINUSE`. En el runner no pasa (máquina nueva, un solo arranque).
+> 20. **En PowerShell, `-x a,b,c` sin comillas no excluye nada.** La coma arma un array y la CLI de
+>     Supabase levantó los 13 contenedores (y cayó por health check a los 194 s). Con comillas,
+>     4 contenedores en 68 s. En el CI corre bash y la coma llega entera. De paso: el `maie-runtime`
+>     de la lista de E.3.1 no es un servicio de la CLI 3.1.0 (`start --help` lista 13) y se ignoraba
+>     sin aviso.
+> 21. **«Bloqueante» era falso: ni `develop` ni `main` tienen protección de rama.** Medido el
+>     2026-11-20 con `gh api …/branches/{develop,main}/protection` → 404 *Branch not protected*, y
+>     `…/rulesets` → `[]`. `gate`, `mobile`, `test-auth` y el paso de `npm audit` ponen el PR en
+>     rojo, pero un PR en rojo se puede mergear igual. Pasan a bloquear cuando Alejandro active la
+>     protección con esos tres checks como obligatorios. #20 y #21 se mergearon con los tres en
+>     `SUCCESS` (`mergedAt` 11 min 59 s y 1 min 28 s después del último `completedAt`), y el push a `develop` (`0823e53`) también: `CI` 1 min 39 s y `Auth` 3 min 23 s,
+>     los dos `success` (runs `44687635879` y `44687635891`; los de `a75e870` se cancelaron por
+>     `concurrency` al llegar el merge de #21 10 s después).
+
 ---
 
 ### E.4 — Push nativo APNs/FCM
@@ -373,16 +1016,19 @@ git checkout main; git pull; git checkout -b feat/e3-auth-por-tokens
 **Forma del daño: introduce el primer secreto de servidor del port** y cambia el esquema. Dos
 motivos independientes para ir en su propio PR.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e4-push-nativo
-```
+**Rama:** `feature/e4-push-nativo` (se abre como dice §4).
+
+**Por qué hacen falta dos canales, y no uno siempre abierto.** Con la app en primer plano, el
+mensaje llega por Supabase Realtime (WebSocket), como hoy. Con la app en segundo plano o cerrada,
+iOS y Android suspenden la app y su socket: **el canal permanente lo mantiene el sistema
+operativo**, y se llama APNs (Apple) y FCM (Google). Esta tanda construye ese segundo canal.
 
 | # | Tarea | Verificación |
 |---|---|---|
 | **E.4.1** | 🔴 Releer `docs/superpowers/specs/2026-07-29-push-sin-service-role-design.md` **antes de escribir nada** | El diseño asumía que el camino nativo no estaba decidido. Ahora sí lo está: confirmar qué sigue en pie |
-| E.4.2 | Tabla `device_tokens` + RLS, en Supabase **local en Docker** primero | Migración contra un Postgres limpio |
-| E.4.3 | Sender a APNs/FCM, sustituyendo `web-push` | Notificación recibida en dispositivo real |
-| E.4.4 | Retirar `push_subscriptions` y el worker de Web Push | Control negativo: nada quedó llamando al endpoint viejo |
+| E.4.2 | Tabla `device_tokens` + RLS, en Supabase **local en Docker** primero. **Supabase local no está montado** (medido el 2026-10-31: no existen `web/supabase/config.toml` ni `migrations/`), así que el primer paso es `supabase init` y pasar el esquema a migraciones | Migración contra un Postgres limpio |
+| E.4.3 | ~~Sender a APNs/FCM, sustituyendo `web-push`~~ **El push lo dispara la base** *(corregido el 2026-10-31, `BUG-9`)*: trigger `AFTER INSERT` en `messages` y `group_messages` → Edge Function → FCM, que entrega también en iOS a través de APNs. Sustituye a `web-push` **y** a la llamada desde el cliente. El secreto de FCM vive en los secretos de la Edge Function. La autorización que hoy hace `/api/push/send` (contacto o membresía) ya la impuso RLS al aceptar el insert | **Control que distingue «lo dispara la base» de «lo dispara el cliente»:** insertar un mensaje **por SQL, sin ningún cliente emisor**, y que la notificación llegue al dispositivo real |
+| E.4.4 | Retirar `push_subscriptions`, el worker de Web Push, `/api/push/send` y los dos `fetch` de los stores (`useChatStore.ts:250`, `useGroupStore.ts:340`) | Control negativo: nada quedó llamando al endpoint viejo |
 
 > **Ninguna migración toca la base remota sin haber pasado por el Supabase local en Docker, y no
 > se aplica sola al mergear: se aplica a propósito.**
@@ -394,9 +1040,7 @@ git checkout main; git pull; git checkout -b feat/e4-push-nativo
 **Agrupadas porque fallan igual:** las tres son «el plugin nativo no está disponible → degradar al
 equivalente web». Mismo modo de fallo, misma verificación.
 
-```powershell
-git checkout main; git pull; git checkout -b feat/e5-plugins-nativos
-```
+**Rama:** `feature/e5-plugins-nativos` (se abre como dice §4).
 
 | # | Tarea |
 |---|---|

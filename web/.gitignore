@@ -67,3 +67,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lo genera `next dev` cuando lo corre un agente (agentRules): ayuda local, no va al repo
+/AGENTS.md

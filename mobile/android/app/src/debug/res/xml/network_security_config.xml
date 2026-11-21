@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sólo en el APK de debug: deja que la app llame por HTTP al servidor web/ de la PC a través
+     de `adb reverse tcp:3000 tcp:3000`. Todo lo demás sigue exigiendo HTTPS. El APK de release
+     no lleva este archivo. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>
