@@ -1025,6 +1025,26 @@ recurso y `localhost:3000` en el bundle. **Lo que no prueba:** el APK de release
 abrió, porque sin firma Android no lo instala. La clave de firma (keystore propio o *Play App
 Signing*) la decide Alejandro, y perderla impide actualizar la app publicada.
 
+**Firmado e instalado el 2026-11-21 (`DEC-17`: *Play App Signing*, el keystore es la clave de
+subida).** Alejandro generó `pictolink-upload.jks` fuera del repo y firmó con `zipalign` +
+`apksigner` (la contraseña no pasó por la sesión). `apksigner verify`: esquemas v2 y v3,
+`CN=Elaris Digital Solutions, OU=Pictolink, O=Elaris Digital Solutions, L=Lima, ST=Lima, C=PE`;
+**control:** el APK sin firmar da «DOES NOT VERIFY». Se desinstaló el de debug (mismo
+`applicationId`, otra firma) y se instaló el de release en el teléfono de `DEC-13`. **No es
+depurable** (0 `DEBUGGABLE`, 0 sockets de DevTools), así que los scripts de `mobile/scripts/cdp/`
+no lo leen: la prueba en pantalla la hizo Alejandro, y lo de la base se midió por el MCP.
+**Según Alejandro, todo funciona contra producción:** registro, tablero, voz, sin red y vuelta a
+la red. **Medido en la base de producción:** cuenta nueva creada a las 18:40:06 UTC; contacto
+nueva→existente a las 18:40:29 (sale de `contacts/search` con el token: el buscador la
+encontró), y existente→nueva a las 18:41:19, **agregado a mano** desde la otra cuenta; 0
+mensajes entre las dos. **El contacto es de un solo lado**, como dice el esquema
+(`contacts_insert`): agregar a alguien no lo agrega a la otra cuenta. Alejandro lo vio como
+«detalle»; es el comportamiento que `SEC-18` decidió conservar, y el aviso al otro lado es el
+flujo de solicitud del Bloque C. **De paso, medido:** la cuenta nueva quedó confirmada a los 0 s
+y sin `confirmation_sent_at`: producción corre sin confirmación de correo (`P0-7`, panel
+bloqueado por el SMTP), confirmado por el efecto. **Sigue sin probar:** `allowBackup="false"`,
+`push/*` y una subida real a Cloudinary desde el release.
+
 ---
 
 ### E.4 — Push nativo APNs/FCM
