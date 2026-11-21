@@ -1009,6 +1009,22 @@ de `ci.yml` (los dos dan 0 hoy).
 >     los dos `success` (runs `44687635879` y `44687635891`; los de `a75e870` se cancelaron por
 >     `concurrency` al llegar el merge de #21 10 s después).
 
+**APK de release contra producción — 2026-11-20** (rama `feature/e3-api-url-produccion`). Decisión de
+Alejandro: el APK que se reparte apunta a `https://picto-link-app-movil.vercel.app`, el dominio de
+producción **medido** (deployment `7955414763`, que responde CORS a `https://localhost`). Va en
+`mobile/.env.production`, que sólo lee `vite build`: `npm run dev` sigue con el proxy, y una
+variable del proceso le gana al archivo (corrección 16), así que un APK de debug contra la PC se
+compila igual que antes. Si llega el dominio propio (`DEC-10`), se cambia una línea. **Medido en
+`dist/`:** la URL de la API aparece 1 vez, el host de Supabase de producción 2 y `localhost`/`127.0.0.1`
+con puerto 0. **Control negativo:** con el archivo apartado, 0. `assembleRelease` (con `ANDROID_HOME`
+en línea, corrección de E.2) → `BUILD SUCCESSFUL` en 2 min 7 s, `app-release-unsigned.apk` de
+4 445 521 bytes. **Sin la excepción de HTTP**, medido con `aapt2`: el manifiesto no trae
+`networkSecurityConfig` ni `usesCleartextTraffic`, no hay recurso `network_security_config`, y
+`allowBackup=false` sí está. **Control:** el APK de debug sí trae `networkSecurityConfig`, el
+recurso y `localhost:3000` en el bundle. **Lo que no prueba:** el APK de release no se instaló ni se
+abrió, porque sin firma Android no lo instala. La clave de firma (keystore propio o *Play App
+Signing*) la decide Alejandro, y perderla impide actualizar la app publicada.
+
 ---
 
 ### E.4 — Push nativo APNs/FCM
